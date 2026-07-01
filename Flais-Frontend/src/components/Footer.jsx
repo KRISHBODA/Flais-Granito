@@ -1,0 +1,189 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Mail, Phone, MapPin, Globe, ArrowRight } from 'lucide-react';
+import logo from '../assets/Flais White.png';
+import api from '../utils/api';
+
+
+
+const Footer = () => {
+  const [footerSettings, setFooterSettings] = React.useState({
+    phone1: '+91 95867 33300',
+    phone2: '+91 98983 04831',
+    email: 'info@flaisgranito.com',
+    address: 'Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.'
+  });
+
+  React.useEffect(() => {
+    const fetchFooterSettings = async () => {
+      try {
+        const res = await api.get('/settings');
+        if (res.data.success && res.data.settings) {
+          const { phone1, phone2, email, address } = res.data.settings;
+          setFooterSettings({ phone1, phone2, email, address });
+        }
+      } catch (err) {
+                // Fallback to local storage if available
+        const saved = localStorage.getItem('flais_footer_settings');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setFooterSettings(prev => ({ ...prev, ...parsed }));
+          } catch (e) {
+            // Silent fail
+          }
+        }
+      }
+    };
+    fetchFooterSettings();
+  }, []);
+
+  const socialLinks = [
+    {
+      name: 'Facebook',
+      href: 'https://www.facebook.com/FlaisTile/',
+      icon: (props) => (
+        <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+        </svg>
+      )
+    },
+    {
+      name: 'Linkedin',
+      href: 'https://www.linkedin.com/company/flais-granito/',
+      icon: (props) => (
+        <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+          <rect x="2" y="9" width="4" height="12" />
+          <circle cx="4" cy="4" r="2" />
+        </svg>
+      )
+    },
+    {
+      name: 'Instagram',
+      href: 'https://www.instagram.com/flaisgranito/',
+      icon: (props) => (
+        <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+        </svg>
+      )
+    },
+    {
+      name: 'Youtube',
+      href: 'https://www.youtube.com/@FlaisGranito',
+      icon: (props) => (
+        <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.11 1 12 1 12s0 3.89.46 5.58a2.78 2.78 0 0 0 1.94 2c1.72.42 8.6.42 8.6.42s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.89 23 12 23 12s0-3.89-.46-5.58z" />
+          <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" />
+        </svg>
+      )
+    },
+    {
+      name: 'Pinterest',
+      href: 'https://pin.it/7ro6vHaq4',
+      icon: (props) => (
+        <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="8" y1="22" x2="14" y2="10" />
+          <path d="M9 14.5A7 7 0 1 1 15.6 7" />
+          <circle cx="12" cy="12" r="10" />
+        </svg>
+      )
+    }
+  ];
+
+  return (
+    <footer className="bg-zinc-950 text-zinc-400 pt-14 sm:pt-20 md:pt-24 pb-8 sm:pb-12">
+      <div className="container-custom">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-12 md:gap-16 mb-12 sm:mb-16 md:mb-20">
+          {/* Column 1: Contact Info */}
+          <div className="space-y-8">
+            <Link to="/" className="inline-block">
+              <img loading="lazy" src={logo} alt="FLAIS GRANITO" className="h-12 w-[160px] object-contain origin-left" />
+            </Link>
+            <div className="space-y-6 text-[15px]">
+              <div className="flex items-start space-x-4">
+                <MapPin size={20} className="text-white shrink-0 mt-1" />
+                <p className="leading-relaxed text-zinc-400 hover:text-white transition-colors cursor-default">
+                  {footerSettings.address}
+                </p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Phone size={20} className="text-white shrink-0" />
+                <div className="flex flex-col">
+                  {footerSettings.phone1 && <a href={`tel:${footerSettings.phone1.replace(/\s+/g, '')}`} className="hover:text-white transition-colors">{footerSettings.phone1}</a>}
+                  {footerSettings.phone2 && <a href={`tel:${footerSettings.phone2.replace(/\s+/g, '')}`} className="hover:text-white transition-colors">{footerSettings.phone2}</a>}
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Mail size={20} className="text-white shrink-0" />
+                <a href={`mailto:${footerSettings.email}`} className="hover:text-white transition-colors">{footerSettings.email}</a>
+              </div>
+            </div>
+
+            {/* Social Icons */}
+            <div className="flex items-center space-x-4 pt-6">
+              {socialLinks.map((social, i) => (
+                <a
+                  key={i}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:bg-[#5D4037] hover:text-white transition-all border border-zinc-800"
+                  aria-label={social.name}
+                >
+                  <social.icon width="18" height="18" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Column 2: Company */}
+          <div className="space-y-8">
+            <h4 className="text-white font-display font-bold text-lg uppercase tracking-widest relative inline-block">
+              Company
+              <span className="absolute -bottom-2 left-0 w-8 h-0.5 bg-[#5D4037]"></span>
+            </h4>
+            <ul className="space-y-4 text-[15px] font-medium">
+              <li><Link to="/about" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Why FLAIS</Link></li>
+              <li><Link to="/where-to-buy" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Where to Buy</Link></li>
+              <li><Link to="/about" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Manufacturing Excellence</Link></li>
+              <li><Link to="/about" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Certification</Link></li>
+              <li><Link to="/calculator" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Tile Calculator</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 3: Collection */}
+          <div className="space-y-8">
+            <h4 className="text-white font-display font-bold text-lg uppercase tracking-widest relative inline-block">
+              Collection
+              <span className="absolute -bottom-2 left-0 w-8 h-0.5 bg-[#5D4037]"></span>
+            </h4>
+            <ul className="space-y-4 text-[15px] font-medium">
+              <li><Link to="/products?cat=full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Full Body Tiles</Link></li>
+              <li><Link to="/products?cat=digital-full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Color Body Tiles</Link></li>
+              <li><Link to="/catalog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Downloads</Link></li>
+              <li><Link to="/blog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Latest Blogs</Link></li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Footer Bottom */}
+        <div className="pt-10 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-4 text-[11px] sm:text-[13px] font-medium tracking-wider text-center">
+            <span>&copy; {new Date().getFullYear()}</span>
+            <span className="font-bold text-white uppercase tracking-widest">Keval Granito LLP</span>
+            <span>ALL RIGHTS RESERVED.</span>
+          </div>
+          <div className="flex items-center space-x-4 sm:space-x-6 text-[10px] uppercase tracking-widest font-bold">
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

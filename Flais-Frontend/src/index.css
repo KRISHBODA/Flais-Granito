@@ -1,0 +1,432 @@
+@import "tailwindcss";
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera globally */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+body {
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+#root {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+* {
+  font-family: "Montserrat", sans-serif !important;
+}
+
+img,
+video {
+  content-visibility: auto;
+  -webkit-user-drag: none;
+}
+
+/* Image Reveal Animation */
+.img-reveal {
+  opacity: 0;
+  animation: imgReveal 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+
+@keyframes imgReveal {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Performance Layer Optimization */
+.transform-gpu {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@theme {
+  --color-admin-primary: #0145F2;
+  --color-admin-bg: #EDF1F5;
+
+  --color-beige-50: #fdfcfb;
+  --color-beige-100: #f7f4ef;
+  --color-beige-200: #eee9e0;
+  --color-beige-300: #e1d8c9;
+  --color-beige-400: #cbbdaf;
+  --color-beige-500: #b49f8b;
+  --color-beige-600: #a38772;
+  --color-beige-700: #886d5e;
+  --color-beige-800: #6f5a4f;
+  --color-beige-900: #5c4b43;
+
+  --font-sans: "Montserrat", sans-serif;
+  --font-display: "Montserrat", sans-serif;
+  --font-classic: "Montserrat", sans-serif;
+  --font-logo: "Montserrat", sans-serif;
+
+  --animate-fade-in: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-up: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-[#FCFCFC] text-zinc-800 font-sans;
+    overflow-x: hidden;
+    width: 100%;
+    overscroll-behavior: none;
+    top: 0 !important;
+  }
+
+  /* Hide Google Translate Banner & Branding but KEEP CLICKABLE */
+  .goog-te-banner-frame.skiptranslate,
+  .goog-logo-link,
+  .goog-te-gadget-icon {
+    display: none !important;
+  }
+
+  /* Make the native trigger invisible but still occupy space so it can be clicked */
+  #google_translate_element .goog-te-gadget,
+  #google_translate_element .goog-te-menu-value,
+  #google_translate_element span {
+    opacity: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    cursor: pointer !important;
+  }
+
+  body {
+    top: 0 !important;
+  }
+
+  .skiptranslate {
+    font-family: 'Montserrat', sans-serif !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display text-zinc-900 tracking-tight;
+  }
+
+  p {
+    @apply leading-relaxed text-zinc-600;
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 lg:px-20;
+  }
+
+  /* Hide scrollbar on horizontal scroll containers */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Infinite Marquee */
+  .marquee {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    align-items: center;
+    gap: 8rem;
+    animation: marquee-left 25s linear infinite !important;
+    will-change: transform;
+  }
+
+  .marquee-track-reverse {
+    animation: marquee-right 25s linear infinite !important;
+  }
+
+  .marquee-logo {
+    flex-shrink: 0;
+    height: 9rem;
+    width: auto;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    transition: transform 0.35s ease;
+    cursor: pointer;
+  }
+
+  .marquee-logo:hover {
+    transform: scale(1.08);
+  }
+
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee-left {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes marquee-right {
+    from {
+      transform: translateX(-50%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  /* Premium Buttons */
+  .btn-primary {
+    @apply relative overflow-hidden bg-zinc-900 text-white px-6 py-3 sm:px-10 sm:py-4 text-sm sm:text-base rounded-full font-medium transition-all duration-500 hover:bg-zinc-800 active:scale-95 flex items-center justify-center gap-2;
+  }
+
+  .btn-beige {
+    @apply relative overflow-hidden bg-beige-700 text-white px-6 py-3 sm:px-10 sm:py-4 text-sm sm:text-base rounded-full font-medium transition-all duration-500 hover:bg-beige-800 active:scale-95 flex items-center justify-center gap-2;
+  }
+
+  .btn-outline {
+    @apply border border-zinc-200 text-zinc-900 px-6 py-3 sm:px-10 sm:py-4 text-sm sm:text-base rounded-full font-medium transition-all duration-500 hover:border-zinc-900 hover:bg-zinc-50 active:scale-95 flex items-center justify-center gap-2;
+  }
+
+  /* High-end Cards */
+  .premium-card {
+    @apply bg-white border border-zinc-100 rounded-[2rem] transition-all duration-700 overflow-hidden;
+  }
+
+  /* Glassmorphism */
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.05)];
+  }
+
+  .glass-nav {
+    @apply bg-white/80 backdrop-blur-md border-b border-zinc-100/50 transition-all duration-500;
+  }
+
+  /* Custom Section Titles */
+  .section-tag {
+    @apply text-[11px] font-bold tracking-[0.3em] uppercase text-beige-700 mb-4 block;
+  }
+
+  .section-title {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-medium text-zinc-900 tracking-tight leading-[1.1] mb-4 sm:mb-6;
+  }
+}
+
+/* Lenis Recommended CSS for Smooth Scrolling */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Swiper Polish */
+.swiper-pagination-bullet {
+  @apply !w-6 sm:!w-12 !h-1 !rounded-full !bg-zinc-200 !opacity-100 transition-all duration-500;
+}
+
+.swiper-pagination-bullet-active {
+  @apply !bg-beige-700 !w-10 sm:!w-20;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  @apply !text-white !w-12 !h-12 !bg-black/20 !rounded-full !backdrop-blur-sm transition-all duration-300 hover:bg-black/40 !z-30;
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  @apply !text-xl font-bold;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Mobile Animation Reduction (≤ 768px)
+   Reduces heavy animations on small screens for better
+   performance, battery life, and smoother scrolling.
+────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Speed up / simplify slide-up & fade-in */
+  .animate-slide-up {
+    animation-duration: 0.3s !important;
+    animation-delay: 0ms !important;
+  }
+
+  .animate-fade-in,
+  .animate-fade-in-scale {
+    animation-duration: 0.3s !important;
+    animation-delay: 0ms !important;
+  }
+
+  /* Remove img reveal scale effect — just fade in */
+  .img-reveal {
+    animation: imgRevealMobile 0.3s ease forwards;
+  }
+
+  @keyframes imgRevealMobile {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Speed up marquees on mobile */
+  .marquee-track {
+    animation-duration: 20s !important;
+  }
+
+  .marquee-track-reverse {
+    animation-duration: 25s !important;
+  }
+
+  .marquee-track {
+    gap: 4rem;
+  }
+
+  .marquee-logo {
+    height: 5rem;
+  }
+
+  /* Disable floating elements — they cause layout jank on scroll */
+  .animate-float {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* Disable hover scale transforms (no hover on touch) */
+  .group:hover .group-hover\:scale-105,
+  .group:hover .group-hover\:scale-110 {
+    transform: none !important;
+  }
+
+  /* Disable animated bounce (e.g. scroll-down indicator) */
+  .animate-bounce {
+    animation: none !important;
+  }
+
+  /* Disable animated spin on non-critical spinners */
+  .no-mobile-spin {
+    animation: none !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   Respect OS-level "Reduce Motion" preference (Accessibility)
+────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Force marquee to keep animating even with reduced motion preference */
+  .marquee-track,
+  .marquee-track-reverse {
+    animation-duration: 35s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  .animate-float,
+  .animate-bounce {
+    animation: none !important;
+  }
+}
+
+/* Explicit fallback for spin animations to guarantee execution on all devices */
+.animate-spin {
+  animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
