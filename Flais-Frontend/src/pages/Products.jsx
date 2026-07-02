@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom';
 import { Search, ArrowRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import collectionsVideo from '../assets/Its different motion logo (1).mp4';
+import collectionsVideo from '../assets/Its_different_motion_logo.mp4';
 import SEO from '../components/SEO';
 import api from '../utils/api';
 import useIntersectionVideoRef from '../hooks/useIntersectionVideoRef';
