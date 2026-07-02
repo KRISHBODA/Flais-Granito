@@ -74,16 +74,15 @@ const Blog = () => {
                   <div className="p-8 space-y-4 flex-grow flex flex-col">
                     <div className="flex items-center text-xs text-zinc-400 space-x-4">
                       <span className="flex items-center"><Calendar size={14} className="mr-1" /> {new Date(post.createdAt).toLocaleDateString()}</span>
-                      <span className="flex items-center"><User size={14} className="mr-1" /> Admin</span>
                     </div>
                     <h3 className="text-2xl font-display font-bold leading-tight group-hover:text-beige-600">
                       <Link to={`/blog/${post.slug}`} className="hover:text-beige-600 transition-colors">
                         {post.title}
                       </Link>
                     </h3>
-                    <p className="text-zinc-500 leading-relaxed flex-grow">
+                    {/* <p className="text-zinc-500 leading-relaxed flex-grow">
                       {post.content.length > 120 ? post.content.substring(0, 120).replace(/<[^>]+>/g, '') + '...' : post.content.replace(/<[^>]+>/g, '')}
-                    </p>
+                    </p> */}
                     <Link
                       to={`/blog/${post.slug}`}
                       className="inline-flex items-center text-sm font-bold text-zinc-900 hover:text-beige-600 transition-colors pt-4 group"

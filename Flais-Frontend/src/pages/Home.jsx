@@ -88,6 +88,15 @@ const Home = () => {
   const blogs = useMemo(() => (blogsRes || []).slice(0, 3), [blogsRes]);
   const heroSlides = useMemo(() => heroRes || [], [heroRes]);
   const dynamicLogos = useMemo(() => logosRes || [], [logosRes]);
+  const collectionSlides = useMemo(() => {
+    const seen = new Set();
+    return (choicesList || []).filter((item) => {
+      const key = item?._id || item?.id || item?.name;
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [choicesList]);
 
   const homeSchema = {
     "@context": "https://schema.org",
@@ -508,94 +517,92 @@ const Home = () => {
           </div>
 
           <div className="relative group/nav w-full max-w-[100vw] overflow-hidden">
-            {choicesList.length > 0 ? (() => {
-              let swiperSlides = choicesList;
-              if (choicesList.length > 1) {
-                while (swiperSlides.length < 8) {
-                  swiperSlides = [...swiperSlides, ...choicesList];
-                }
-              }
-              return (
-                <Swiper
-                  key={`collections-swiper-${swiperSlides.length}-${choicesList.map(c => c.id || c.name).join('-')}`}
-                  onSwiper={setCollectionsSwiper}
-                  modules={[Navigation, Autoplay]}
-                  spaceBetween={24}
-                  slidesPerView={1.2}
-                  centeredSlides={true}
-                  loop={swiperSlides.length > 1}
-                  breakpoints={{
-                    768: { slidesPerView: 1.5 },
-                    1024: { slidesPerView: 2 }
-                  }}
-                  className="collections-swiper !pb-12"
-                >
-                  {swiperSlides.map((col, index) => {
-                    return (
-                      <SwiperSlide key={`${col.id || col.name}-${index}`}>
-                        {() => (
-                          <div className="relative h-[350px] sm:h-[420px] md:h-[500px] overflow-hidden group">
-                            <img loading="lazy"
-                              src={getOptimizedImageUrl(col.image, 800)}
+            {collectionSlides.length > 0 ? (
+              <Swiper
+                key={`collections-swiper-${collectionSlides.length}-${collectionSlides.map(c => c._id || c.id || c.name).join('-')}`}
+                onSwiper={setCollectionsSwiper}
+                modules={[Navigation, Autoplay]}
+                spaceBetween={24}
+                slidesPerView={1.05}
+                centeredSlides={false}
+                loop={collectionSlides.length > 3}
+                watchOverflow={true}
+                grabCursor={true}
+                breakpoints={{
+                  640: { slidesPerView: 1.25 },
+                  768: { slidesPerView: 1.6 },
+                  1024: { slidesPerView: 2.2 },
+                  1280: { slidesPerView: 3 },
+                }}
+                className="collections-swiper !pb-12"
+              >
+                {collectionSlides.map((col, index) => (
+                  <SwiperSlide key={`${col._id || col.id || col.name}-${index}`}>
+                    <div className="relative h-[350px] sm:h-[420px] md:h-[500px] overflow-hidden group">
+                      <img
+                        loading="lazy"
+                        src={getOptimizedImageUrl(col.image, 800)}
+                        alt={col.name}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                      />
+                      {/* Subtle Vignette for logo contrast */}
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+
+                      {/* Content Area */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        {/* Logo in Center */}
+                        <div className="flex flex-col items-center select-none w-full px-6">
+                          {col.logoImage ? (
+                            <img
+                              loading="lazy"
+                              src={getOptimizedImageUrl(col.logoImage, 300)}
                               alt={col.name}
-                              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                              className="h-32 md:h-44 object-contain filter invert brightness-[1.5] drop-shadow-lg mix-blend-screen transition-transform duration-500 group-hover:scale-110"
                             />
-                            {/* Subtle Vignette for logo contrast */}
-                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500" />
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+                          ) : (
+                            <h3 className="text-3xl font-display font-bold text-white tracking-wider drop-shadow-lg uppercase text-center transition-transform duration-500 group-hover:scale-110">
+                            </h3>
+                          )}
+                        </div>
 
-                            {/* Content Area */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              {/* Logo in Center */}
-                              <div className="flex flex-col items-center select-none w-full px-6">
-                                {col.logoImage ? (
-                                  <img loading="lazy"
-                                    src={getOptimizedImageUrl(col.logoImage, 300)}
-                                    alt={col.name}
-                                    className="h-32 md:h-44 object-contain filter invert brightness-[1.5] drop-shadow-lg mix-blend-screen transition-transform duration-500 group-hover:scale-110"
-                                  />
-                                ) : (
-                                  <h3 className="text-3xl font-display font-bold text-white tracking-wider drop-shadow-lg uppercase text-center transition-transform duration-500 group-hover:scale-110">{col.name}</h3>
-                                )}
-                              </div>
+                        {/* Explore More Button at Bottom */}
+                        <div className="absolute bottom-10 w-full flex justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                          <Link
+                            to="/products"
+                            className="px-10 py-3 bg-white text-zinc-900 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-100 transition-all shadow-xl"
+                          >
+                            Explore Collection
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                ))}
 
-                              {/* Explore More Button at Bottom */}
-                              <div className="absolute bottom-10 w-full flex justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                                <Link to="/products" className="px-10 py-3 bg-white text-zinc-900 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-100 transition-all shadow-xl">
-                                  Explore Collection
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </SwiperSlide>
-                    );
-                  })}
+                {/* Navigation Arrows positioned on the gaps */}
+                <div className="hidden md:block absolute top-1/2 -translate-y-1/2 left-[25%] -translate-x-1/2 z-50 pointer-events-auto">
+                  <button onClick={() => collectionsSwiper?.slidePrev()} className="w-12 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                  </button>
+                </div>
+                <div className="hidden md:block absolute top-1/2 -translate-y-1/2 right-[25%] translate-x-1/2 z-50 pointer-events-auto">
+                  <button onClick={() => collectionsSwiper?.slideNext()} className="w-12 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                  </button>
+                </div>
 
-                  {/* Navigation Arrows positioned on the gaps */}
-                  <div className="hidden md:block absolute top-1/2 -translate-y-1/2 left-[25%] -translate-x-1/2 z-50 pointer-events-auto">
-                    <button onClick={() => collectionsSwiper?.slidePrev()} className="w-12 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                    </button>
-                  </div>
-                  <div className="hidden md:block absolute top-1/2 -translate-y-1/2 right-[25%] translate-x-1/2 z-50 pointer-events-auto">
-                    <button onClick={() => collectionsSwiper?.slideNext()} className="w-12 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-                    </button>
-                  </div>
-
-                  {/* Mobile Arrows (Bottom Center) */}
-                  <div className="md:hidden absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center space-x-2 z-50 pointer-events-auto">
-                    <button onClick={() => collectionsSwiper?.slidePrev()} className="w-10 h-10 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                    </button>
-                    <button onClick={() => collectionsSwiper?.slideNext()} className="w-10 h-10 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-                    </button>
-                  </div>
-                </Swiper>
-              );
-            })() : (
+                {/* Mobile Arrows (Bottom Center) */}
+                <div className="md:hidden absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center space-x-2 z-50 pointer-events-auto">
+                  <button onClick={() => collectionsSwiper?.slidePrev()} className="w-10 h-10 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                  </button>
+                  <button onClick={() => collectionsSwiper?.slideNext()} className="w-10 h-10 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                  </button>
+                </div>
+              </Swiper>
+            ) : (
               <div className="mx-auto max-w-2xl rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center text-slate-500">
                 <Sparkles className="mx-auto mb-3 opacity-50" size={34} />
                 <p className="text-lg font-semibold text-slate-600">No collections added yet</p>
@@ -832,9 +839,9 @@ const Home = () => {
                       <h3 className="text-lg md:text-xl lg:text-[1.35rem] font-bold text-zinc-900 leading-[1.3] group-hover:text-beige-700 transition-colors duration-500 line-clamp-2">
                         {blog.title}
                       </h3>
-                      <p className="text-zinc-600 text-sm md:text-[15px] leading-relaxed line-clamp-2 md:line-clamp-3">
+                      {/* <p className="text-zinc-600 text-sm md:text-[15px] leading-relaxed line-clamp-2 md:line-clamp-3">
                         {blog.content.length > 120 ? blog.content.substring(0, 120).replace(/<[^>]+>/g, '') + '...' : blog.content.replace(/<[^>]+>/g, '')}
-                      </p>
+                      </p> */}
                       <div className="flex items-center text-beige-700 font-bold text-sm opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
                         Read Story <ArrowRight size={14} className="ml-2" />
                       </div>
