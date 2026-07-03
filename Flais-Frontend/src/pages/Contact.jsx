@@ -7,7 +7,7 @@ import contactHero from '../assets/contact_hero.jpg';
 import api from '../utils/api';
 
 const countryCodes = [
-  { code: '+91', name: 'India (IN)' },
+  { code: '+91', name: 'India IN' },
   { code: '+93', name: 'Afghanistan' },
   { code: '+355', name: 'Albania' },
   { code: '+213', name: 'Algeria' },
