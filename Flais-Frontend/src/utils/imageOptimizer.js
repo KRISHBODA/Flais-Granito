@@ -7,14 +7,13 @@ const getStorageUrl = () => {
   return baseUrl.replace(/\/$/, '');
 };
 
-/**
- * Resolves local relative paths to full storage URLs, or returns absolute URLs as-is.
- * 
- * @param {string} url - The original image URL or relative path.
- * @returns {string} - The resolved URL.
- */
 export const getOptimizedImageUrl = (url) => {
   if (!url) return '';
+  
+  // Self-healing check for Hostinger VPS missing proxy on port 80
+  if (url.startsWith('http://187.127.179.251/media/') || url.startsWith('http://187.127.179.251/uploads/')) {
+    url = url.replace('http://187.127.179.251/', 'http://187.127.179.251:8000/');
+  }
   
   // If it is already an absolute URL, return as-is
   if (url.startsWith('http://') || url.startsWith('https://')) {

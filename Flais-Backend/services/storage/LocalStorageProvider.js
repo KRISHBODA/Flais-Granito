@@ -5,7 +5,12 @@ class LocalStorageProvider {
   constructor() {
     // Resolve standard storage root from env, fallback to project-local 'uploads' folder for dev
     this.storageRoot = path.resolve(process.env.STORAGE_ROOT || path.join(__dirname, "../../uploads"));
-    this.baseUrl = process.env.STORAGE_BASE_URL || "http://localhost:8000/media";
+    
+    let baseUrl = process.env.STORAGE_BASE_URL || "http://localhost:8000/media";
+    if (baseUrl.includes("187.127.179.251") && !baseUrl.includes(":8000") && !baseUrl.includes(":80")) {
+      baseUrl = baseUrl.replace("187.127.179.251", "187.127.179.251:8000");
+    }
+    this.baseUrl = baseUrl;
   }
 
   resolve(relativePath) {
