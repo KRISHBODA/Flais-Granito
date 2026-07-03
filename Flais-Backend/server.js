@@ -26,7 +26,7 @@ const defaultOrigins = [
   process.env.VITE_FRONTEND_URL,
   process.env.VITE_ADMIN_URL,
   "https://flais-frontend.vercel.app",
-  "http://localhost:5173",
+  "http://localhost:5175",
   "http://localhost:5174",
   "http://localhost:4173",
   "http://localhost:3000",
