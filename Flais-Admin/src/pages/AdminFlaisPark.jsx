@@ -424,7 +424,8 @@ const AdminFlaisPark = () => {
                           const token = localStorage.getItem('adminToken');
                           const formData = new FormData();
                           formData.append('file', file);
-                          const res = await axios.post(`${BackendUrl}/api/admin/upload-file`, formData, {
+                          formData.append('category', 'park');
+                          const res = await axios.post(`${BackendUrl}/api/admin/upload`, formData, {
                             headers: {
                               'Authorization': `Bearer ${token}`,
                               'Content-Type': 'multipart/form-data'

@@ -1,5 +1,5 @@
 const HomePage = require("../models/HomePage");
-const { uploadToR2 } = require("../middleware/r2Upload");
+const uploadService = require("../services/storage/UploadService");
 
 const DEFAULT_HOME = {
   homeTexts: {
@@ -25,7 +25,7 @@ const DEFAULT_HOME = {
   ],
   sizes: [],
   categories: [],
-  video: { url: "", name: "" },
+  video: { url: "", name: "", path: "" },
 };
 
 exports.getHomePage = async (req, res) => {
@@ -44,21 +44,25 @@ exports.upsertHomePage = async (req, res) => {
   try {
     const payload = req.body?.home ? req.body.home : req.body;
     
-    // Handle video upload to R2 if video file is provided
+    // Handle video upload if video file is provided
     if (req.file) {
       try {
-        const uploadResult = await uploadToR2(req.file, "videos/home");
-        if (uploadResult.success) {
-          payload.video = {
-            url: uploadResult.url,
-            name: req.file.originalname,
-            key: uploadResult.key,
-          };
+        // Delete previous video to conserve space on local VPS
+        const currentHome = await HomePage.findOne();
+        if (currentHome && currentHome.video && currentHome.video.path) {
+          await uploadService.delete(currentHome.video.path);
         }
+
+        const uploadResult = await uploadService.upload(req.file, "home");
+        payload.video = {
+          url: uploadResult.url,
+          name: req.file.originalname,
+          path: uploadResult.path,
+        };
       } catch (uploadError) {
         return res.status(500).json({ 
           success: false, 
-          message: "Failed to upload video to R2: " + uploadError.message 
+          message: "Failed to upload video: " + uploadError.message 
         });
       }
     }

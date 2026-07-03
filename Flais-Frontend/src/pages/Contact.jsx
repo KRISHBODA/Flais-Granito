@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
 import contactHero from '../assets/contact_hero.jpg';
 import api from '../utils/api';
+import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
 
 const countryCodes = [
   { code: '+91', name: 'India IN' },
@@ -339,11 +340,11 @@ const Contact = () => {
             className="absolute inset-0 w-full h-full object-cover filter brightness-[0.6]"
             key={pageSettings.heroMedia}
           >
-            <source src={pageSettings.heroMedia} type="video/mp4" />
+            <source src={getOptimizedVideoUrl(pageSettings.heroMedia)} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         ) : (
-          <img loading="lazy" src={pageSettings.heroMedia || contactHero} alt="Contact FLAIS GRANITO" className="absolute inset-0 w-full h-full object-cover" />
+          <img loading="lazy" src={getOptimizedImageUrl(pageSettings.heroMedia) || contactHero} alt="Contact FLAIS GRANITO" className="absolute inset-0 w-full h-full object-cover" />
         )}
         <div className="absolute inset-0 bg-black/60" />
         <div className="container-custom relative z-10 text-center space-y-4">

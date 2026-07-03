@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Award, ShieldCheck, Globe, Leaf, Star, CheckCircle2, TrendingUp, Trophy, MapPin, Calendar, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import SEO from '../components/SEO';
 import api from '../utils/api';
+import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
 
 const certificateDocs = [];
 
@@ -360,7 +361,7 @@ const Certifications = () => {
                 preload="auto"
                 className="w-full h-full object-cover"
               >
-                <source src={exhibitionVideoSrc} type="video/mp4" />
+                <source src={getOptimizedVideoUrl(exhibitionVideoSrc)} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -499,11 +500,11 @@ const Certifications = () => {
               className="w-full h-full object-cover opacity-80"
               key={pageSettings.heroMedia}
             >
-              <source src={pageSettings.heroMedia} type="video/mp4" />
+              <source src={getOptimizedVideoUrl(pageSettings.heroMedia)} type="video/mp4" />
             </video>
           ) : (
             <img
-              src={pageSettings.heroMedia || ''}
+              src={getOptimizedImageUrl(pageSettings.heroMedia) || ''}
               alt={pageSettings.heroTitle}
               className="w-full h-full object-cover opacity-[0.15] mix-blend-multiply"
             />
@@ -621,7 +622,7 @@ const Certifications = () => {
               onClick={() => setSelectedDoc(doc)}
             >
               <div className="aspect-[3/4] rounded-xl overflow-hidden bg-zinc-50 border border-zinc-100 mb-4 relative flex items-center justify-center p-2">
-                <img loading="lazy" src={doc.image} alt={doc.title} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500" />
+                <img loading="lazy" src={getOptimizedImageUrl(doc.image, 600)} alt={doc.title} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-black/5 opacity-100 group-hover:bg-black/0 transition-colors duration-300" />
               </div>
               <h4 className="text-xs md:text-sm font-bold text-zinc-900 text-center line-clamp-2 mt-auto">{doc.title}</h4>
@@ -682,7 +683,7 @@ const Certifications = () => {
             })}
           >
             <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
-              <img loading="lazy" src={awardsSettings.image} alt="Awards Showcase" className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700" />
+              <img loading="lazy" src={getOptimizedImageUrl(awardsSettings.image, 800)} alt="Awards Showcase" className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700" />
               <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300" />
               {/* Zoom Overlay indicator on hover */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 transition-opacity duration-300 text-white font-bold uppercase tracking-wider text-xs">
@@ -704,7 +705,7 @@ const Certifications = () => {
               &times;
             </button>
             <div className="flex-1 aspect-[3/4] max-h-[70vh] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-100 flex items-center justify-center p-2">
-              <img src={selectedDoc.image} alt={selectedDoc.title} className="max-w-full max-h-full object-contain" />
+              <img src={getOptimizedImageUrl(selectedDoc.image, 1200)} alt={selectedDoc.title} className="max-w-full max-h-full object-contain" />
             </div>
             <div className="md:w-80 flex flex-col justify-center space-y-4">
               <span className="text-[#5D4037] text-xs font-bold uppercase tracking-wider bg-[#5D4037]/5 px-3 py-1 rounded-full w-fit">

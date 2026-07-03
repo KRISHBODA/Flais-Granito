@@ -61,11 +61,12 @@ const Categories = () => {
       setIsAdding(true);
       const token = localStorage.getItem('adminToken');
       
-      // Step 1: Upload image to Cloudinary
+      // Step 1: Upload image to Local Storage
       const imageFormData = new FormData();
       imageFormData.append('file', newCategoryImage);
+      imageFormData.append('category', 'categories');
       
-      const uploadResponse = await axios.post(`${API}/api/admin/upload-file-cloudinary`, imageFormData, {
+      const uploadResponse = await axios.post(`${API}/api/admin/upload`, imageFormData, {
         headers: { 
           'Authorization': `Bearer ${token}`
         }

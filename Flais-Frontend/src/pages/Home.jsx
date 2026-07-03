@@ -626,7 +626,7 @@ const Home = () => {
 
         {(() => {
           const logos = dynamicLogos.map((logo) => ({
-            image: logo.image,
+            image: getOptimizedImageUrl(logo.image),
             name: logo.name,
           }));
 
@@ -695,7 +695,7 @@ const Home = () => {
                   className="group relative w-full h-[350px] sm:h-[420px] md:h-[500px] overflow-hidden rounded-[2rem] cursor-pointer bg-zinc-100 block"
                 >
                   <img loading="lazy"
-                    src={item.image || item.img}
+                    src={getOptimizedImageUrl(item.image || item.img, 600)}
                     alt={item.title}
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
@@ -767,7 +767,7 @@ const Home = () => {
               <div className="w-full h-full">
                 {homeTexts.sustainabilityImage ? (
                   <img loading="lazy"
-                    src={homeTexts.sustainabilityImage}
+                    src={getOptimizedImageUrl(homeTexts.sustainabilityImage, 800)}
                     alt="Sustainable Manufacturing"
                     className="w-full h-full object-cover"
                   />
@@ -828,7 +828,7 @@ const Home = () => {
                   >
                     <div className="relative aspect-[4/3] overflow-hidden bg-zinc-200 rounded-2xl">
                       <img loading="lazy"
-                        src={blog.image || 'https://via.placeholder.com/600x400?text=No+Image'}
+                        src={getOptimizedImageUrl(blog.image) || 'https://via.placeholder.com/600x400?text=No+Image'}
                         alt={blog.title}
                         className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
                       />

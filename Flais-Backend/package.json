@@ -12,10 +12,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1073.0",
     "axios": "^1.16.0",
     "bcryptjs": "^3.0.3",
-    "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -23,7 +21,6 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
     "multer": "^2.1.1",
-    "multer-storage-cloudinary": "^4.0.0",
     "path": "^0.12.7"
   },
   "packageManager": "pnpm@10.28.2"

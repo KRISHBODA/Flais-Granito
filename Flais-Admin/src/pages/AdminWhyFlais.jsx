@@ -146,10 +146,9 @@ const AdminWhyFlais = () => {
     const token = localStorage.getItem('adminToken');
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('category', 'about');
     
-    // Use R2 for videos, Cloudinary for images
-    const endpoint = isVideo ? '/api/admin/upload-video-r2' : '/api/admin/upload-file-cloudinary';
-    
+    const endpoint = '/api/admin/upload';
     
     const res = await axios.post(`${BackendUrl}${endpoint}`, formData, {
       headers: {

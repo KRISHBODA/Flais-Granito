@@ -57,10 +57,10 @@ const AdminAchievement = () => {
 
     const formData = new FormData();
     formData.append('file', file);
-    
+    formData.append('category', 'guides');
     const uploadToast = toast.loading("Uploading image...");
     try {
-      const response = await api.post('/admin/upload-file-cloudinary', formData, {
+      const response = await api.post('/admin/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -91,10 +91,11 @@ const AdminAchievement = () => {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('category', 'guides');
     
-    const uploadToast = toast.loading("Uploading PDF to Cloudinary...");
+    const uploadToast = toast.loading("Uploading PDF...");
     try {
-      const response = await api.post('/admin/upload-file-cloudinary-raw', formData, {
+      const response = await api.post('/admin/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -151,10 +152,11 @@ const AdminAchievement = () => {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('category', 'guides');
 
     setUploading(true);
     try {
-      const response = await api.post('/admin/upload-file-cloudinary-raw', formData, {
+      const response = await api.post('/admin/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -225,10 +227,11 @@ const AdminAchievement = () => {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('category', 'guides');
 
     setUploadingPdf(true);
     try {
-      const response = await api.post('/admin/upload-file-cloudinary-raw', formData, {
+      const response = await api.post('/admin/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -370,7 +373,8 @@ const AdminAchievement = () => {
       try {
         const formData = new FormData();
         formData.append('file', uploadedFile);
-        const response = await api.post('/admin/upload-video-r2', formData, {
+        formData.append('category', 'guides');
+        const response = await api.post('/admin/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },

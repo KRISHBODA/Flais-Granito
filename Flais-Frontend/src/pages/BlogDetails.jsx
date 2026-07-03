@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Calendar, User, ArrowLeft, Share2, MessageSquare } from 'lucide-react';
 import SEO from '../components/SEO';
 import api from '../utils/api';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 import { blogPosts } from '../data/mockData';
 
 const BlogDetails = () => {
@@ -68,7 +69,7 @@ const BlogDetails = () => {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": post.title,
-    "image": [post.image || 'https://via.placeholder.com/1200x800?text=No+Image'],
+    "image": [getOptimizedImageUrl(post.image) || 'https://via.placeholder.com/1200x800?text=No+Image'],
     "datePublished": formatISO(post.createdAt),
     "dateModified": formatISO(post.updatedAt || post.createdAt),
     "author": [{
@@ -85,12 +86,12 @@ const BlogDetails = () => {
         title={post.title}
         description={blogExcerpt}
         keywords={`flais granito blog, tile design trends, ${post.title}`}
-        image={post.image}
+        image={getOptimizedImageUrl(post.image)}
         schema={blogSchema}
       />
       {/* Article Header */}
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
-        <img loading="lazy" src={post.image || 'https://via.placeholder.com/1200x800?text=No+Image'} alt={post.title} className="absolute inset-0 w-full h-full object-cover" />
+        <img loading="lazy" src={getOptimizedImageUrl(post.image) || 'https://via.placeholder.com/1200x800?text=No+Image'} alt={post.title} className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/50" />
         <div className="container-custom relative z-10 text-center text-white space-y-6">
           <motion.div

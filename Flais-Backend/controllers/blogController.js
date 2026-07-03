@@ -1,4 +1,5 @@
 const Blog = require("../models/Blog");
+const uploadService = require("../services/storage/UploadService");
 
 // @desc    Create a Blog
 // @route   POST /api/blogs
@@ -9,7 +10,8 @@ exports.createBlog = async (req, res) => {
         
         let imageUrl = "";
         if (req.file) {
-            imageUrl = req.file.path; // Cloudinary URL
+            const uploadResult = await uploadService.upload(req.file, "blogs");
+            imageUrl = uploadResult.path;
         }
 
         const blog = await Blog.create({ 
@@ -81,7 +83,8 @@ exports.updateBlog = async (req, res) => {
         }
 
         if (req.file) {
-            updateData.image = req.file.path;
+            const uploadResult = await uploadService.replace(req.file, blog.image, "blogs");
+            updateData.image = uploadResult.path;
         }
 
         const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
@@ -98,6 +101,10 @@ exports.deleteBlog = async (req, res) => {
     try {
         const blog = await Blog.findByIdAndDelete(req.params.id);
         if (!blog) return res.status(404).json({ success: false, message: "Blog not found" });
+        
+        if (blog.image) {
+            await uploadService.delete(blog.image);
+        }
         
         res.status(200).json({ success: true, message: "Blog deleted successfully" });
     } catch (error) {

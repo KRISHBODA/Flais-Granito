@@ -1,42 +1,36 @@
 /**
- * Utility functions to optimize media URLs (images and videos) for better web performance,
- * particularly for mobile devices.
+ * Utility functions to resolve media URLs (images and videos) to local storage.
  */
 
-/**
- * Optimizes Cloudinary image URLs by injecting automatic formatting, compression, and width adjustments.
- * 
- * @param {string} url - The original image URL.
- * @param {number|string} [width] - The desired width to resize the image to.
- * @returns {string} - The optimized URL.
- */
-export const getOptimizedImageUrl = (url, width) => {
-  if (!url) return '';
-  
-  // Verify it is a Cloudinary URL
-  if (url.includes('cloudinary.com') && url.includes('/image/upload/')) {
-    // Avoid double transforming if already present
-    if (!url.includes('/f_auto') && !url.includes('/q_auto')) {
-      const transform = width ? `f_auto,q_auto,w_${width}` : 'f_auto,q_auto';
-      return url.replace('/image/upload/', `/image/upload/${transform}/`);
-    }
-  }
-  return url;
+const getStorageUrl = () => {
+  const baseUrl = import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/media';
+  return baseUrl.replace(/\/$/, '');
 };
 
 /**
- * Optimizes Cloudinary video URLs by injecting automatic formatting and quality compression.
+ * Resolves local relative paths to full storage URLs, or returns absolute URLs as-is.
  * 
- * @param {string} url - The original video URL.
- * @returns {string} - The optimized URL.
+ * @param {string} url - The original image URL or relative path.
+ * @returns {string} - The resolved URL.
  */
-export const getOptimizedVideoUrl = (url) => {
+export const getOptimizedImageUrl = (url) => {
   if (!url) return '';
   
-  if (url.includes('cloudinary.com') && url.includes('/video/upload/')) {
-    if (!url.includes('/f_auto') && !url.includes('/q_auto')) {
-      return url.replace('/video/upload/', '/video/upload/f_auto,q_auto/');
-    }
+  // If it is already an absolute URL, return as-is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
   }
-  return url;
+  
+  // Otherwise resolve relative to the local storage base URL
+  return `${getStorageUrl()}/${url.replace(/^\//, '')}`;
+};
+
+/**
+ * Resolves local relative paths to full storage URLs for videos, or returns absolute URLs as-is.
+ * 
+ * @param {string} url - The original video URL or relative path.
+ * @returns {string} - The resolved URL.
+ */
+export const getOptimizedVideoUrl = (url) => {
+  return getOptimizedImageUrl(url);
 };

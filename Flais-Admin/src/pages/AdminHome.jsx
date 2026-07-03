@@ -498,16 +498,16 @@ const AdminHome = () => {
       throw new Error('No file selected');
     }
 
-    // Determine upload destination based on file type
-    const isVideo = file.type.startsWith('video/');
-    const endpoint = isVideo ? '/api/admin/upload-video-r2' : '/api/admin/upload-file-cloudinary';
+    // Local storage upload
+    const endpoint = '/api/admin/upload';
 
     if (typeof onStage === 'function') {
-      onStage(isVideo ? 'Uploading video to R2...' : 'Uploading to Cloudinary...');
+      onStage('Uploading to local storage...');
     }
 
     const formData = new FormData();
     formData.append('file', file, file.name);
+    formData.append('category', 'home');
 
     const response = await axios.post(`${BackendUrl}${endpoint}`, formData, {
       headers: {

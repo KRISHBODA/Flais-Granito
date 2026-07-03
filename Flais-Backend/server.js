@@ -79,7 +79,8 @@ const apiLimiter = createRateLimit({
 
 app.use("/api", apiLimiter);
 
-// Serve static files (if using local storage instead of cloudinary in future)
+// Serve static files (local storage)
+app.use("/media", express.static(path.join(__dirname, "uploads")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes

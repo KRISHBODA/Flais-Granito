@@ -3,6 +3,7 @@ import { Search, MapPin, Phone, Mail, Navigation, ChevronDown, Check, Loader2 } 
 import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '../components/SEO';
 import api from '../utils/api';
+import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
 
 const WhereToBuy = () => {
   const [dealers, setDealers] = useState([]);
@@ -135,12 +136,12 @@ const WhereToBuy = () => {
                 className="w-full h-full object-cover filter brightness-[0.6]"
                 key={pageSettings.heroMedia}
               >
-                <source src={pageSettings.heroMedia} />
+                <source src={getOptimizedVideoUrl(pageSettings.heroMedia)} />
                 Your browser does not support the video tag.
               </video>
             ) : (
               <img loading="lazy" 
-                src={pageSettings.heroMedia} 
+                src={getOptimizedImageUrl(pageSettings.heroMedia)} 
                 alt={pageSettings.heroTitle} 
                 className="w-full h-full object-cover filter brightness-[0.6]"
               />

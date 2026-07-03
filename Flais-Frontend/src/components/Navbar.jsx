@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import logoBlack from '../assets/Flais_black.png';
 import logoWhite from '../assets/Flais White.png';
 import api from '../utils/api';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,14 +60,7 @@ const Navbar = () => {
       }
 
       // Resolve URL
-      resolvedUrl = latestPdfUrl;
-      const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
-      if (latestPdfUrl.includes('/uploads/')) {
-        const parts = latestPdfUrl.split('/uploads/');
-        resolvedUrl = `${backendUrl}/uploads/${parts[parts.length - 1]}`;
-      } else if (!latestPdfUrl.startsWith('http')) {
-        resolvedUrl = `${backendUrl}${latestPdfUrl.startsWith('/') ? '' : '/'}${latestPdfUrl}`;
-      }
+      resolvedUrl = getOptimizedImageUrl(latestPdfUrl);
 
       // Fetch PDF binary with cache-busting to prevent browser caching of Cloudinary contents
       const fetchUrl = resolvedUrl.includes('?') ? `${resolvedUrl}&t=${Date.now()}` : `${resolvedUrl}?t=${Date.now()}`;

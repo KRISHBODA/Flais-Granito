@@ -4,7 +4,7 @@ import { Download, Eye, Loader2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import catalogHeader from '../assets/catalog_header.jpg';
 import api from '../utils/api';
-import { getOptimizedImageUrl } from '../utils/imageOptimizer';
+import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
 
 const Catalog = () => {
   const [pageSettings, setPageSettings] = useState({
@@ -37,10 +37,7 @@ const Catalog = () => {
 
   const resolveCatalogUrl = (catalog) => {
     const link = catalog.link && catalog.link !== '#' ? catalog.link : catalog.image;
-    if (!link) return '';
-    if (link.startsWith('http')) return link;
-    const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
-    return `${backendUrl}${link.startsWith('/') ? '' : '/'}${link}`;
+    return getOptimizedImageUrl(link);
   };
 
   const handleAction = async (e, catalog, action) => {
@@ -141,7 +138,7 @@ const Catalog = () => {
         {pageSettings.heroMedia ? (
           /\.(mp4|webm|ogg|mov|m4v)$/i.test(pageSettings.heroMedia) ? (
             <video 
-              src={pageSettings.heroMedia} 
+              src={getOptimizedVideoUrl(pageSettings.heroMedia)} 
               autoPlay 
               loop 
               muted 

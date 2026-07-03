@@ -4,6 +4,7 @@ import { Target, Eye, Shield, Award, Users, Zap, ArrowRight, ChevronDown, Boxes,
 import axios from 'axios';
 import SEO from '../components/SEO';
 import WorldMap from '../components/WorldMap';
+import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
 const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
 const iconMap = { Shield, Sparkles, Layout: Layers, Layers, Flag, Clock, Globe, Info };
 
@@ -200,7 +201,7 @@ const About = () => {
           className="absolute inset-0 z-0"
         >
           <img loading="lazy"
-            src={aboutSettings.heroImage}
+            src={getOptimizedImageUrl(aboutSettings.heroImage, 1200)}
             alt="FLAIS GRANITO Luxury Interior"
             className="w-full h-full object-cover"
           />
@@ -281,7 +282,7 @@ const About = () => {
                 className="relative z-10 rounded-3xl sm:rounded-[3rem] overflow-hidden shadow-2xl"
               >
                 <img loading="lazy"
-                  src={aboutSettings.narrativeImage}
+                  src={getOptimizedImageUrl(aboutSettings.narrativeImage, 800)}
                   alt="FLAIS Design Innovation"
                   className="w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-[650px] object-cover hover:scale-110 transition-transform duration-1000"
                 />
@@ -305,7 +306,7 @@ const About = () => {
                 transition={{ duration: 0.8 }}
                 className="rounded-3xl overflow-hidden shadow-2xl relative z-10"
               >
-                <img loading="lazy" src={aboutSettings.manuImage} alt="Manufacturing Excellence" className="w-full h-auto object-cover" />
+                <img loading="lazy" src={getOptimizedImageUrl(aboutSettings.manuImage, 800)} alt="Manufacturing Excellence" className="w-full h-auto object-cover" />
               </motion.div>
               <div className="absolute -bottom-8 -left-8 w-64 h-64 bg-[#D2C9B1] rounded-2xl -z-0 hidden md:block" />
             </div>
@@ -348,7 +349,7 @@ const About = () => {
             <video
               ref={videoRef}
               key={videos.flaisFilm}
-              src={videos.flaisFilm}
+              src={getOptimizedVideoUrl(videos.flaisFilm)}
               autoPlay
               muted
               loop
@@ -541,7 +542,7 @@ const About = () => {
               <div className="relative z-10 rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl">
                 <img
                   loading="lazy"
-                  src={aboutSettings.sustainImage}
+                  src={getOptimizedImageUrl(aboutSettings.sustainImage, 800)}
                   alt="Sustainable Manufacturing at FLAIS GRANITO"
                   className="w-full h-[350px] sm:h-[400px] md:h-[500px] object-cover hover:scale-105 transition-transform duration-1000"
                 />

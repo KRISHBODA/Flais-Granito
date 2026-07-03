@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const uploadService = require("../services/storage/UploadService");
 
 // @desc    Create a product
 // @route   POST /api/products
@@ -9,7 +10,10 @@ exports.createProduct = async (req, res) => {
 
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
-      imageUrls = req.files.map((file) => file.path); // Cloudinary URL is in path
+      for (const file of req.files) {
+        const uploadResult = await uploadService.upload(file, "products");
+        imageUrls.push(uploadResult.path);
+      }
     }
 
     const product = await Product.create({
@@ -82,7 +86,6 @@ exports.getProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
   try {
     const idOrSlug = req.params.id;
-    // Check if it's a valid ObjectId, otherwise treat as slug
     let query = {};
     if (idOrSlug.match(/^[0-9a-fA-F]{24}$/)) {
       query = { _id: idOrSlug };
@@ -126,7 +129,11 @@ exports.updateProduct = async (req, res) => {
     };
 
     if (req.files && req.files.length > 0) {
-      const newImages = req.files.map((file) => file.path);
+      const newImages = [];
+      for (const file of req.files) {
+        const uploadResult = await uploadService.upload(file, "products");
+        newImages.push(uploadResult.path);
+      }
       updateData.images = [...product.images, ...newImages];
     }
 
@@ -153,6 +160,13 @@ exports.deleteProduct = async (req, res) => {
         success: false,
         message: "Product not found",
       });
+    }
+
+    // Clean up local images
+    if (product.images && product.images.length > 0) {
+      for (const imagePath of product.images) {
+        await uploadService.delete(imagePath);
+      }
     }
 
     res.status(200).json({

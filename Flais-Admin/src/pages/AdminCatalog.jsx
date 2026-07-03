@@ -17,7 +17,8 @@ const uploadToCloudinary = async (BackendUrl, file, label, { raw = false } = {})
     formData.append('file', file);
 
 
-    const endpoint = raw ? '/api/admin/upload-file-cloudinary-raw' : '/api/admin/upload-file-cloudinary';
+    const endpoint = '/api/admin/upload';
+    formData.append('category', 'catalogs');
     const res = await axios.post(`${BackendUrl}${endpoint}`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,

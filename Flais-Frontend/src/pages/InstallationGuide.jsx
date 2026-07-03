@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Move, Scissors, Layers, Grid, Construction, Ruler, FileText } from 'lucide-react';
 import SEO from '../components/SEO';
 import api from '../utils/api';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
 const AccordionItem = ({ title, icon: Icon, content, isOpen, onClick }) => {
   return (
@@ -125,7 +126,7 @@ const InstallationGuide = () => {
       />
       {/* Hero Section */}
       <section className="relative h-[35vh] sm:h-[40vh] md:h-[50vh] min-h-[280px] sm:min-h-[350px] md:min-h-[400px] flex items-center overflow-hidden mb-12 sm:mb-16 md:mb-20">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${settings.heroImage})` }}></div>
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${getOptimizedImageUrl(settings.heroImage)})` }}></div>
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent"></div>
 
         <div className="relative z-10 container-custom">
@@ -144,15 +145,7 @@ const InstallationGuide = () => {
             {settings.pdfUrl ? (
               <button
                 onClick={() => {
-                  let resolvedUrl = settings.pdfUrl;
-                  const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
-                  if (settings.pdfUrl.includes('/uploads/')) {
-                    const parts = settings.pdfUrl.split('/uploads/');
-                    resolvedUrl = `${backendUrl}/uploads/${parts[parts.length - 1]}`;
-                  } else if (!settings.pdfUrl.startsWith('http')) {
-                    resolvedUrl = `${backendUrl}${settings.pdfUrl.startsWith('/') ? '' : '/'}${settings.pdfUrl}`;
-                  }
-                  window.open(resolvedUrl, '_blank');
+                  window.open(getOptimizedImageUrl(settings.pdfUrl), '_blank');
                 }}
                 className="inline-block bg-black hover:bg-zinc-800 text-white font-bold tracking-[0.2em] uppercase py-4 px-10 text-sm shadow-md transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer mt-6"
               >

@@ -6,7 +6,7 @@ import collectionsVideo from '../assets/Its_different_motion_logo.mp4';
 import SEO from '../components/SEO';
 import api from '../utils/api';
 import useIntersectionVideoRef from '../hooks/useIntersectionVideoRef';
-import { getOptimizedImageUrl } from '../utils/imageOptimizer';
+import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -154,7 +154,6 @@ const Products = () => {
     );
   }, [collectionSettings.bannerVideo]);
 
-  const bannerMedia = collectionSettings.bannerVideo || collectionsVideo;
   const isImage = useMemo(() => {
     const media = collectionSettings.bannerVideo;
     if (!media) return false;
@@ -163,6 +162,10 @@ const Products = () => {
       /\.(png|jpe?g|webp|gif|avif|bmp|svg)(\?.*)?$/i.test(media)
     );
   }, [collectionSettings.bannerVideo]);
+
+  const bannerMedia = collectionSettings.bannerVideo 
+    ? (isImage ? getOptimizedImageUrl(collectionSettings.bannerVideo, 1200) : getOptimizedVideoUrl(collectionSettings.bannerVideo))
+    : collectionsVideo;
 
   return (
     <div className="pt-24 min-h-screen bg-white">

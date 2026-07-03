@@ -1,4 +1,5 @@
 const HeroSlide = require("../models/HeroSlide");
+const uploadService = require("../services/storage/UploadService");
 
 // @desc    Get all hero slides
 // @route   GET /api/hero
@@ -21,7 +22,8 @@ exports.createHeroSlide = async (req, res) => {
     let imageUrl = "";
 
     if (req.file) {
-      imageUrl = req.file.path; // Cloudinary URL from Multer
+      const uploadResult = await uploadService.upload(req.file, "hero");
+      imageUrl = uploadResult.path;
     }
 
     if (!imageUrl) {
@@ -44,6 +46,11 @@ exports.deleteHeroSlide = async (req, res) => {
     if (!slide) {
       return res.status(404).json({ success: false, message: "Slide not found" });
     }
+    
+    if (slide.image) {
+      await uploadService.delete(slide.image);
+    }
+    
     res.status(200).json({ success: true, message: "Slide deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -56,19 +63,22 @@ exports.deleteHeroSlide = async (req, res) => {
 exports.updateHeroSlide = async (req, res) => {
   try {
     const { tagline, title, subtitle } = req.body;
-    let updateData = { tagline, title, subtitle };
-
-    if (req.file) {
-      updateData.image = req.file.path; // New image
-    }
-
-    const slide = await HeroSlide.findByIdAndUpdate(req.params.id, updateData, { new: true });
     
+    const slide = await HeroSlide.findById(req.params.id);
     if (!slide) {
       return res.status(404).json({ success: false, message: "Slide not found" });
     }
+
+    let updateData = { tagline, title, subtitle };
+
+    if (req.file) {
+      const uploadResult = await uploadService.replace(req.file, slide.image, "hero");
+      updateData.image = uploadResult.path;
+    }
+
+    const updatedSlide = await HeroSlide.findByIdAndUpdate(req.params.id, updateData, { new: true });
     
-    res.status(200).json({ success: true, message: "Slide updated", slide });
+    res.status(200).json({ success: true, message: "Slide updated", slide: updatedSlide });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }

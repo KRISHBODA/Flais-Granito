@@ -1,4 +1,5 @@
 const SeriesLogo = require("../models/SeriesLogo");
+const uploadService = require("../services/storage/UploadService");
 
 // @desc    Get all series logos
 // @route   GET /api/series-logos
@@ -21,7 +22,8 @@ exports.createSeriesLogo = async (req, res) => {
     let imageUrl = "";
 
     if (req.file) {
-      imageUrl = req.file.path; // Local URL from Multer
+      const uploadResult = await uploadService.upload(req.file, "logos");
+      imageUrl = uploadResult.path;
     }
 
     if (!imageUrl) {
@@ -60,6 +62,11 @@ exports.deleteSeriesLogo = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Series logo not found" });
     }
+    
+    if (logo.image) {
+      await uploadService.delete(logo.image);
+    }
+    
     res.status(200).json({ success: true, message: "Series logo deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -72,10 +79,19 @@ exports.deleteSeriesLogo = async (req, res) => {
 exports.updateSeriesLogo = async (req, res) => {
   try {
     const { name, order } = req.body;
+    
+    const logo = await SeriesLogo.findById(req.params.id);
+    if (!logo) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Series logo not found" });
+    }
+
     let updateData = { name, order: order ? parseInt(order) : undefined };
 
     if (req.file) {
-      updateData.image = req.file.path;
+      const uploadResult = await uploadService.replace(req.file, logo.image, "logos");
+      updateData.image = uploadResult.path;
     }
 
     // Remove undefined values
@@ -83,21 +99,15 @@ exports.updateSeriesLogo = async (req, res) => {
       (key) => updateData[key] === undefined && delete updateData[key]
     );
 
-    const logo = await SeriesLogo.findByIdAndUpdate(
+    const updatedLogo = await SeriesLogo.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true }
     );
 
-    if (!logo) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Series logo not found" });
-    }
-
     res
       .status(200)
-      .json({ success: true, message: "Series logo updated", logo });
+      .json({ success: true, message: "Series logo updated", logo: updatedLogo });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import api from '../utils/api';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -74,7 +75,8 @@ const ProductDetails = () => {
     );
   }
 
-  const allImages = product.images?.length > 0 ? product.images : (product.image ? [product.image] : []);
+  const rawImages = product.images?.length > 0 ? product.images : (product.image ? [product.image] : []);
+  const allImages = rawImages.map(img => getOptimizedImageUrl(img));
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
