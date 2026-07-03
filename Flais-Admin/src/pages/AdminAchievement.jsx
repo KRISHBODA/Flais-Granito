@@ -84,10 +84,6 @@ const AdminAchievement = () => {
       return null;
     }
 
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error('PDF must be smaller than 50 MB.');
-      return null;
-    }
 
     const formData = new FormData();
     formData.append('file', file);

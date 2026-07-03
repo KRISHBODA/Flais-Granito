@@ -39,7 +39,24 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Prevent external source exposure
-        sourcemap: false
+        sourcemap: false,
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('framer-motion') || id.includes('lenis')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('swiper')) {
+              return 'vendor-swiper';
+            }
+            if (id.includes('recharts') || id.includes('d3')) {
+              return 'vendor-charts';
+            }
+            return 'vendor-others';
+          }
+        }
       }
     }
   }

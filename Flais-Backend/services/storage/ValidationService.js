@@ -56,11 +56,7 @@ class ValidationService {
       throw new Error(`Unsupported file type: ${file.mimetype} for category ${targetCategory}`);
     }
 
-    // 2. Size Validation
-    if (file.size > maxSize) {
-      const mbSize = (maxSize / (1024 * 1024)).toFixed(0);
-      throw new Error(`File size exceeds limit of ${mbSize}MB for category ${targetCategory}`);
-    }
+    // 2. Size Validation (Bypassed/Removed to allow arbitrary file sizes)
 
     // 3. Filename Sanitization & Security Checks
     const originalName = file.originalname;

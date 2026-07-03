@@ -549,10 +549,6 @@ const AdminHome = () => {
 
     if (!file) return;
 
-    if (file.size > MAX_VIDEO_UPLOAD_SIZE) {
-      toast.error('This file is larger than the allowed 500 MB upload limit.');
-      return;
-    }
 
     setVideoUploading(true);
     setVideoUploadProgress(0);
