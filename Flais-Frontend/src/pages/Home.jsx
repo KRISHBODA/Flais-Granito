@@ -90,13 +90,34 @@ const Home = () => {
   const dynamicLogos = useMemo(() => logosRes || [], [logosRes]);
   const collectionSlides = useMemo(() => {
     const seen = new Set();
-    return (choicesList || []).filter((item) => {
+    const list = (choicesList || []).filter((item) => {
       const key = item?._id || item?.id || item?.name;
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     });
+
+    let merged = [...list];
+    if (merged.length < 3) {
+      const fallbacks = [
+        { id: 'fallback-1', name: 'LISC Collection', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800&auto=format&fit=crop', logoImage: '' },
+        { id: 'fallback-2', name: 'ELEGANCE Collection', image: 'https://images.unsplash.com/photo-1600585154340-be6199f68b0c?q=80&w=800&auto=format&fit=crop', logoImage: '' },
+        { id: 'fallback-3', name: 'MODERN Collection', image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=800&auto=format&fit=crop', logoImage: '' }
+      ];
+      for (const fallback of fallbacks) {
+        if (merged.length >= 3) break;
+        if (!merged.some(item => item.name.toLowerCase() === fallback.name.toLowerCase())) {
+          merged.push(fallback);
+        }
+      }
+    }
+
+    if (merged.length > 0 && merged.length < 6) {
+      return [...merged, ...merged];
+    }
+    return merged;
   }, [choicesList]);
+
 
   const homeSchema = {
     "@context": "https://schema.org",
@@ -293,9 +314,9 @@ const Home = () => {
                 <SwiperSlide key={index} className="overflow-hidden">
                   <div className="relative h-full w-full overflow-hidden perspective-1000">
                     <img
-                      src={getOptimizedImageUrl(slide.image, 1200)}
+                      src={getOptimizedImageUrl(slide.image, 1920)}
                       alt={slide.title}
-                      className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[7000ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] transform-gpu will-change-transform backface-hidden ${isActive ? 'scale-112' : 'scale-100'
+                      className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[7000ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${isActive ? 'scale-112' : 'scale-100'
                         }`}
                       loading="lazy"
                     />
@@ -512,7 +533,7 @@ const Home = () => {
         <div className="container-custom">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-medium text-zinc-900 tracking-tight">
-              {homeTexts.collectionsTitle}
+              {homeTexts.collectionsTitle || "Make Your choice"}
             </h2>
           </div>
 
@@ -522,82 +543,70 @@ const Home = () => {
                 key={`collections-swiper-${collectionSlides.length}-${collectionSlides.map(c => c._id || c.id || c.name).join('-')}`}
                 onSwiper={setCollectionsSwiper}
                 modules={[Navigation, Autoplay]}
-                spaceBetween={24}
-                slidesPerView={1.05}
-                centeredSlides={false}
-                loop={collectionSlides.length > 3}
+                spaceBetween={16}
+                slidesPerView={"auto"}
+                centeredSlides={true}
+                loop={collectionSlides.length >= 3}
+                loopAdditionalSlides={6}
                 watchOverflow={true}
                 grabCursor={true}
                 breakpoints={{
-                  640: { slidesPerView: 1.25 },
-                  768: { slidesPerView: 1.6 },
-                  1024: { slidesPerView: 2.2 },
-                  1280: { slidesPerView: 3 },
+                  1024: { spaceBetween: 24 }
                 }}
                 className="collections-swiper !pb-12"
               >
                 {collectionSlides.map((col, index) => (
                   <SwiperSlide key={`${col._id || col.id || col.name}-${index}`}>
-                    <div className="relative h-[350px] sm:h-[420px] md:h-[500px] overflow-hidden group">
+                    <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-2xl transition-all duration-500">
                       <img
                         loading="lazy"
                         src={getOptimizedImageUrl(col.image, 800)}
                         alt={col.name}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                       />
-                      {/* Subtle Vignette for logo contrast */}
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+                      
+                      {/* Base overlay for inactive slide contrast */}
+                      <div className="absolute inset-0 bg-black/5 transition-colors duration-500" />
 
-                      {/* Content Area */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        {/* Logo in Center */}
-                        <div className="flex flex-col items-center select-none w-full px-6">
-                          {col.logoImage ? (
-                            <img
-                              loading="lazy"
-                              src={getOptimizedImageUrl(col.logoImage, 300)}
-                              alt={col.name}
-                              className="h-32 md:h-44 object-contain filter invert brightness-[1.5] drop-shadow-lg mix-blend-screen transition-transform duration-500 group-hover:scale-110"
-                            />
-                          ) : (
-                            <h3 className="text-3xl font-display font-bold text-white tracking-wider drop-shadow-lg uppercase text-center transition-transform duration-500 group-hover:scale-110">
-                            </h3>
-                          )}
-                        </div>
-
-                        {/* Explore More Button at Bottom */}
-                        <div className="absolute bottom-10 w-full flex justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                          <Link
-                            to="/products"
-                            className="px-10 py-3 bg-white text-zinc-900 text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-100 transition-all shadow-xl"
-                          >
-                            Explore Collection
-                          </Link>
+                      {/* Active-only overlay and content */}
+                      <div className="absolute inset-0 transition-opacity duration-500 active-only-content">
+                        {/* Blue tint overlay matching the requested style */}
+                        <div className="absolute inset-0 bg-[#0145F2]/25 backdrop-blur-[0.5px]" />
+                        {/* Content Area */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          {/* Explore More Button at Bottom */}
+                          <div className="absolute bottom-10 w-full flex justify-center translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                            <Link
+                              to="/products"
+                              className="px-10 py-3 bg-white text-zinc-900 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-100 transition-all shadow-xl rounded-full"
+                            >
+                              Explore Collection
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </SwiperSlide>
                 ))}
 
-                {/* Navigation Arrows positioned on the gaps */}
-                <div className="hidden md:block absolute top-1/2 -translate-y-1/2 left-[25%] -translate-x-1/2 z-50 pointer-events-auto">
-                  <button onClick={() => collectionsSwiper?.slidePrev()} className="w-12 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
+                {/* Navigation Arrows positioned on the active slide boundaries */}
+                <div className="collections-prev-btn hidden md:block absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+                  <button onClick={() => collectionsSwiper?.slidePrev()} className="w-12 h-12 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                   </button>
                 </div>
-                <div className="hidden md:block absolute top-1/2 -translate-y-1/2 right-[25%] translate-x-1/2 z-50 pointer-events-auto">
-                  <button onClick={() => collectionsSwiper?.slideNext()} className="w-12 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
+                <div className="collections-next-btn hidden md:block absolute top-1/2 -translate-y-1/2 translate-x-1/2 z-50 pointer-events-auto">
+                  <button onClick={() => collectionsSwiper?.slideNext()} className="w-12 h-12 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                   </button>
                 </div>
 
                 {/* Mobile Arrows (Bottom Center) */}
                 <div className="md:hidden absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center space-x-2 z-50 pointer-events-auto">
-                  <button onClick={() => collectionsSwiper?.slidePrev()} className="w-10 h-10 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
+                  <button onClick={() => collectionsSwiper?.slidePrev()} className="w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                   </button>
-                  <button onClick={() => collectionsSwiper?.slideNext()} className="w-10 h-10 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-colors duration-300 cursor-pointer">
+                  <button onClick={() => collectionsSwiper?.slideNext()} className="w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                   </button>
                 </div>

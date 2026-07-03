@@ -430,3 +430,115 @@ html.lenis body {
     transform: rotate(360deg);
   }
 }
+
+/* ──────────────────────────────────────────────────────────
+   Collections Centered Swiper Active/Inactive Styles
+   ────────────────────────────────────────────────────────── */
+/* Align items to center vertically in the swiper track */
+.collections-swiper .swiper-wrapper {
+  align-items: center !important;
+}
+
+/* Default Mobile Slide Layout: uniform square slide for Swiper tracking */
+.collections-swiper .swiper-slide {
+  width: 300px !important;
+  height: 300px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.55;
+}
+
+.collections-swiper .swiper-slide-active {
+  opacity: 1;
+}
+
+/* Inner card dimensions: square for active, vertical rectangle for inactive */
+.collections-swiper .swiper-slide .collections-card-inner {
+  width: 200px !important;
+  height: 300px !important;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.collections-swiper .swiper-slide-active .collections-card-inner {
+  width: 300px !important;
+  height: 300px !important;
+}
+
+/* Tablet styles (min-width: 640px) */
+@media (min-width: 640px) {
+  .collections-swiper .swiper-slide {
+    width: 400px !important;
+    height: 400px !important;
+  }
+
+  .collections-swiper .swiper-slide .collections-card-inner {
+    width: 260px !important;
+    height: 400px !important;
+  }
+
+  .collections-swiper .swiper-slide-active .collections-card-inner {
+    width: 400px !important;
+    height: 400px !important;
+  }
+}
+
+/* Desktop styles (min-width: 1024px) */
+@media (min-width: 1024px) {
+  .collections-swiper .swiper-slide {
+    width: 500px !important;
+    height: 500px !important;
+  }
+
+  .collections-swiper .swiper-slide .collections-card-inner {
+    width: 330px !important;
+    height: 500px !important;
+  }
+
+  .collections-swiper .swiper-slide-active .collections-card-inner {
+    width: 500px !important;
+    height: 500px !important;
+  }
+}
+
+/* Hide/show overlay content on active slide only */
+.collections-swiper .swiper-slide .active-only-content {
+  opacity: 0 !important;
+  pointer-events: none;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.collections-swiper .swiper-slide-active .active-only-content {
+  opacity: 1 !important;
+  pointer-events: auto;
+}
+
+/* Navigation buttons positioned exactly at active slide borders */
+.collections-prev-btn {
+  left: calc(50% - 150px) !important;
+}
+
+.collections-next-btn {
+  right: calc(50% - 150px) !important;
+}
+
+@media (min-width: 640px) {
+  .collections-prev-btn {
+    left: calc(50% - 200px) !important;
+  }
+
+  .collections-next-btn {
+    right: calc(50% - 200px) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .collections-prev-btn {
+    left: calc(50% - 250px) !important;
+  }
+
+  .collections-next-btn {
+    right: calc(50% - 250px) !important;
+  }
+}
