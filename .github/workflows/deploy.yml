@@ -24,7 +24,8 @@ jobs:
             echo "========== Updating Repository =========="
 
             cd /var/www/Flais-Granito
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
             echo "========== Backend =========="
 
