@@ -29,19 +29,19 @@ jobs:
             echo "========== Backend =========="
 
             cd Flais-Backend
-            npm install
+            npm install --legacy-peer-deps
             pm2 restart backend
 
             echo "========== Frontend =========="
 
             cd ../Flais-Frontend
-            npm install
+            npm install --legacy-peer-deps
             npm run build
 
             echo "========== Admin =========="
 
             cd ../Flais-Admin
-            npm install
+            npm install --legacy-peer-deps
             npm run build
 
             echo "========== Reload Nginx =========="
