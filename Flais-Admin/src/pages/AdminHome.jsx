@@ -32,25 +32,20 @@ const AdminHome = () => {
 
   const getImageUrl = (url) => {
     if (!url) return '';
-    
-    let cleanPath = url;
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      try {
-        const parsed = new URL(url);
-        let pathname = parsed.pathname;
-        if (pathname.startsWith('/media/')) {
-          cleanPath = pathname.substring(7);
-        } else if (pathname.startsWith('/uploads/')) {
-          cleanPath = pathname.substring(9);
-        } else if (pathname.startsWith('/')) {
-          cleanPath = pathname.substring(1);
-        }
-      } catch (e) {
-        cleanPath = url;
-      }
+
+    if (url.startsWith('blob:') || url.startsWith('data:')) {
+      return url;
     }
-    
-    return `${BackendUrl}/media/${cleanPath.replace(/^\//, '')}`;
+
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    if (url.startsWith('/')) {
+      return `${BackendUrl}${url}`;
+    }
+
+    return `${BackendUrl}/media/${url}`;
   };
 
   // Choice form states
