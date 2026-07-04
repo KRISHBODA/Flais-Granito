@@ -354,6 +354,10 @@ const About = () => {
               muted
               loop
               playsInline
+              preload="auto"
+              onCanPlay={(e) => {
+                e.currentTarget.play().catch(() => { });
+              }}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
