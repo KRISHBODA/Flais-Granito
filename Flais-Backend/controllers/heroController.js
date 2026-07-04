@@ -23,7 +23,7 @@ exports.createHeroSlide = async (req, res) => {
 
     if (req.file) {
       const uploadResult = await uploadService.upload(req.file, "hero");
-      imageUrl = uploadResult.path;
+      imageUrl = uploadResult.url;
     }
 
     if (!imageUrl) {
@@ -73,7 +73,7 @@ exports.updateHeroSlide = async (req, res) => {
 
     if (req.file) {
       const uploadResult = await uploadService.replace(req.file, slide.image, "hero");
-      updateData.image = uploadResult.path;
+      updateData.image = uploadResult.url;
     }
 
     const updatedSlide = await HeroSlide.findByIdAndUpdate(req.params.id, updateData, { new: true });

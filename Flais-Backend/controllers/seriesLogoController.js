@@ -23,7 +23,7 @@ exports.createSeriesLogo = async (req, res) => {
 
     if (req.file) {
       const uploadResult = await uploadService.upload(req.file, "logos");
-      imageUrl = uploadResult.path;
+      imageUrl = uploadResult.url;
     }
 
     if (!imageUrl) {
@@ -91,7 +91,7 @@ exports.updateSeriesLogo = async (req, res) => {
 
     if (req.file) {
       const uploadResult = await uploadService.replace(req.file, logo.image, "logos");
-      updateData.image = uploadResult.path;
+      updateData.image = uploadResult.url;
     }
 
     // Remove undefined values
