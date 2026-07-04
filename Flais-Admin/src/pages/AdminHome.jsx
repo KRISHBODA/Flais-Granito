@@ -48,6 +48,14 @@ const AdminHome = () => {
     return `${BackendUrl}/media/${url}`;
   };
 
+  const getPreviewUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return getImageUrl(url);
+  };
+
   // Choice form states
   const [isAddingChoice, setIsAddingChoice] = useState(false);
   const [newChoice, setNewChoice] = useState({ name: '', image: '', type: '', logoImage: '' });
@@ -202,6 +210,7 @@ const AdminHome = () => {
   const [editSlideId, setEditSlideId] = useState(null);
   const [editSlideData, setEditSlideData] = useState({ tagline: '', title: '', subtitle: '' });
   const [editSlideImage, setEditSlideImage] = useState(null);
+  const [newSlidePreview, setNewSlidePreview] = useState(null);
 
   useEffect(() => {
     const initData = async () => {
@@ -433,6 +442,7 @@ const AdminHome = () => {
       toast.success('Slide added successfully');
       setNewSlide({ tagline: '', title: '', subtitle: '' });
       setNewSlideImage(null);
+      setNewSlidePreview(null);
       setIsAddingSlide(false);
       fetchSlides();
     } catch (error) {
@@ -708,7 +718,21 @@ const AdminHome = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-1">Image Background</label>
-                  <input type="file" required accept="image/*" onChange={(e) => setNewSlideImage(e.target.files[0])} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700" />
+                  <input
+                    type="file"
+                    required
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      setNewSlideImage(file);
+                      setNewSlidePreview(URL.createObjectURL(file));
+                    }}
+                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700"
+                  />
+                  {newSlidePreview && (
+                    <img src={newSlidePreview} alt="slide preview" className="mt-2 h-20 w-full rounded-xl object-cover border border-slate-100" />
+                  )}
                 </div>
                 <div className="md:col-span-2 pt-2">
                   <button type="submit" disabled={isSubmitting} className="w-full md:w-auto bg-[#0145F2] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2">
@@ -740,7 +764,7 @@ const AdminHome = () => {
                   )}
                   {slides.map((slide, idx) => (
                     <tr key={slide._id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-6 py-4"><div className="flex items-center gap-3"><span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span><img loading="lazy" src={slide.image} className="h-14 w-20 rounded-xl object-cover border border-slate-100" /></div></td>
+                      <td className="px-6 py-4"><div className="flex items-center gap-3"><span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span><img loading="lazy" src={getImageUrl(slide.image)} className="h-14 w-20 rounded-xl object-cover border border-slate-100" /></div></td>
                       <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{slide.title}</td>
                       <td className="px-6 py-4 text-xs text-slate-400 max-w-[200px] truncate">{slide.subtitle}</td>
                       <td className="px-6 py-4 text-right">
@@ -1406,7 +1430,7 @@ const AdminHome = () => {
                       onChange={handleLogoFileChange}
                     />
                       {logoPreview ? (
-                        <img src={getImageUrl(logoPreview)} alt="preview" className="h-20 mx-auto object-contain mix-blend-multiply" />
+                        <img src={getPreviewUrl(logoPreview)} alt="preview" className="h-20 mx-auto object-contain mix-blend-multiply" />
                       ) : (
                         <div className="flex flex-col items-center gap-2 text-slate-400">
                           <Upload size={28} />
@@ -1474,7 +1498,7 @@ const AdminHome = () => {
                       onChange={handleEditLogoFileChange}
                     />
                       {editLogoPreview ? (
-                        <img src={getImageUrl(editLogoPreview)} alt="preview" className="h-20 mx-auto object-contain mix-blend-multiply" />
+                        <img src={getPreviewUrl(editLogoPreview)} alt="preview" className="h-20 mx-auto object-contain mix-blend-multiply" />
                       ) : (
                         <div className="flex flex-col items-center gap-2 text-slate-400">
                           <Upload size={28} />
