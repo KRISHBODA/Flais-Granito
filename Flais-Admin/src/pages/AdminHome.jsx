@@ -41,6 +41,16 @@ const AdminHome = () => {
       return url;
     }
 
+    if (url.startsWith('/media/') || url.startsWith('media/')) {
+      const cleanPath = url.replace(/^\/?media\//, '');
+      return `${BackendUrl}/media/${cleanPath}`;
+    }
+
+    if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+      const cleanPath = url.replace(/^\/?uploads\//, '');
+      return `${BackendUrl}/uploads/${cleanPath}`;
+    }
+
     if (url.startsWith('/')) {
       return `${BackendUrl}${url}`;
     }
@@ -1569,7 +1579,7 @@ const AdminHome = () => {
                           <div className="h-14 w-28 rounded-xl border border-slate-100 bg-slate-50 flex items-center justify-center overflow-hidden p-1">
                             <img
                               loading="lazy"
-                              src={getImageUrl(logo.image)}
+                              src={getPreviewUrl(logo.image)}
                               alt={logo.name}
                               className="max-h-full max-w-full object-contain mix-blend-multiply"
                             />
