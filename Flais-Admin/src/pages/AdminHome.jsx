@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Images, Video, Plus, Edit, Trash2, Upload, CheckCircle, X, Save, Film, CheckSquare, Maximize, Grid, Loader2, Star, FileText } from 'lucide-react';
+import { Images, Video, Plus, Edit, Trash2, Upload, CheckCircle, X, Save, Film, CheckSquare, Maximize, Grid, Loader2, Star, FileText, ImageOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import defaultSustainImg from '../assets/michael-fortsch-bIm9salXn-g-unsplash.jpg.jpeg';
@@ -57,7 +57,61 @@ const HeroPreviewThumbnail = React.memo(({ src, alt, onOpen }) => {
         <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/5" />
       )}
     </button>
-  });
+  );
+});
+
+const LogoPreviewTile = React.memo(({ src, alt, onOpen }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(false);
+    setHasError(false);
+  }, [src]);
+
+  const label = alt?.trim() ? alt : 'Series logo';
+
+  return (
+    <button
+      type="button"
+      onClick={hasError || !src ? undefined : onOpen}
+      disabled={hasError || !src}
+      className="group relative flex h-[70px] w-[120px] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-[#f8f8f8] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0145F2]/30 disabled:cursor-default disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+      aria-label={hasError ? `${label} not available` : `Open ${label} in full size`}
+    >
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100" aria-hidden="true" />
+      )}
+
+      {!hasError && src && (
+        <img
+          src={src}
+          alt={label}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setIsLoaded(true)}
+          onError={() => {
+            setHasError(true);
+            setIsLoaded(true);
+          }}
+          className={`h-full w-full object-contain object-center transition-all duration-300 group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+          style={{ contentVisibility: 'auto' }}
+        />
+      )}
+
+      {hasError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-slate-400" aria-hidden="true">
+          <ImageOff size={18} className="opacity-70" />
+          <span className="text-[11px] font-medium">No Logo</span>
+        </div>
+      )}
+
+      {!hasError && isLoaded && (
+        <div className="pointer-events-none absolute inset-0 rounded-xl bg-black/0 transition-colors duration-300 group-hover:bg-black/5" />
+      )}
+    </button>
+  );
+});
 
 const AdminHome = () => {
   const [activeTab, setActiveTab] = useState('slider');
@@ -259,6 +313,7 @@ const AdminHome = () => {
   const [editLogoData, setEditLogoData] = useState({ name: '', order: '' });
   const [editLogoFile, setEditLogoFile] = useState(null);
   const [editLogoPreview, setEditLogoPreview] = useState(null);
+  const [logoLightbox, setLogoLightbox] = useState(null);
 
   // New slide form state
   const [isAddingSlide, setIsAddingSlide] = useState(false);
@@ -274,15 +329,16 @@ const AdminHome = () => {
   const [heroLightbox, setHeroLightbox] = useState(null);
 
   useEffect(() => {
-    if (!heroLightbox) return;
+    if (!heroLightbox && !logoLightbox) return;
 
     const onKeyDown = (event) => {
       if (event.key === 'Escape') setHeroLightbox(null);
+      if (event.key === 'Escape') setLogoLightbox(null);
     };
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [heroLightbox]);
+  }, [heroLightbox, logoLightbox]);
 
   useEffect(() => {
     const initData = async () => {
@@ -1622,70 +1678,69 @@ const AdminHome = () => {
                 <Loader2 className="animate-spin mx-auto text-blue-500" size={32} />
               </div>
             ) : (
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100">
-                    <th className="px-6 py-4">Logo Preview</th>
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Order</th>
-                    <th className="px-6 py-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {seriesLogos.length === 0 && (
-                    <tr>
-                      <td colSpan="4" className="p-10 text-center">
-                        <div className="flex flex-col items-center gap-3 text-slate-400">
-                          <Star size={36} className="opacity-30" />
-                          <div>
-                            <p className="font-semibold text-slate-500">No custom logos yet</p>
-                            <p className="text-xs mt-1">The homepage will show the default static logos.<br />Add logos above to override them dynamically.</p>
-                          </div>
-                        </div>
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="min-w-[760px] w-full text-left">
+                  <thead>
+                    <tr className="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100">
+                      <th className="px-6 py-4">Logo Preview</th>
+                      <th className="px-6 py-4">Name</th>
+                      <th className="px-6 py-4">Order</th>
+                      <th className="px-6 py-4 text-right">Action</th>
                     </tr>
-                  )}
-                  {seriesLogos.map((logo, idx) => (
-                    <tr key={logo._id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center flex-shrink-0">
-                            {idx + 1}
-                          </span>
-                          <div className="h-14 w-28 rounded-xl border border-slate-100 bg-slate-50 flex items-center justify-center overflow-hidden p-1">
-                            <img
-                              loading="lazy"
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {seriesLogos.length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="p-10 text-center">
+                          <div className="flex flex-col items-center gap-3 text-slate-400">
+                            <Star size={36} className="opacity-30" />
+                            <div>
+                              <p className="font-semibold text-slate-500">No custom logos yet</p>
+                              <p className="text-xs mt-1">The homepage will show the default static logos.<br />Add logos above to override them dynamically.</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {seriesLogos.map((logo, idx) => (
+                      <tr key={logo._id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center flex-shrink-0">
+                              {idx + 1}
+                            </span>
+                            <LogoPreviewTile
                               src={getPreviewUrl(logo.image)}
                               alt={logo.name}
-                              className="max-h-full max-w-full object-contain mix-blend-multiply"
+                              onOpen={() => setLogoLightbox({ src: getPreviewUrl(logo.image), alt: logo.name })}
                             />
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{logo.name}</td>
-                      <td className="px-6 py-4 text-xs text-slate-400">{logo.order ?? '—'}</td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => { setEditLogoId(logo._id); setEditLogoData({ name: logo.name, order: logo.order ?? '' }); setEditLogoPreview(logo.image); setIsAddingLogo(false); }}
-                            className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Edit Logo"
-                          >
-                            <Edit size={17} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteLogo(logo._id)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Remove Logo"
-                          >
-                            <Trash2 size={17} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{logo.name}</td>
+                        <td className="px-6 py-4 text-xs text-slate-400">{logo.order ?? '—'}</td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => { setEditLogoId(logo._id); setEditLogoData({ name: logo.name, order: logo.order ?? '' }); setEditLogoPreview(logo.image); setIsAddingLogo(false); }}
+                              className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Edit Logo"
+                            >
+                              <Edit size={17} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLogo(logo._id)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Remove Logo"
+                            >
+                              <Trash2 size={17} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
@@ -1697,6 +1752,46 @@ const AdminHome = () => {
             <div className="text-xs text-blue-700 leading-relaxed">
               <p className="font-semibold mb-0.5">How it works</p>
               <p>When logos are added here, the homepage "Discover Endless Inspiration" marquee will display them dynamically instead of the built-in static images. Upload PNG or JPG files with a transparent or white background for best results.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {logoLightbox && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logo-lightbox-title"
+          onClick={() => setLogoLightbox(null)}
+        >
+          <div
+            className="w-full max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+              <div>
+                <p id="logo-lightbox-title" className="text-sm font-semibold text-slate-900">
+                  {logoLightbox.alt || 'Series logo'}
+                </p>
+                <p className="text-xs text-slate-500">Full-size logo preview</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setLogoLightbox(null)}
+                className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0145F2]/30"
+                aria-label="Close logo preview"
+                autoFocus
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex items-center justify-center bg-[#f8f8f8] p-6">
+              <img
+                src={logoLightbox.src}
+                alt={logoLightbox.alt || 'Series logo'}
+                className="max-h-[80vh] max-w-full object-contain"
+              />
             </div>
           </div>
         </div>
