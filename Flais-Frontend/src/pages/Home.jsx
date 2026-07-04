@@ -98,19 +98,6 @@ const Home = () => {
     });
 
     let merged = [...list];
-    if (merged.length < 3) {
-      const fallbacks = [
-        { id: 'fallback-1', name: 'LISC Collection', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800&auto=format&fit=crop', logoImage: '' },
-        { id: 'fallback-2', name: 'ELEGANCE Collection', image: 'https://images.unsplash.com/photo-1600585154340-be6199f68b0c?q=80&w=800&auto=format&fit=crop', logoImage: '' },
-        { id: 'fallback-3', name: 'MODERN Collection', image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=800&auto=format&fit=crop', logoImage: '' }
-      ];
-      for (const fallback of fallbacks) {
-        if (merged.length >= 3) break;
-        if (!merged.some(item => item.name.toLowerCase() === fallback.name.toLowerCase())) {
-          merged.push(fallback);
-        }
-      }
-    }
 
     if (merged.length > 0 && merged.length < 6) {
       return [...merged, ...merged];
@@ -210,7 +197,7 @@ const Home = () => {
                 setVideoHasPlayed(true);
               }}
               onCanPlay={(e) => {
-                e.currentTarget.play().catch(() => {});
+                e.currentTarget.play().catch(() => { });
               }}
               style={{
                 position: 'absolute',
@@ -495,7 +482,7 @@ const Home = () => {
                         setCollectionsVideoHasPlayed(true);
                       }}
                       onCanPlay={(e) => {
-                        e.currentTarget.play().catch(() => {});
+                        e.currentTarget.play().catch(() => { });
                       }}
                       className="w-full h-full object-cover block"
                     />
@@ -529,42 +516,57 @@ const Home = () => {
       </section>
 
       {/* Explore The New Collections */}
-      <section className="py-12 sm:py-16 md:py-24 bg-white overflow-hidden">
-        <div className="container-custom">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-medium text-zinc-900 tracking-tight">
-              {homeTexts.collectionsTitle || "Make Your choice"}
-            </h2>
-          </div>
+      {collectionSlides.length > 0 && (
+        <section className="py-12 sm:py-16 md:py-24 bg-white overflow-hidden">
+          <div className="container-custom">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-medium text-zinc-900 tracking-tight">
+                {homeTexts.collectionsTitle || "Make Your choice"}
+              </h2>
+            </div>
 
-          <div className="relative group/nav w-full max-w-[100vw] overflow-hidden">
-            {collectionSlides.length > 0 ? (
+            <div className="relative group/nav w-full max-w-[100vw] overflow-hidden">
               <Swiper
                 key={`collections-swiper-${collectionSlides.length}-${collectionSlides.map(c => c._id || c.id || c.name).join('-')}`}
                 onSwiper={setCollectionsSwiper}
                 modules={[Navigation, Autoplay]}
-                spaceBetween={16}
+                spaceBetween={-60}
                 slidesPerView={"auto"}
                 centeredSlides={true}
-                loop={collectionSlides.length >= 3}
-                loopAdditionalSlides={6}
-                watchOverflow={true}
+                loop={true}
+                loopedSlides={collectionSlides.length}
+                loopAdditionalSlides={collectionSlides.length}
+                speed={700}
+                autoplay={{
+                  delay: 3000,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: true,
+                }}
+                watchSlidesProgress={true}
                 grabCursor={true}
+                observer={true}
+                observeParents={true}
+                resistanceRatio={0}
                 breakpoints={{
-                  1024: { spaceBetween: 24 }
+                  640: { spaceBetween: -76 },
+                  1024: { spaceBetween: -107 }
+                }}
+                navigation={{
+                  prevEl: '.collections-swiper-btn-prev',
+                  nextEl: '.collections-swiper-btn-next',
                 }}
                 className="collections-swiper !pb-12"
               >
                 {collectionSlides.map((col, index) => (
                   <SwiperSlide key={`${col._id || col.id || col.name}-${index}`}>
-                    <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-2xl transition-all duration-500">
+                    <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-none transition-all duration-500">
                       <img
                         loading="lazy"
                         src={getOptimizedImageUrl(col.image, 800)}
                         alt={col.name}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                       />
-                      
+
                       {/* Base overlay for inactive slide contrast */}
                       <div className="absolute inset-0 bg-black/5 transition-colors duration-500" />
 
@@ -591,36 +593,30 @@ const Home = () => {
 
                 {/* Navigation Arrows positioned on the active slide boundaries */}
                 <div className="collections-prev-btn hidden md:block absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-                  <button onClick={() => collectionsSwiper?.slidePrev()} className="w-12 h-12 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer shadow-lg">
+                  <button className="collections-swiper-btn-prev w-8 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                   </button>
                 </div>
                 <div className="collections-next-btn hidden md:block absolute top-1/2 -translate-y-1/2 translate-x-1/2 z-50 pointer-events-auto">
-                  <button onClick={() => collectionsSwiper?.slideNext()} className="w-12 h-12 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer shadow-lg">
+                  <button className="collections-swiper-btn-next w-8 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                   </button>
                 </div>
 
                 {/* Mobile Arrows (Bottom Center) */}
                 <div className="md:hidden absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center space-x-2 z-50 pointer-events-auto">
-                  <button onClick={() => collectionsSwiper?.slidePrev()} className="w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer">
+                  <button className="collections-swiper-btn-prev w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                   </button>
-                  <button onClick={() => collectionsSwiper?.slideNext()} className="w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer">
+                  <button className="collections-swiper-btn-next w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                   </button>
                 </div>
               </Swiper>
-            ) : (
-              <div className="mx-auto max-w-2xl rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center text-slate-500">
-                <Sparkles className="mx-auto mb-3 opacity-50" size={34} />
-                <p className="text-lg font-semibold text-slate-600">No collections added yet</p>
-                <p className="mt-2 text-sm">Use the admin panel to add choices for this section.</p>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Discover Endless Inspiration Marquee */}
       <section className="py-10 sm:py-12 md:py-16 bg-white overflow-hidden">
@@ -639,8 +635,18 @@ const Home = () => {
             name: logo.name,
           }));
 
-          const top = [...logos, ...logos];
-          const bottom = [...logos].reverse();
+          if (logos.length === 0) return null;
+
+          // Ensure we have at least 20 logos in the list to span the screen and loop seamlessly
+          const minItems = 20;
+          const repetitions = Math.ceil(minItems / logos.length);
+          const baseList = [];
+          for (let i = 0; i < repetitions; i++) {
+            baseList.push(...logos);
+          }
+
+          const top = [...baseList, ...baseList];
+          const bottom = [...baseList].reverse();
           const bottomLoop = [...bottom, ...bottom];
 
           return (

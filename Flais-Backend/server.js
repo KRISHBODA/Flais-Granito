@@ -16,8 +16,8 @@ app.set("trust proxy", 1);
 app.disable("x-powered-by");
 
 // Parse flexible origins from environment variables (e.g. Hostinger domains, comma separated)
-const envOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',').map(url => url.trim()) 
+const envOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(url => url.trim())
   : [];
 
 const defaultOrigins = [
@@ -28,7 +28,7 @@ const defaultOrigins = [
   "https://flais-frontend.vercel.app",
   "http://localhost:5175",
   "http://localhost:5174",
-  "http://localhost:4173",
+  "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:8000",
   "https://metathetical-desiringly-korey.ngrok-free.dev",
@@ -50,13 +50,13 @@ app.use(
     origin(origin, cb) {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return cb(null, true);
-      
+
       // Allow exact matches from the Set
       if (allowedOrigins.has(origin)) return cb(null, true);
-      
+
       // Allow dynamic Vercel preview domains temporarily
       if (origin.endsWith('.vercel.app')) return cb(null, true);
-      
+
       console.warn(`CORS blocked for unauthorized origin: ${origin}`);
       // Safely return false instead of throwing an Error (which causes 500s)
       return cb(null, false);

@@ -185,6 +185,7 @@ video {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
@@ -200,12 +201,12 @@ video {
     width: max-content;
     align-items: center;
     gap: 8rem;
-    animation: marquee-left 25s linear infinite !important;
+    animation: marquee-left 55s linear infinite !important;
     will-change: transform;
   }
 
   .marquee-track-reverse {
-    animation: marquee-right 25s linear infinite !important;
+    animation: marquee-right 55s linear infinite !important;
   }
 
   .marquee-logo {
@@ -230,6 +231,7 @@ video {
     from {
       transform: translateX(0);
     }
+
     to {
       transform: translateX(-50%);
     }
@@ -239,6 +241,7 @@ video {
     from {
       transform: translateX(-50%);
     }
+
     to {
       transform: translateX(0);
     }
@@ -347,17 +350,22 @@ html.lenis body {
   }
 
   @keyframes imgRevealMobile {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
   /* Speed up marquees on mobile */
   .marquee-track {
-    animation-duration: 20s !important;
+    animation-duration: 45s !important;
   }
 
   .marquee-track-reverse {
-    animation-duration: 25s !important;
+    animation-duration: 45s !important;
   }
 
   .marquee-track {
@@ -395,6 +403,7 @@ html.lenis body {
    Respect OS-level "Reduce Motion" preference (Accessibility)
 ────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -426,6 +435,7 @@ html.lenis body {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -441,64 +451,72 @@ html.lenis body {
 
 /* Default Mobile Slide Layout: uniform square slide for Swiper tracking */
 .collections-swiper .swiper-slide {
-  width: 300px !important;
-  height: 300px !important;
+  width: 280px !important;
+  height: 280px !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  opacity: 0.55;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0 !important;
+  visibility: hidden;
+}
+
+.collections-swiper .swiper-slide-active,
+.collections-swiper .swiper-slide-prev,
+.collections-swiper .swiper-slide-next {
+  opacity: 0.55 !important;
+  visibility: visible;
 }
 
 .collections-swiper .swiper-slide-active {
-  opacity: 1;
+  opacity: 1 !important;
 }
 
-/* Inner card dimensions: square for active, vertical rectangle for inactive */
+/* Inner card dimensions: square/rectangle for active, vertical rectangle for inactive */
 .collections-swiper .swiper-slide .collections-card-inner {
-  width: 200px !important;
-  height: 300px !important;
+  width: 150px !important;
+  height: 280px !important;
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .collections-swiper .swiper-slide-active .collections-card-inner {
-  width: 300px !important;
-  height: 300px !important;
+  width: 280px !important;
+  height: 280px !important;
 }
 
 /* Tablet styles (min-width: 640px) */
 @media (min-width: 640px) {
   .collections-swiper .swiper-slide {
-    width: 400px !important;
-    height: 400px !important;
+    width: 360px !important;
+    height: 350px !important;
   }
 
   .collections-swiper .swiper-slide .collections-card-inner {
-    width: 260px !important;
-    height: 400px !important;
+    width: 200px !important;
+    height: 350px !important;
   }
 
   .collections-swiper .swiper-slide-active .collections-card-inner {
-    width: 400px !important;
-    height: 400px !important;
+    width: 360px !important;
+    height: 350px !important;
   }
 }
 
 /* Desktop styles (min-width: 1024px) */
 @media (min-width: 1024px) {
   .collections-swiper .swiper-slide {
-    width: 500px !important;
-    height: 500px !important;
+    width: 480px !important;
+    height: 400px !important;
   }
 
   .collections-swiper .swiper-slide .collections-card-inner {
-    width: 330px !important;
-    height: 500px !important;
+    width: 250px !important;
+    height: 400px !important;
   }
 
   .collections-swiper .swiper-slide-active .collections-card-inner {
-    width: 500px !important;
-    height: 500px !important;
+    width: 480px !important;
+    height: 400px !important;
   }
 }
 
@@ -516,29 +534,29 @@ html.lenis body {
 
 /* Navigation buttons positioned exactly at active slide borders */
 .collections-prev-btn {
-  left: calc(50% - 150px) !important;
+  left: calc(50% - 140px) !important;
 }
 
 .collections-next-btn {
-  right: calc(50% - 150px) !important;
+  right: calc(50% - 140px) !important;
 }
 
 @media (min-width: 640px) {
   .collections-prev-btn {
-    left: calc(50% - 200px) !important;
+    left: calc(50% - 180px) !important;
   }
 
   .collections-next-btn {
-    right: calc(50% - 200px) !important;
+    right: calc(50% - 180px) !important;
   }
 }
 
 @media (min-width: 1024px) {
   .collections-prev-btn {
-    left: calc(50% - 250px) !important;
+    left: calc(50% - 240px) !important;
   }
 
   .collections-next-btn {
-    right: calc(50% - 250px) !important;
+    right: calc(50% - 240px) !important;
   }
 }
