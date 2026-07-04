@@ -29,7 +29,7 @@ const initialHomeTexts = {
   collectionsVideo: "",
   categoriesTitle: "Find Tiles By Category",
   categoriesDesc: "Discover our curated selection of premium tiles for every application.",
-  collectionsTitle: "Make Your choice",
+  collectionsTitle: "Make Your Choice",
   marqueeTitle: "Discover Endless Inspiration",
   sustainabilityTitle: "Our Commitment to Sustainability",
   sustainabilityDesc: "We have been producing porcelain surfaces for over 60 years with passion, innovation, and a focus on sustainability. Our processes are designed to minimize environmental impact while maximizing quality and durability.",
@@ -104,6 +104,7 @@ const Home = () => {
     }
     return merged;
   }, [choicesList]);
+  const initialCollectionSlide = collectionSlides.length > 1 ? 1 : 0;
 
 
   const homeSchema = {
@@ -528,10 +529,10 @@ const Home = () => {
       {/* Explore The New Collections */}
       {collectionSlides.length > 0 && (
         <section className="py-12 sm:py-16 md:py-24 bg-white overflow-hidden">
-          <div className="mx-auto w-[95%] lg:w-[90%] max-w-7xl px-5 sm:px-6 lg:px-10">
+          <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-medium text-zinc-900 tracking-tight">
-                {homeTexts.collectionsTitle || "Make Your choice"}
+                {homeTexts.collectionsTitle || "Make Your Choice"}
               </h2>
             </div>
 
@@ -540,7 +541,8 @@ const Home = () => {
                 key={`collections-swiper-${collectionSlides.length}-${collectionSlides.map(c => c._id || c.id || c.name).join('-')}`}
                 onSwiper={setCollectionsSwiper}
                 modules={[Navigation, Autoplay]}
-                spaceBetween={-60}
+                initialSlide={initialCollectionSlide}
+                spaceBetween={28}
                 slidesPerView={"auto"}
                 centeredSlides={true}
                 loop={true}
@@ -562,8 +564,8 @@ const Home = () => {
                 lazy={true}
                 lazyPreloadPrevNext={1}
                 breakpoints={{
-                  640: { spaceBetween: -80 },
-                  1024: { spaceBetween: -110 }
+                  640: { spaceBetween: 28 },
+                  1024: { spaceBetween: 32 }
                 }}
                 navigation={{
                   prevEl: '.collections-swiper-btn-prev',

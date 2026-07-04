@@ -451,7 +451,7 @@ html.lenis body {
 
 /* Default Mobile Slide Layout: uniform square slide for Swiper tracking */
 .collections-swiper .swiper-slide {
-  width: 340px !important;
+  width: 88vw !important;
   height: 280px !important;
   display: flex !important;
   justify-content: center !important;
@@ -474,31 +474,31 @@ html.lenis body {
 
 /* Inner card dimensions: square/rectangle for active, vertical rectangle for inactive */
 .collections-swiper .swiper-slide .collections-card-inner {
-  width: 230px !important;
+  width: 100% !important;
   height: 280px !important;
   will-change: width, height;
 }
 
 .collections-swiper .swiper-slide-active .collections-card-inner {
-  width: 340px !important;
+  width: 100% !important;
   height: 280px !important;
 }
 
 /* Tablet styles (min-width: 640px) */
 @media (min-width: 640px) {
   .collections-swiper .swiper-slide {
-    width: 460px !important;
+    width: 72vw !important;
     height: 350px !important;
   }
 
   .collections-swiper .swiper-slide .collections-card-inner {
-    width: 320px !important;
+    width: 100% !important;
     height: 350px !important;
     will-change: width, height;
   }
 
   .collections-swiper .swiper-slide-active .collections-card-inner {
-    width: 460px !important;
+    width: 100% !important;
     height: 350px !important;
   }
 }
@@ -506,18 +506,18 @@ html.lenis body {
 /* Desktop styles (min-width: 1024px) */
 @media (min-width: 1024px) {
   .collections-swiper .swiper-slide {
-    width: 620px !important;
+    width: 50vw !important;
     height: 400px !important;
   }
 
   .collections-swiper .swiper-slide .collections-card-inner {
-    width: 420px !important;
+    width: 100% !important;
     height: 400px !important;
     will-change: width, height;
   }
 
   .collections-swiper .swiper-slide-active .collections-card-inner {
-    width: 620px !important;
+    width: 100% !important;
     height: 400px !important;
   }
 }
@@ -536,29 +536,29 @@ html.lenis body {
 
 /* Navigation buttons positioned exactly at active slide borders */
 .collections-prev-btn {
-  left: calc(50% - 170px) !important;
+  left: calc(50% - 33vw) !important;
 }
 
 .collections-next-btn {
-  right: calc(50% - 170px) !important;
+  right: calc(50% - 33vw) !important;
 }
 
 @media (min-width: 640px) {
   .collections-prev-btn {
-    left: calc(50% - 230px) !important;
+    left: calc(50% - 33vw) !important;
   }
 
   .collections-next-btn {
-    right: calc(50% - 230px) !important;
+    right: calc(50% - 33vw) !important;
   }
 }
 
 @media (min-width: 1024px) {
   .collections-prev-btn {
-    left: calc(50% - 300px) !important;
+    left: calc(50% - 23vw) !important;
   }
 
   .collections-next-btn {
-    right: calc(50% - 300px) !important;
+    right: calc(50% - 23vw) !important;
   }
 }
