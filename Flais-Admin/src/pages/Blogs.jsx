@@ -7,6 +7,40 @@ const Blogs = () => {
   const navigate = useNavigate();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const getBackendBaseUrl = () => {
+    if (import.meta.env.VITE_BACKEND_URL) {
+      return import.meta.env.VITE_BACKEND_URL.trim().replace(/\/$/, '');
+    }
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `http://${hostname}:8000`;
+    }
+    return 'http://localhost:8000';
+  };
+
+  const getImageUrl = (url) => {
+    if (!url) return '';
+    
+    let cleanPath = url;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      try {
+        const parsed = new URL(url);
+        let pathname = parsed.pathname;
+        if (pathname.startsWith('/media/')) {
+          cleanPath = pathname.substring(7);
+        } else if (pathname.startsWith('/uploads/')) {
+          cleanPath = pathname.substring(9);
+        } else if (pathname.startsWith('/')) {
+          cleanPath = pathname.substring(1);
+        }
+      } catch (e) {
+        cleanPath = url;
+      }
+    }
+    
+    return `${getBackendBaseUrl()}/media/${cleanPath.replace(/^\//, '')}`;
+  };
+
   const BackendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const fetchBlogs = async () => {
@@ -77,7 +111,7 @@ const Blogs = () => {
                   <tr key={blog._id} className="hover:bg-slate-50">
                     <td className="p-6 flex items-center gap-4">
                       {blog.image ? (
-                        <img loading="lazy" src={blog.image} className="w-12 h-12 rounded object-cover" alt="" />
+                        <img loading="lazy" src={getImageUrl(blog.image)} className="w-12 h-12 rounded object-cover" alt="" />
                       ) : (
                         <div className="w-12 h-12 rounded bg-slate-100 flex items-center justify-center text-slate-400">
                           <FileText size={20} />

@@ -745,7 +745,7 @@ const AdminHome = () => {
                   )}
                   {slides.map((slide, idx) => (
                     <tr key={slide._id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-6 py-4"><div className="flex items-center gap-3"><span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span><img loading="lazy" src={getImageUrl(slide.image)} className="h-14 w-20 rounded-xl object-cover border border-slate-100" /></div></td>
+                      <td className="px-6 py-4"><div className="flex items-center gap-3"><span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span><img loading="lazy" src={slide.image} className="h-14 w-20 rounded-xl object-cover border border-slate-100" /></div></td>
                       <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{slide.title}</td>
                       <td className="px-6 py-4 text-xs text-slate-400 max-w-[200px] truncate">{slide.subtitle}</td>
                       <td className="px-6 py-4 text-right">
@@ -782,7 +782,7 @@ const AdminHome = () => {
                 <p className="text-white/50 text-xs">{videoUploadProgress}% complete</p>
               </div>
             ) : videoPreview ? (
-              <video preload="none" src={videoPreview} controls className="w-full h-full object-cover" />
+              <video preload="none" src={getImageUrl(videoPreview)} controls className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-white/60 gap-3">
                 <Film size={48} className="opacity-40" />
@@ -857,7 +857,7 @@ const AdminHome = () => {
                       <Loader2 size={14} className="animate-spin" /> Uploading...
                     </div>
                   ) : newChoice.logoImage ? (
-                    <img src={newChoice.logoImage} alt="logo preview" className="h-10 mt-1 rounded object-contain border border-slate-100 bg-slate-900 p-1" />
+                    <img src={getImageUrl(newChoice.logoImage)} alt="logo preview" className="h-10 mt-1 rounded object-contain border border-slate-100 bg-slate-900 p-1" />
                   ) : null}
                 </div>
                 <div>
@@ -886,7 +886,7 @@ const AdminHome = () => {
                       <Loader2 size={14} className="animate-spin" /> Uploading...
                     </div>
                   ) : newChoice.image ? (
-                    <img src={newChoice.image} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
+                    <img src={getImageUrl(newChoice.image)} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
                   ) : null}
                 </div>
                 <div>
@@ -935,7 +935,7 @@ const AdminHome = () => {
                       <Loader2 size={14} className="animate-spin" /> Uploading...
                     </div>
                   ) : editChoiceData.logoImage ? (
-                    <img src={editChoiceData.logoImage} alt="logo preview" className="h-10 mt-1 rounded object-contain border border-slate-100 bg-slate-900 p-1" />
+                    <img src={getImageUrl(editChoiceData.logoImage)} alt="logo preview" className="h-10 mt-1 rounded object-contain border border-slate-100 bg-slate-900 p-1" />
                   ) : null}
                 </div>
                 <div>
@@ -963,7 +963,7 @@ const AdminHome = () => {
                       <Loader2 size={14} className="animate-spin" /> Uploading...
                     </div>
                   ) : editChoiceData.image ? (
-                    <img src={editChoiceData.image} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
+                    <img src={getImageUrl(editChoiceData.image)} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
                   ) : null}
                 </div>
                 <div>
@@ -998,13 +998,13 @@ const AdminHome = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span>
-                        <img loading="lazy" src={col.image} className="h-14 w-20 rounded-xl object-cover border border-slate-100" />
+                        <img loading="lazy" src={getImageUrl(col.image)} className="h-14 w-20 rounded-xl object-cover border border-slate-100" />
                       </div>
                     </td>
                     <td className="px-6 py-4 font-semibold text-slate-900 text-sm">
                       <div className="flex items-center gap-3">
                         {col.logoImage && (
-                          <img src={col.logoImage} className="h-8 w-12 object-contain bg-slate-950 p-1 rounded border border-slate-200" alt="logo" />
+                          <img src={getImageUrl(col.logoImage)} className="h-8 w-12 object-contain bg-slate-950 p-1 rounded border border-slate-200" alt="logo" />
                         )}
                         <span>{col.name}</span>
                       </div>
@@ -1087,7 +1087,7 @@ const AdminHome = () => {
                       <Loader2 size={14} className="animate-spin" /> Uploading...
                     </div>
                   ) : newSize.image ? (
-                    <img src={newSize.image} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
+                    <img src={getImageUrl(newSize.image)} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
                   ) : null}
                 </div>
                 <div className="md:col-span-3 pt-2">
@@ -1136,7 +1136,7 @@ const AdminHome = () => {
                       <Loader2 size={14} className="animate-spin" /> Uploading...
                     </div>
                   ) : editSizeData.image ? (
-                    <img src={editSizeData.image} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
+                    <img src={getImageUrl(editSizeData.image)} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
                   ) : null}
                 </div>
                 <div className="md:col-span-3 pt-2 flex gap-3">
@@ -1167,7 +1167,7 @@ const AdminHome = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span>
-                        <img loading="lazy" src={size.image} className="h-14 w-20 rounded-xl object-cover border border-slate-100" />
+                        <img loading="lazy" src={getImageUrl(size.image)} className="h-14 w-20 rounded-xl object-cover border border-slate-100" />
                       </div>
                     </td>
                     <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{size.title}</td>
@@ -1248,7 +1248,7 @@ const AdminHome = () => {
                       <Loader2 size={14} className="animate-spin" /> Uploading...
                     </div>
                   ) : newCategory.image ? (
-                    <img src={newCategory.image} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
+                    <img src={getImageUrl(newCategory.image)} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
                   ) : null}
                 </div>
                 <div className="md:col-span-2 pt-2">
@@ -1293,7 +1293,7 @@ const AdminHome = () => {
                       <Loader2 size={14} className="animate-spin" /> Uploading...
                     </div>
                   ) : editCategoryData.image ? (
-                    <img src={editCategoryData.image} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
+                    <img src={getImageUrl(editCategoryData.image)} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />
                   ) : null}
                 </div>
                 <div className="md:col-span-2 pt-2 flex gap-3">
@@ -1323,7 +1323,7 @@ const AdminHome = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span>
-                        <img loading="lazy" src={cat.image} alt={cat.name} className="h-14 w-20 rounded-xl object-cover border border-slate-100" />
+                        <img loading="lazy" src={getImageUrl(cat.image)} alt={cat.name} className="h-14 w-20 rounded-xl object-cover border border-slate-100" />
                       </div>
                     </td>
                     <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{cat.name}</td>
@@ -1411,7 +1411,7 @@ const AdminHome = () => {
                       onChange={handleLogoFileChange}
                     />
                       {logoPreview ? (
-                        <img src={logoPreview} alt="preview" className="h-20 mx-auto object-contain mix-blend-multiply" />
+                        <img src={getImageUrl(logoPreview)} alt="preview" className="h-20 mx-auto object-contain mix-blend-multiply" />
                       ) : (
                         <div className="flex flex-col items-center gap-2 text-slate-400">
                           <Upload size={28} />
@@ -1659,7 +1659,7 @@ const AdminHome = () => {
                     {homeTexts.innovationImage ? (
                       <img
                         loading="lazy"
-                        src={homeTexts.innovationImage}
+                        src={getImageUrl(homeTexts.innovationImage)}
                         className="w-full h-full object-cover"
                         alt="Innovation section preview"
                       />
@@ -1754,7 +1754,7 @@ const AdminHome = () => {
                     {homeTexts.collectionsImage ? (
                       <img
                         loading="lazy"
-                        src={homeTexts.collectionsImage}
+                        src={getImageUrl(homeTexts.collectionsImage)}
                         className="w-full h-full object-cover"
                         alt="Collections section image preview"
                       />
@@ -1790,7 +1790,7 @@ const AdminHome = () => {
                     {homeTexts.collectionsVideo ? (
                       <video
                         key={homeTexts.collectionsVideo}
-                        src={homeTexts.collectionsVideo}
+                        src={getImageUrl(homeTexts.collectionsVideo)}
                         muted
                         loop
                         playsInline
@@ -1872,7 +1872,7 @@ const AdminHome = () => {
                     {homeTexts.sustainabilityImage ? (
                       <img
                         loading="lazy"
-                        src={homeTexts.sustainabilityImage}
+                        src={getImageUrl(homeTexts.sustainabilityImage)}
                         className="w-full h-full object-cover"
                         alt="Sustainability section preview"
                       />

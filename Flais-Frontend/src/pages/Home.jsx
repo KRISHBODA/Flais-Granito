@@ -520,14 +520,14 @@ const Home = () => {
       {/* Explore The New Collections */}
       {collectionSlides.length > 0 && (
         <section className="py-12 sm:py-16 md:py-24 bg-white overflow-hidden">
-          <div className="container-custom">
+          <div className="mx-auto w-[95%] lg:w-[90%] max-w-7xl px-5 sm:px-6 lg:px-10">
             <div className="text-center mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-medium text-zinc-900 tracking-tight">
                 {homeTexts.collectionsTitle || "Make Your choice"}
               </h2>
             </div>
 
-            <div className="relative group/nav w-full max-w-[100vw] overflow-hidden">
+            <div className="relative group/nav w-full overflow-hidden">
               <Swiper
                 key={`collections-swiper-${collectionSlides.length}-${collectionSlides.map(c => c._id || c.id || c.name).join('-')}`}
                 onSwiper={setCollectionsSwiper}
@@ -540,15 +540,19 @@ const Home = () => {
                 loopAdditionalSlides={collectionSlides.length}
                 speed={700}
                 autoplay={{
-                  delay: 3000,
+                  delay: 4000,
                   disableOnInteraction: false,
                   pauseOnMouseEnter: true,
+                  waitForTransition: true,
                 }}
                 watchSlidesProgress={true}
                 grabCursor={true}
                 observer={true}
                 observeParents={true}
                 resistanceRatio={0}
+                preloadImages={false}
+                lazy={true}
+                lazyPreloadPrevNext={1}
                 breakpoints={{
                   640: { spaceBetween: -76 },
                   1024: { spaceBetween: -107 }
@@ -561,12 +565,13 @@ const Home = () => {
               >
                 {collectionSlides.map((col, index) => (
                   <SwiperSlide key={`${col._id || col.id || col.name}-${index}`}>
-                    <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-none transition-all duration-500">
+                    <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-none" style={{ transform: 'translateZ(0)' }}>
                       <img
                         loading="lazy"
                         src={getOptimizedImageUrl(col.image, 800)}
                         alt={col.name}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                        style={{ backfaceVisibility: 'hidden' }}
                       />
 
                       {/* Base overlay for inactive slide contrast */}
@@ -574,8 +579,6 @@ const Home = () => {
 
                       {/* Active-only overlay and content */}
                       <div className="absolute inset-0 transition-opacity duration-500 active-only-content">
-                        {/* Blue tint overlay matching the requested style */}
-                        <div className="absolute inset-0 bg-[#0145F2]/25 backdrop-blur-[0.5px]" />
                         {/* Content Area */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                           {/* Explore More Button at Bottom */}

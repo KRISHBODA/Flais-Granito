@@ -456,7 +456,7 @@ html.lenis body {
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, visibility;
   opacity: 0 !important;
   visibility: hidden;
 }
@@ -476,7 +476,7 @@ html.lenis body {
 .collections-swiper .swiper-slide .collections-card-inner {
   width: 150px !important;
   height: 280px !important;
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: width, height;
 }
 
 .collections-swiper .swiper-slide-active .collections-card-inner {
@@ -494,6 +494,7 @@ html.lenis body {
   .collections-swiper .swiper-slide .collections-card-inner {
     width: 200px !important;
     height: 350px !important;
+    will-change: width, height;
   }
 
   .collections-swiper .swiper-slide-active .collections-card-inner {
@@ -512,6 +513,7 @@ html.lenis body {
   .collections-swiper .swiper-slide .collections-card-inner {
     width: 250px !important;
     height: 400px !important;
+    will-change: width, height;
   }
 
   .collections-swiper .swiper-slide-active .collections-card-inner {
@@ -524,7 +526,7 @@ html.lenis body {
 .collections-swiper .swiper-slide .active-only-content {
   opacity: 0 !important;
   pointer-events: none;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity;
 }
 
 .collections-swiper .swiper-slide-active .active-only-content {
