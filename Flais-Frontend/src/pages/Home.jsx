@@ -104,7 +104,9 @@ const Home = () => {
     }
     return merged;
   }, [choicesList]);
-  const initialCollectionSlide = collectionSlides.length > 1 ? 1 : 0;
+  const initialCollectionSlide = collectionSlides.length > 2
+    ? collectionSlides.length - 2
+    : Math.max(0, collectionSlides.length - 1);
 
 
   const homeSchema = {
