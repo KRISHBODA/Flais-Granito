@@ -9,6 +9,56 @@ const initialChoiceData = [];
 const initialSizeData = [];
 const initialCategoryData = [];
 
+const HeroPreviewThumbnail = React.memo(({ src, alt, onOpen }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(false);
+    setHasError(false);
+  }, [src]);
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      disabled={hasError || !src}
+      className="group relative block overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0145F2]/30 disabled:cursor-default disabled:hover:shadow-sm"
+      style={{ width: 148, height: 84 }}
+      aria-label={hasError ? 'No Image' : `Open ${alt}`}
+    >
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100" />
+      )}
+
+      {!hasError && src && (
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          onLoad={() => setIsLoaded(true)}
+          onError={() => {
+            setHasError(true);
+            setIsLoaded(true);
+          }}
+          className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+          style={{ contentVisibility: 'auto' }}
+        />
+      )}
+
+      {hasError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-slate-50 text-slate-400">
+          <Images size={18} className="opacity-60" />
+          <span className="text-[11px] font-medium">No Image</span>
+        </div>
+      )}
+
+      {!hasError && isLoaded && (
+        <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/5" />
+      )}
+    </button>
+  });
+
 const AdminHome = () => {
   const [activeTab, setActiveTab] = useState('slider');
   const [slides, setSlides] = useState([]);
@@ -221,6 +271,18 @@ const AdminHome = () => {
   const [editSlideData, setEditSlideData] = useState({ tagline: '', title: '', subtitle: '' });
   const [editSlideImage, setEditSlideImage] = useState(null);
   const [newSlidePreview, setNewSlidePreview] = useState(null);
+  const [heroLightbox, setHeroLightbox] = useState(null);
+
+  useEffect(() => {
+    if (!heroLightbox) return;
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setHeroLightbox(null);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [heroLightbox]);
 
   useEffect(() => {
     const initData = async () => {
@@ -774,7 +836,21 @@ const AdminHome = () => {
                   )}
                   {slides.map((slide, idx) => (
                     <tr key={slide._id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-6 py-4"><div className="flex items-center gap-3"><span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span><img loading="lazy" src={getImageUrl(slide.image)} className="h-14 w-20 rounded-xl object-cover border border-slate-100" /></div></td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center flex-shrink-0">
+                            {idx + 1}
+                          </span>
+                          <HeroPreviewThumbnail
+                            src={getImageUrl(slide.image)}
+                            alt={slide.title || `Hero slide ${idx + 1}`}
+                            onOpen={() => setHeroLightbox({
+                              src: getImageUrl(slide.image),
+                              alt: slide.title || `Hero slide ${idx + 1}`
+                            })}
+                          />
+                        </div>
+                      </td>
                       <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{slide.title}</td>
                       <td className="px-6 py-4 text-xs text-slate-400 max-w-[200px] truncate">{slide.subtitle}</td>
                       <td className="px-6 py-4 text-right">
@@ -2089,6 +2165,31 @@ const AdminHome = () => {
                 </tbody>
               </table>
             )}
+          </div>
+        </div>
+      )}
+      {heroLightbox && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 px-4"
+          onClick={() => setHeroLightbox(null)}
+        >
+          <div
+            className="relative max-w-5xl w-full overflow-hidden rounded-3xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setHeroLightbox(null)}
+              className="absolute right-4 top-4 z-10 rounded-full bg-white/90 p-2 text-slate-700 shadow hover:bg-white"
+              aria-label="Close preview"
+            >
+              <X size={18} />
+            </button>
+            <img
+              src={heroLightbox.src}
+              alt={heroLightbox.alt}
+              className="max-h-[80vh] w-full object-contain bg-slate-100"
+            />
           </div>
         </div>
       )}
