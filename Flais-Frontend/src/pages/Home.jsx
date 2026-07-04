@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SEO from '../components/SEO';
@@ -131,15 +131,17 @@ const Home = () => {
   const collectionsVideoRef = useIntersectionVideoRef();
   const handleCollectionsSwiper = (swiper) => {
     setCollectionsSwiper(swiper);
-
-    if (collectionSlides.length <= 1) return;
-
-    requestAnimationFrame(() => {
-      swiper.slideToLoop(initialCollectionSlide, 0, false);
-      swiper.update();
-      swiper.updateSlidesClasses();
-    });
   };
+
+  useLayoutEffect(() => {
+    if (!collectionsSwiper || collectionSlides.length <= 1) return;
+
+    collectionsSwiper.loopDestroy();
+    collectionsSwiper.loopCreate();
+    collectionsSwiper.update();
+    collectionsSwiper.slideToLoop(initialCollectionSlide, 0, false);
+    collectionsSwiper.updateSlidesClasses();
+  }, [collectionsSwiper, collectionSlides.length, initialCollectionSlide]);
 
   const handleCollectionsPrev = () => {
     if (!collectionsSwiper || collectionSlides.length <= 1) return;
