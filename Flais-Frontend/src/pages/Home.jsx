@@ -146,7 +146,7 @@ const Home = () => {
     const currentIndex = typeof collectionsSwiper.realIndex === 'number'
       ? collectionsSwiper.realIndex
       : collectionsSwiper.activeIndex || 0;
-    const targetIndex = (currentIndex - 1 + collectionSlides.length) % collectionSlides.length;
+    const targetIndex = (currentIndex + 1) % collectionSlides.length;
     collectionsSwiper.slideToLoop(targetIndex, 700);
   };
 
@@ -155,7 +155,7 @@ const Home = () => {
     const currentIndex = typeof collectionsSwiper.realIndex === 'number'
       ? collectionsSwiper.realIndex
       : collectionsSwiper.activeIndex || 0;
-    const targetIndex = (currentIndex + 1) % collectionSlides.length;
+    const targetIndex = (currentIndex - 1 + collectionSlides.length) % collectionSlides.length;
     collectionsSwiper.slideToLoop(targetIndex, 700);
   };
 
@@ -577,9 +577,7 @@ const Home = () => {
                 observer={true}
                 observeParents={true}
                 resistanceRatio={0}
-                preloadImages={false}
-                lazy={true}
-                lazyPreloadPrevNext={1}
+                preloadImages={true}
                 breakpoints={{
                   640: { spaceBetween: 28 },
                   1024: { spaceBetween: 32 }
@@ -590,7 +588,7 @@ const Home = () => {
                   <SwiperSlide key={`${col._id || col.id || col.name}-${index}`}>
                     <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-none" style={{ transform: 'translateZ(0)' }}>
                       <img
-                        loading="lazy"
+                        loading="eager"
                         src={getOptimizedImageUrl(col.image, 800)}
                         alt={col.name}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
