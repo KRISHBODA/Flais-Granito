@@ -215,11 +215,11 @@ const Navbar = () => {
       ? 'top-4 md:top-6 w-[95%] lg:w-[90%] max-w-7xl bg-white/95 backdrop-blur-md shadow-xl rounded-full'
       : 'top-0 w-full bg-transparent border-transparent shadow-none rounded-none';
 
-  const rowPadding = isOpen
-    ? 'py-4 px-6 md:px-12'
-    : shouldShowBg
-      ? 'py-4 px-5 sm:px-6 lg:py-6 lg:px-10'
-      : 'py-4 px-6 md:px-12 lg:py-6 lg:px-20';
+const rowPadding = isOpen
+  ? 'py-4 px-6 md:px-12'
+  : shouldShowBg
+    ? 'py-2.5 px-5 sm:px-6 lg:py-3 lg:px-10'
+    : 'py-5 px-6 md:px-12 lg:py-7 lg:px-20';
 
   return (
     <nav className={`fixed left-1/2 -translate-x-1/2 z-50 transition-[background-color,border-color,box-shadow,transform,top,border-radius,width] duration-500 ease-in-out ${navClass}`}>
