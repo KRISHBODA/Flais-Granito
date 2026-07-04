@@ -449,9 +449,9 @@ html.lenis body {
   align-items: center !important;
 }
 
-/* Default Mobile Slide Layout: uniform square slide for Swiper tracking */
+/* Default Mobile Slide Layout: single fixed slide for consistent arrow steps */
 .collections-swiper .swiper-slide {
-  width: 88vw !important;
+  width: 100% !important;
   height: 280px !important;
   display: flex !important;
   justify-content: center !important;

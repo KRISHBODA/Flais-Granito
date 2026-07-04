@@ -562,8 +562,8 @@ const Home = () => {
                 modules={[Autoplay]}
                 initialSlide={initialCollectionSlide}
                 spaceBetween={28}
-                slidesPerView={"auto"}
-                centeredSlides={true}
+                slidesPerView={1}
+                centeredSlides={false}
                 loop={true}
                 loopedSlides={collectionSlides.length}
                 loopAdditionalSlides={collectionSlides.length}
@@ -581,8 +581,8 @@ const Home = () => {
                 resistanceRatio={0}
                 preloadImages={true}
                 breakpoints={{
-                  640: { spaceBetween: 28 },
-                  1024: { spaceBetween: 32 }
+                  640: { slidesPerView: 'auto', centeredSlides: true, spaceBetween: 28 },
+                  1024: { slidesPerView: 'auto', centeredSlides: true, spaceBetween: 32 }
                 }}
                 className="collections-swiper !pb-12"
               >
