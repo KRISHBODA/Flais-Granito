@@ -540,7 +540,7 @@ const Home = () => {
                 key={`collections-swiper-${collectionSlides.length}-${collectionSlides.map(c => c._id || c.id || c.name).join('-')}`}
                 onSwiper={setCollectionsSwiper}
                 modules={[Navigation, Autoplay]}
-                spaceBetween={-80}
+                spaceBetween={-60}
                 slidesPerView={"auto"}
                 centeredSlides={true}
                 loop={true}
