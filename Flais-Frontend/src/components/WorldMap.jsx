@@ -231,22 +231,28 @@ const WorldMap = ({ countries }) => {
                     <h4 className="font-display font-bold text-zinc-900 text-sm leading-tight">
                       {hoveredCountry.fullName}
                     </h4>
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-[#5D4037]">
-                      {hoveredCountry.region}
-                    </span>
+                    {hoveredCountry.region && (
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-[#5D4037]">
+                        {hoveredCountry.region}
+                      </span>
+                    )}
                   </div>
                 </div>
                 
-                <p className="text-zinc-600 text-xs leading-relaxed font-light">
-                  {hoveredCountry.detail}
-                </p>
-                
-                <div className="pt-2 border-t border-[#D2C9B1]/30">
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">Key Focus</span>
-                  <p className="text-[11px] font-bold text-[#5D4037] leading-snug">
-                    {hoveredCountry.highlight}
+                {hoveredCountry.detail && (
+                  <p className="text-zinc-600 text-xs leading-relaxed font-light">
+                    {hoveredCountry.detail}
                   </p>
-                </div>
+                )}
+                
+                {hoveredCountry.highlight && (
+                  <div className="pt-2 border-t border-[#D2C9B1]/30">
+                    <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">Key Focus</span>
+                    <p className="text-[11px] font-bold text-[#5D4037] leading-snug">
+                      {hoveredCountry.highlight}
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

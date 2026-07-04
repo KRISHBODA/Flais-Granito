@@ -21,9 +21,6 @@ const EMPTY_COUNTRY = {
   fullName: '',
   coordinates: ['', ''],
   flag: '',
-  region: '',
-  highlight: '',
-  detail: '',
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -258,8 +255,8 @@ const AdminWhyFlais = () => {
   };
 
   const handleSaveEditCountry = () => {
-    if (!editingCountry.name || !editingCountry.fullName) {
-      toast.error('Country short name and full name are required.');
+    if (!editingCountry.fullName) {
+      toast.error('Full country name is required.');
       return;
     }
     const lat = parseFloat(editingCountry.coordinates[1]);
@@ -268,9 +265,12 @@ const AdminWhyFlais = () => {
       toast.error('Please enter valid longitude and latitude numbers.');
       return;
     }
+    const autoName = editingCountry.fullName.trim().split(' ').length <= 2
+      ? editingCountry.fullName.trim()
+      : editingCountry.fullName.trim().split(' ').map(w => w[0]).join('').toUpperCase();
     const updated = exportCountries.map(c =>
       c.id === editingCountry.id
-        ? { ...editingCountry, coordinates: [lng, lat] }
+        ? { ...editingCountry, name: autoName, coordinates: [lng, lat] }
         : c
     );
     saveExportCountries(updated);
@@ -279,8 +279,8 @@ const AdminWhyFlais = () => {
   };
 
   const handleAddCountry = () => {
-    if (!newCountry.name || !newCountry.fullName) {
-      toast.error('Country short name and full name are required.');
+    if (!newCountry.fullName) {
+      toast.error('Full country name is required.');
       return;
     }
     const lat = parseFloat(newCountry.coordinates[1]);
@@ -290,7 +290,10 @@ const AdminWhyFlais = () => {
       return;
     }
     const id = Date.now();
-    const added = { ...newCountry, id, coordinates: [lng, lat] };
+    const autoName = newCountry.fullName.trim().split(' ').length <= 2
+      ? newCountry.fullName.trim()
+      : newCountry.fullName.trim().split(' ').map(w => w[0]).join('').toUpperCase();
+    const added = { ...newCountry, id, name: autoName, coordinates: [lng, lat] };
     saveExportCountries([...exportCountries, added]);
     setNewCountry({ ...EMPTY_COUNTRY });
     setShowAddCountry(false);
@@ -802,21 +805,13 @@ const AdminWhyFlais = () => {
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Editing — {country.fullName}</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">Short Name *</label>
-                        <input value={editingCountry.name} onChange={e => setEditingCountry({ ...editingCountry, name: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="UAE" />
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">Full Country Name *</label>
+                        <input value={editingCountry.fullName} onChange={e => setEditingCountry({ ...editingCountry, fullName: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="United Arab Emirates" />
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-slate-600 mb-1">Flag Emoji</label>
                         <input value={editingCountry.flag} onChange={e => setEditingCountry({ ...editingCountry, flag: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="🇦🇪" />
                       </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Full Name *</label>
-                      <input value={editingCountry.fullName} onChange={e => setEditingCountry({ ...editingCountry, fullName: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="United Arab Emirates" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Region</label>
-                      <input value={editingCountry.region} onChange={e => setEditingCountry({ ...editingCountry, region: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="Middle East" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -827,14 +822,6 @@ const AdminWhyFlais = () => {
                         <label className="block text-xs font-semibold text-slate-600 mb-1">Latitude</label>
                         <input type="number" step="0.01" value={editingCountry.coordinates[1]} onChange={e => setEditingCountry({ ...editingCountry, coordinates: [editingCountry.coordinates[0], e.target.value] })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="24.47" />
                       </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Highlight Tag</label>
-                      <input value={editingCountry.highlight} onChange={e => setEditingCountry({ ...editingCountry, highlight: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="Premium Hospitality & Luxury Residential" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Detail Description</label>
-                      <textarea rows="2" value={editingCountry.detail} onChange={e => setEditingCountry({ ...editingCountry, detail: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2] resize-none" />
                     </div>
                     <div className="flex gap-2 pt-1">
                       <button onClick={handleSaveEditCountry} className="flex-1 flex items-center justify-center gap-1.5 bg-[#0145F2] text-white text-xs font-bold py-2 rounded-lg hover:bg-blue-700">
@@ -853,7 +840,6 @@ const AdminWhyFlais = () => {
                         <span className="text-3xl leading-none">{country.flag}</span>
                         <div>
                           <h3 className="font-bold text-slate-800 text-sm">{country.fullName}</h3>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#5D4037]">{country.region}</span>
                         </div>
                       </div>
                       <div className="flex gap-1">
@@ -874,12 +860,7 @@ const AdminWhyFlais = () => {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-3">{country.detail}</p>
-
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#5D4037] bg-[#5D4037]/5 px-2 py-1 rounded-full border border-[#5D4037]/15">
-                        {country.highlight}
-                      </span>
+                    <div className="flex items-center justify-end pt-3 border-t border-slate-100">
                       <span className="text-[10px] text-slate-400 font-mono">
                         {Array.isArray(country.coordinates)
                           ? `${Number(country.coordinates[0]).toFixed(1)}, ${Number(country.coordinates[1]).toFixed(1)}`
@@ -907,23 +888,13 @@ const AdminWhyFlais = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Short Name *</label>
-                    <input value={newCountry.name} onChange={e => setNewCountry({ ...newCountry, name: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="e.g. Germany" />
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Full Country Name *</label>
+                    <input value={newCountry.fullName} onChange={e => setNewCountry({ ...newCountry, fullName: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="e.g. Germany" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 mb-1">Flag Emoji</label>
                     <input value={newCountry.flag} onChange={e => setNewCountry({ ...newCountry, flag: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="🇩🇪" />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Full Country Name *</label>
-                  <input value={newCountry.fullName} onChange={e => setNewCountry({ ...newCountry, fullName: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="e.g. Federal Republic of Germany" />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Region</label>
-                  <input value={newCountry.region} onChange={e => setNewCountry({ ...newCountry, region: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="e.g. Europe" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -935,16 +906,6 @@ const AdminWhyFlais = () => {
                     <label className="block text-xs font-semibold text-slate-600 mb-1">Latitude (North/South)</label>
                     <input type="number" step="0.01" value={newCountry.coordinates[1]} onChange={e => setNewCountry({ ...newCountry, coordinates: [newCountry.coordinates[0], e.target.value] })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="51.16 (Germany)" />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Highlight Tag</label>
-                  <input value={newCountry.highlight} onChange={e => setNewCountry({ ...newCountry, highlight: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="e.g. Architecture & Commercial Projects" />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Detail Description</label>
-                  <textarea rows="3" value={newCountry.detail} onChange={e => setNewCountry({ ...newCountry, detail: e.target.value })} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:border-[#0145F2] resize-none" placeholder="Brief description of FLAIS presence in this country..." />
                 </div>
 
                 <div className="flex gap-3 pt-2">
