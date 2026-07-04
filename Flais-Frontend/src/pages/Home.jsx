@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SEO from '../components/SEO';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Navigation } from 'swiper/modules';
+import { Autoplay } from 'swiper/modules';
 import ScrollReveal from '../components/ScrollReveal';
 import { Shield, Award, Sparkles, ArrowRight, Leaf, Sprout, Film } from 'lucide-react';
 import { /* categories, products, testimonials, blogPosts */ } from '../data/mockData';
@@ -96,13 +96,7 @@ const Home = () => {
       seen.add(key);
       return true;
     });
-
-    let merged = [...list];
-
-    if (merged.length > 0 && merged.length < 6) {
-      return [...merged, ...merged];
-    }
-    return merged;
+    return list;
   }, [choicesList]);
   const initialCollectionSlide = collectionSlides.length > 2
     ? collectionSlides.length - 2
@@ -542,7 +536,7 @@ const Home = () => {
               <Swiper
                 key={`collections-swiper-${collectionSlides.length}-${collectionSlides.map(c => c._id || c.id || c.name).join('-')}`}
                 onSwiper={setCollectionsSwiper}
-                modules={[Navigation, Autoplay]}
+                modules={[Autoplay]}
                 initialSlide={initialCollectionSlide}
                 spaceBetween={28}
                 slidesPerView={"auto"}
@@ -568,10 +562,6 @@ const Home = () => {
                 breakpoints={{
                   640: { spaceBetween: 28 },
                   1024: { spaceBetween: 32 }
-                }}
-                navigation={{
-                  prevEl: '.collections-swiper-btn-prev',
-                  nextEl: '.collections-swiper-btn-next',
                 }}
                 className="collections-swiper !pb-12"
               >
