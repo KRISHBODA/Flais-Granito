@@ -129,6 +129,17 @@ const Home = () => {
   const [collectionsVideoHasPlayed, setCollectionsVideoHasPlayed] = useState(false);
   const videoRef = useIntersectionVideoRef();
   const collectionsVideoRef = useIntersectionVideoRef();
+  const handleCollectionsSwiper = (swiper) => {
+    setCollectionsSwiper(swiper);
+
+    if (collectionSlides.length <= 1) return;
+
+    requestAnimationFrame(() => {
+      swiper.slideToLoop(initialCollectionSlide, 0, false);
+      swiper.update();
+      swiper.updateSlidesClasses();
+    });
+  };
 
   const handleCollectionsPrev = () => {
     if (!collectionsSwiper || collectionSlides.length <= 1) return;
@@ -545,7 +556,7 @@ const Home = () => {
             <div className="relative group/nav w-full overflow-hidden">
               <Swiper
                 key={`collections-swiper-${collectionSlides.length}-${collectionSlides.map(c => c._id || c.id || c.name).join('-')}`}
-                onSwiper={setCollectionsSwiper}
+                onSwiper={handleCollectionsSwiper}
                 modules={[Autoplay]}
                 initialSlide={initialCollectionSlide}
                 spaceBetween={28}
