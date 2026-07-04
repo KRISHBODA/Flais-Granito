@@ -98,9 +98,9 @@ const Home = () => {
     });
     return list;
   }, [choicesList]);
-  const initialCollectionSlide = collectionSlides.length > 2
-    ? collectionSlides.length - 2
-    : Math.max(0, collectionSlides.length - 1);
+  const initialCollectionSlide = collectionSlides.length > 0
+    ? Math.min(Math.floor(collectionSlides.length / 2), collectionSlides.length - 1)
+    : 0;
 
 
   const homeSchema = {
@@ -131,11 +131,21 @@ const Home = () => {
   const collectionsVideoRef = useIntersectionVideoRef();
 
   const handleCollectionsPrev = () => {
-    collectionsSwiper?.slidePrev(700);
+    if (!collectionsSwiper || collectionSlides.length <= 1) return;
+    const currentIndex = typeof collectionsSwiper.realIndex === 'number'
+      ? collectionsSwiper.realIndex
+      : collectionsSwiper.activeIndex || 0;
+    const targetIndex = (currentIndex - 1 + collectionSlides.length) % collectionSlides.length;
+    collectionsSwiper.slideToLoop(targetIndex, 700);
   };
 
   const handleCollectionsNext = () => {
-    collectionsSwiper?.slideNext(700);
+    if (!collectionsSwiper || collectionSlides.length <= 1) return;
+    const currentIndex = typeof collectionsSwiper.realIndex === 'number'
+      ? collectionsSwiper.realIndex
+      : collectionsSwiper.activeIndex || 0;
+    const targetIndex = (currentIndex + 1) % collectionSlides.length;
+    collectionsSwiper.slideToLoop(targetIndex, 700);
   };
 
   const toggleMute = () => {

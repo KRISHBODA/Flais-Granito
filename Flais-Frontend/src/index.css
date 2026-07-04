@@ -464,7 +464,7 @@ html.lenis body {
 .collections-swiper .swiper-slide-active,
 .collections-swiper .swiper-slide-prev,
 .collections-swiper .swiper-slide-next {
-  opacity: 0.55 !important;
+  opacity: 1 !important;
   visibility: visible;
 }
 
