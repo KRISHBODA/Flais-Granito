@@ -667,7 +667,7 @@ const AdminHome = () => {
               <form onSubmit={handleAddSlide} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold mb-1">Title</label>
-                  <input type="text" required value={newSlide.title} onChange={(e) => setNewSlide({ ...newSlide, title: e.target.value })} className="w-full rounded-xl border border-slate-200 p-2.5" placeholder="e.g. Premium Tiles" />
+                  <input type="text" value={newSlide.title} onChange={(e) => setNewSlide({ ...newSlide, title: e.target.value })} className="w-full rounded-xl border border-slate-200 p-2.5" placeholder="e.g. Premium Tiles (Optional)" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-1">Tagline</label>

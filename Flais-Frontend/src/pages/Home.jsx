@@ -308,24 +308,26 @@ const Home = () => {
                       loading="lazy"
                     />
 
-                    <div className="absolute inset-0 flex items-end pb-12 sm:pb-24 md:pb-36">
-                      <div className="container-custom w-full px-4 sm:px-0">
-                        <div className="max-w-4xl">
-                          <div className="space-y-1">
-                            {(slide.title || '').split('\n').map((line, lineIndex) => (
-                              <div key={lineIndex} className="overflow-hidden">
-                                <h1
-                                  className={`text-lg sm:text-3xl md:text-5xl lg:text-[4rem] font-display font-bold leading-[1.15] text-white transition-all duration-[800ms] delay-[400ms] transform-gpu ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'
-                                    }`}
-                                >
-                                  {line}
-                                </h1>
-                              </div>
-                            ))}
+                    {slide.title && (
+                      <div className="absolute inset-0 flex items-end pb-12 sm:pb-24 md:pb-36">
+                        <div className="container-custom w-full px-4 sm:px-0">
+                          <div className="max-w-4xl">
+                            <div className="space-y-1">
+                              {slide.title.split('\n').map((line, lineIndex) => (
+                                <div key={lineIndex} className="overflow-hidden">
+                                  <h1
+                                    className={`text-lg sm:text-3xl md:text-5xl lg:text-[4rem] font-display font-bold leading-[1.15] text-white transition-all duration-[800ms] delay-[400ms] transform-gpu ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'
+                                      }`}
+                                  >
+                                    {line}
+                                  </h1>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                     <button className="hidden md:flex swiper-button-prev-custom absolute left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 bg-white/10 hover:bg-white/25 backdrop-blur-sm rounded-full items-center justify-center text-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                     </button>

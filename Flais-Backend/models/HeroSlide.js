@@ -7,7 +7,6 @@ const heroSlideSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      required: true,
     },
     subtitle: {
       type: String,
