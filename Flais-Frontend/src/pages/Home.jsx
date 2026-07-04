@@ -133,6 +133,14 @@ const Home = () => {
   const videoRef = useIntersectionVideoRef();
   const collectionsVideoRef = useIntersectionVideoRef();
 
+  const handleCollectionsPrev = () => {
+    collectionsSwiper?.slidePrev(700);
+  };
+
+  const handleCollectionsNext = () => {
+    collectionsSwiper?.slideNext(700);
+  };
+
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
@@ -532,7 +540,7 @@ const Home = () => {
                 key={`collections-swiper-${collectionSlides.length}-${collectionSlides.map(c => c._id || c.id || c.name).join('-')}`}
                 onSwiper={setCollectionsSwiper}
                 modules={[Navigation, Autoplay]}
-                spaceBetween={-60}
+                spaceBetween={-80}
                 slidesPerView={"auto"}
                 centeredSlides={true}
                 loop={true}
@@ -554,8 +562,8 @@ const Home = () => {
                 lazy={true}
                 lazyPreloadPrevNext={1}
                 breakpoints={{
-                  640: { spaceBetween: -76 },
-                  1024: { spaceBetween: -107 }
+                  640: { spaceBetween: -80 },
+                  1024: { spaceBetween: -110 }
                 }}
                 navigation={{
                   prevEl: '.collections-swiper-btn-prev',
@@ -598,22 +606,22 @@ const Home = () => {
 
                 {/* Navigation Arrows positioned on the active slide boundaries */}
                 <div className="collections-prev-btn hidden md:block absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-                  <button className="collections-swiper-btn-prev w-8 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
+                  <button onClick={handleCollectionsPrev} className="collections-swiper-btn-prev w-8 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                   </button>
                 </div>
                 <div className="collections-next-btn hidden md:block absolute top-1/2 -translate-y-1/2 translate-x-1/2 z-50 pointer-events-auto">
-                  <button className="collections-swiper-btn-next w-8 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
+                  <button onClick={handleCollectionsNext} className="collections-swiper-btn-next w-8 h-12 bg-zinc-900/90 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                   </button>
                 </div>
 
                 {/* Mobile Arrows (Bottom Center) */}
                 <div className="md:hidden absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center space-x-2 z-50 pointer-events-auto">
-                  <button className="collections-swiper-btn-prev w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
+                  <button onClick={handleCollectionsPrev} className="collections-swiper-btn-prev w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                   </button>
-                  <button className="collections-swiper-btn-next w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
+                  <button onClick={handleCollectionsNext} className="collections-swiper-btn-next w-10 h-10 rounded-full bg-zinc-900/95 flex items-center justify-center text-white hover:bg-beige-600 transition-all duration-300 cursor-pointer disabled:opacity-35 disabled:pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                   </button>
                 </div>
