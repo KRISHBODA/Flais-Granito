@@ -17,7 +17,41 @@ const AdminHome = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploadingField, setUploadingField] = useState(null); // Track which field is uploading
-  const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+  const getBackendBaseUrl = () => {
+    if (import.meta.env.VITE_BACKEND_URL) {
+      return import.meta.env.VITE_BACKEND_URL.trim().replace(/\/$/, '');
+    }
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `http://${hostname}:8000`;
+    }
+    return 'http://localhost:8000';
+  };
+
+  const BackendUrl = getBackendBaseUrl();
+
+  const getImageUrl = (url) => {
+    if (!url) return '';
+    
+    let cleanPath = url;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      try {
+        const parsed = new URL(url);
+        let pathname = parsed.pathname;
+        if (pathname.startsWith('/media/')) {
+          cleanPath = pathname.substring(7);
+        } else if (pathname.startsWith('/uploads/')) {
+          cleanPath = pathname.substring(9);
+        } else if (pathname.startsWith('/')) {
+          cleanPath = pathname.substring(1);
+        }
+      } catch (e) {
+        cleanPath = url;
+      }
+    }
+    
+    return `${BackendUrl}/media/${cleanPath.replace(/^\//, '')}`;
+  };
 
   // Choice form states
   const [isAddingChoice, setIsAddingChoice] = useState(false);
@@ -711,7 +745,7 @@ const AdminHome = () => {
                   )}
                   {slides.map((slide, idx) => (
                     <tr key={slide._id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-6 py-4"><div className="flex items-center gap-3"><span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span><img loading="lazy" src={slide.image} className="h-14 w-20 rounded-xl object-cover border border-slate-100" /></div></td>
+                      <td className="px-6 py-4"><div className="flex items-center gap-3"><span className="w-6 h-6 rounded-full bg-[#0145F2]/10 text-[#0145F2] text-xs font-bold flex items-center justify-center">{idx + 1}</span><img loading="lazy" src={getImageUrl(slide.image)} className="h-14 w-20 rounded-xl object-cover border border-slate-100" /></div></td>
                       <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{slide.title}</td>
                       <td className="px-6 py-4 text-xs text-slate-400 max-w-[200px] truncate">{slide.subtitle}</td>
                       <td className="px-6 py-4 text-right">
@@ -1445,7 +1479,7 @@ const AdminHome = () => {
                       onChange={handleEditLogoFileChange}
                     />
                       {editLogoPreview ? (
-                        <img src={editLogoPreview} alt="preview" className="h-20 mx-auto object-contain mix-blend-multiply" />
+                        <img src={getImageUrl(editLogoPreview)} alt="preview" className="h-20 mx-auto object-contain mix-blend-multiply" />
                       ) : (
                         <div className="flex flex-col items-center gap-2 text-slate-400">
                           <Upload size={28} />
@@ -1516,7 +1550,7 @@ const AdminHome = () => {
                           <div className="h-14 w-28 rounded-xl border border-slate-100 bg-slate-50 flex items-center justify-center overflow-hidden p-1">
                             <img
                               loading="lazy"
-                              src={logo.image}
+                              src={getImageUrl(logo.image)}
                               alt={logo.name}
                               className="max-h-full max-w-full object-contain mix-blend-multiply"
                             />
@@ -2000,7 +2034,7 @@ const AdminHome = () => {
                           </span>
                           <img 
                             loading="lazy" 
-                            src={blog.image} 
+                            src={getImageUrl(blog.image)} 
                             className="h-14 w-20 rounded-xl object-cover border border-slate-100" 
                             alt={blog.title} 
                           />

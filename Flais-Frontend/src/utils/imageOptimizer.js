@@ -3,25 +3,37 @@
  */
 
 const getStorageUrl = () => {
-  const baseUrl = import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/media';
-  return baseUrl.replace(/\/$/, '');
+  if (import.meta.env.VITE_STORAGE_URL) {
+    return import.meta.env.VITE_STORAGE_URL.trim().replace(/\/$/, '');
+  }
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    return `http://${hostname}:8000/media`;
+  }
+  return 'http://localhost:8000/media';
 };
 
 export const getOptimizedImageUrl = (url) => {
   if (!url) return '';
   
-  // Self-healing check for Hostinger VPS missing proxy on port 80
-  if (url.startsWith('http://187.127.179.251/media/') || url.startsWith('http://187.127.179.251/uploads/')) {
-    url = url.replace('http://187.127.179.251/', 'http://187.127.179.251:8000/');
-  }
-  
-  // If it is already an absolute URL, return as-is
+  let cleanPath = url;
   if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
+    try {
+      const parsed = new URL(url);
+      let pathname = parsed.pathname;
+      if (pathname.startsWith('/media/')) {
+        cleanPath = pathname.substring(7);
+      } else if (pathname.startsWith('/uploads/')) {
+        cleanPath = pathname.substring(9);
+      } else if (pathname.startsWith('/')) {
+        cleanPath = pathname.substring(1);
+      }
+    } catch (e) {
+      cleanPath = url;
+    }
   }
   
-  // Otherwise resolve relative to the local storage base URL
-  return `${getStorageUrl()}/${url.replace(/^\//, '')}`;
+  return `${getStorageUrl()}/${cleanPath.replace(/^\//, '')}`;
 };
 
 /**
