@@ -2116,40 +2116,6 @@ const AdminHome = () => {
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs focus:outline-none focus:border-[#0145F2]"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Blog Hero Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 file:hover:bg-blue-100"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = '';
-                    if (!file) return;
-                    try {
-                      const uploadResult = await uploadFileToBackend(file);
-                      const updatedHomeTexts = { ...homeTexts, blogHeroImage: uploadResult.fileUrl };
-                      setHomeTexts(updatedHomeTexts);
-                      await persistHomePage({ homeTexts: updatedHomeTexts });
-                      toast.success('Blog hero image saved!');
-                    } catch (error) {
-                      toast.error(error?.response?.data?.message || error?.message || 'Failed to upload blog hero image');
-                    }
-                  }}
-                />
-                {homeTexts.blogHeroImage && (
-                  <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 aspect-[16/6]">
-                    <img
-                      src={getImageUrl(homeTexts.blogHeroImage)}
-                      alt="Blog hero preview"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                )}
-                <p className="mt-1 text-[11px] text-slate-400">
-                  This image is shown at the top of the public /blog page.
-                </p>
-              </div>
             </div>
           </form>
         </div>
@@ -2168,6 +2134,48 @@ const AdminHome = () => {
             >
               {isAddingBlog ? <X size={18} /> : <Plus size={18} />} {isAddingBlog ? 'Cancel' : 'Add Article'}
             </button>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-3">
+            <div>
+              <h3 className="text-md font-bold text-slate-800">Blog Page Hero</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Upload the banner image shown at the top of the public /blog page.</p>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-1 text-slate-700">Hero Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 file:hover:bg-blue-100"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = '';
+                  if (!file) return;
+                  try {
+                    const uploadResult = await uploadFileToBackend(file);
+                    const updatedHomeTexts = { ...homeTexts, blogHeroImage: uploadResult.fileUrl };
+                    setHomeTexts(updatedHomeTexts);
+                    await persistHomePage({ homeTexts: updatedHomeTexts });
+                    toast.success('Blog hero image saved!');
+                  } catch (error) {
+                    toast.error(error?.response?.data?.message || error?.message || 'Failed to upload blog hero image');
+                  }
+                }}
+              />
+            </div>
+            {homeTexts.blogHeroImage ? (
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 aspect-[16/6]">
+                <img
+                  src={getImageUrl(homeTexts.blogHeroImage)}
+                  alt="Blog hero preview"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-xs text-slate-400">
+                No hero image uploaded yet.
+              </div>
+            )}
           </div>
 
           {isAddingBlog && (

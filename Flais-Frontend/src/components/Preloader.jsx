@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
+import motionLogo from '../assets/Flais motion logo.mp4';
 import logo from '../assets/Flais White.png';
 
 let preloaderShown = false;
@@ -39,6 +40,15 @@ const Preloader = () => {
           }}
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(197,168,128,0.20),_transparent_45%),linear-gradient(180deg,_#f8f5f0_0%,_#fffdf9_100%)]" />
+          <video
+            src={motionLogo}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="absolute inset-0 h-full w-full object-cover object-center opacity-[0.16] pointer-events-none select-none"
+          />
           <div className="relative z-10 flex h-full w-full items-center justify-center px-6 text-center">
             <div className="flex flex-col items-center justify-center">
               <img
