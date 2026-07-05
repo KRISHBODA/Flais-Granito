@@ -32,13 +32,13 @@ const Blog = () => {
   }, []);
 
   return (
-    <div className="pt-24 min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       <SEO 
         title="Latest Trends & Design Blogs"
         description="Stay updated with the latest trends in interior design, vitrified tile selection guides, tile installation tips, and home decor inspiration from FLAIS GRANITO."
         keywords="tile design blog, home decor trends, interior design tips, tile installation guide, flais granito news"
       />
-      <section className="relative h-[140px] sm:h-[160px] md:h-[180px] flex items-center justify-center overflow-hidden">
+      <section className="relative -mt-24 pt-24 h-[220px] sm:h-[240px] md:h-[260px] flex items-center justify-center overflow-hidden">
         {blogHeroImage ? (
           <img
             loading="lazy"
@@ -50,7 +50,7 @@ const Blog = () => {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,_#f8f5f0_0%,_#e9dfcf_100%)]" />
         )}
         <div className="absolute inset-0 bg-black/60" />
-        <div className="container-custom relative z-10 text-center space-y-4">
+        <div className="container-custom relative z-10 text-center space-y-4 pt-10 sm:pt-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white">{blogHeroTitle}</h1>
           <div className="h-1 w-20 bg-beige-600 mx-auto"></div>
           <p className="text-white/80 max-w-2xl mx-auto text-lg">
