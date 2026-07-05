@@ -18,30 +18,35 @@ const Blogs = () => {
     return 'http://localhost:8000';
   };
 
+  const BackendUrl = getBackendBaseUrl();
+
   const getImageUrl = (url) => {
     if (!url) return '';
-    
-    let cleanPath = url;
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      try {
-        const parsed = new URL(url);
-        let pathname = parsed.pathname;
-        if (pathname.startsWith('/media/')) {
-          cleanPath = pathname.substring(7);
-        } else if (pathname.startsWith('/uploads/')) {
-          cleanPath = pathname.substring(9);
-        } else if (pathname.startsWith('/')) {
-          cleanPath = pathname.substring(1);
-        }
-      } catch (e) {
-        cleanPath = url;
-      }
-    }
-    
-    return `${getBackendBaseUrl()}/media/${cleanPath.replace(/^\//, '')}`;
-  };
 
-  const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+    if (url.startsWith('blob:') || url.startsWith('data:')) {
+      return url;
+    }
+
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    if (url.startsWith('/media/') || url.startsWith('media/')) {
+      const cleanPath = url.replace(/^\/?media\//, '');
+      return `${BackendUrl}/media/${cleanPath}`;
+    }
+
+    if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+      const cleanPath = url.replace(/^\/?uploads\//, '');
+      return `${BackendUrl}/uploads/${cleanPath}`;
+    }
+
+    if (url.startsWith('/')) {
+      return `${BackendUrl}${url}`;
+    }
+
+    return `${BackendUrl}/media/${url}`;
+  };
 
   const fetchBlogs = async () => {
     try {
