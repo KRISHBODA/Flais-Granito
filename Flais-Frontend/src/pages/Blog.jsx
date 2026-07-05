@@ -38,28 +38,32 @@ const Blog = () => {
         description="Stay updated with the latest trends in interior design, vitrified tile selection guides, tile installation tips, and home decor inspiration from FLAIS GRANITO."
         keywords="tile design blog, home decor trends, interior design tips, tile installation guide, flais granito news"
       />
-      <section className="relative -mt-24 pt-24 h-[220px] sm:h-[240px] md:h-[260px] flex items-center justify-center overflow-hidden">
-        {blogHeroImage ? (
-          <img
-            loading="lazy"
-            src={getOptimizedImageUrl(blogHeroImage, 1600)}
-            alt={blogHeroTitle}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,_#f8f5f0_0%,_#e9dfcf_100%)]" />
-        )}
+      <section className="relative h-[45vh] min-h-[400px] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          {blogHeroImage ? (
+            <img
+              loading="lazy"
+              src={getOptimizedImageUrl(blogHeroImage, 1600)}
+              alt={blogHeroTitle}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-[linear-gradient(180deg,_#f8f5f0_0%,_#e9dfcf_100%)]" />
+          )}
+        </div>
         <div className="absolute inset-0 bg-black/60" />
-        <div className="container-custom relative z-10 text-center space-y-4 pt-10 sm:pt-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white">{blogHeroTitle}</h1>
-          <div className="h-1 w-20 bg-beige-600 mx-auto"></div>
-          <p className="text-white/80 max-w-2xl mx-auto text-lg">
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-16 sm:mt-20">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white uppercase tracking-wider mb-6">
+            {blogHeroTitle}
+          </h1>
+          <div className="h-1 w-20 bg-beige-600 mx-auto mb-6"></div>
+          <p className="text-lg text-white/90 font-light max-w-2xl mx-auto">
             Stay updated with the latest trends in interior design, tile maintenance, and company news.
           </p>
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="pt-20 pb-4 relative z-20 -translate-y-16">
         <div className="container-custom">
           {loading ? (
             <div className="flex justify-center py-20">
