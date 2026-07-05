@@ -162,7 +162,7 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-zinc-600">
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f5f0] text-zinc-600 px-6">
         <div className="text-center space-y-3">
           <Loader2 className="mx-auto animate-spin text-beige-700" size={36} />
           <p className="text-sm font-semibold">Loading Home page...</p>
@@ -173,7 +173,7 @@ const Home = () => {
 
   if (loadError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-zinc-600 px-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f5f0] text-zinc-600 px-6">
         <div className="max-w-md text-center space-y-3 rounded-3xl border border-zinc-200 bg-zinc-50 p-8">
           <p className="text-lg font-bold text-zinc-900">Home page unavailable</p>
           <p className="text-sm text-zinc-600">{loadError}</p>
@@ -559,6 +559,7 @@ const Home = () => {
                 loop={true}
                 loopedSlides={collectionSlides.length}
                 loopAdditionalSlides={collectionSlides.length}
+                loopPreventsSliding={false}
                 speed={700}
                 autoplay={{
                   delay: 4000,
