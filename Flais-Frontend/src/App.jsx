@@ -15,7 +15,6 @@ const Contact = lazy(() => import('./pages/Contact'));
 const WhereToBuy = lazy(() => import('./pages/WhereToBuy'));
 
 import SmoothScroll from './components/SmoothScroll';
-import Preloader from './components/Preloader';
 
 const Certifications = lazy(() => import('./pages/Certifications'));
 const InstallationGuide = lazy(() => import('./pages/InstallationGuide'));
@@ -26,7 +25,6 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <Preloader />
         <SmoothScroll>
           <Layout>
             <Suspense fallback={
