@@ -145,20 +145,12 @@ const Home = () => {
 
   const handleCollectionsPrev = () => {
     if (!collectionsSwiper || collectionSlides.length <= 1) return;
-    const currentIndex = typeof collectionsSwiper.realIndex === 'number'
-      ? collectionsSwiper.realIndex
-      : collectionsSwiper.activeIndex || 0;
-    const targetIndex = (currentIndex + 1) % collectionSlides.length;
-    collectionsSwiper.slideToLoop(targetIndex, 700);
+    collectionsSwiper.slidePrev();
   };
 
   const handleCollectionsNext = () => {
     if (!collectionsSwiper || collectionSlides.length <= 1) return;
-    const currentIndex = typeof collectionsSwiper.realIndex === 'number'
-      ? collectionsSwiper.realIndex
-      : collectionsSwiper.activeIndex || 0;
-    const targetIndex = (currentIndex - 1 + collectionSlides.length) % collectionSlides.length;
-    collectionsSwiper.slideToLoop(targetIndex, 700);
+    collectionsSwiper.slideNext();
   };
 
   const toggleMute = () => {
