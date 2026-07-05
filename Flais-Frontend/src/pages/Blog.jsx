@@ -2,26 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, ArrowRight, User } from 'lucide-react';
-import blogBg from '../assets/blog_trends.jpg';
 import SEO from '../components/SEO';
 import api from '../utils/api';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
+  const [blogHeroImage, setBlogHeroImage] = useState('');
+  const [blogHeroTitle, setBlogHeroTitle] = useState('News & Design Blog');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBlogs = async () => {
+    const fetchPageData = async () => {
       try {
-        const res = await api.get('/blogs');
-        setBlogs(res.data.blogs || []);
+        const [blogsRes, homeRes] = await Promise.all([
+          api.get('/blogs'),
+          api.get('/home'),
+        ]);
+        setBlogs(blogsRes.data.blogs || []);
+        const homeTexts = homeRes.data?.home?.homeTexts || {};
+        setBlogHeroTitle(homeTexts.blogTitle || 'News & Design Blog');
+        setBlogHeroImage(homeTexts.blogHeroImage || '');
       } catch (error) {
-              } finally {
+      } finally {
         setLoading(false);
       }
     };
-    fetchBlogs();
+    fetchPageData();
   }, []);
 
   return (
@@ -32,10 +39,19 @@ const Blog = () => {
         keywords="tile design blog, home decor trends, interior design tips, tile installation guide, flais granito news"
       />
       <section className="relative h-[140px] sm:h-[160px] md:h-[180px] flex items-center justify-center overflow-hidden">
-        <img loading="lazy" src={blogBg} alt="News & Design Blog" className="absolute inset-0 w-full h-full object-cover" />
+        {blogHeroImage ? (
+          <img
+            loading="lazy"
+            src={getOptimizedImageUrl(blogHeroImage, 1600)}
+            alt={blogHeroTitle}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,_#f8f5f0_0%,_#e9dfcf_100%)]" />
+        )}
         <div className="absolute inset-0 bg-black/60" />
         <div className="container-custom relative z-10 text-center space-y-4">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white">News & Design Blog</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white">{blogHeroTitle}</h1>
           <div className="h-1 w-20 bg-beige-600 mx-auto"></div>
           <p className="text-white/80 max-w-2xl mx-auto text-lg">
             Stay updated with the latest trends in interior design, tile maintenance, and company news.

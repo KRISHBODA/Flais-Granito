@@ -19,6 +19,7 @@ const DEFAULT_HOME = {
       "We have been producing porcelain surfaces for over 60 years with passion, innovation, and a focus on sustainability. Our processes are designed to minimize environmental impact while maximizing quality and durability.",
     sustainabilityImage: "",
     blogTitle: "New Day\nNew Inspiration",
+    blogHeroImage: "",
   },
   choices: [
     { id: 1, name: "LISC collection", image: "", type: "lisc", logoImage: "" },

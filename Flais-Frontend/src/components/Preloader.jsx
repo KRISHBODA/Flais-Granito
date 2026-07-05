@@ -38,35 +38,35 @@ const Preloader = () => {
     <AnimatePresence>
       {loading && (
         <motion.div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#f8f5f0] overflow-hidden"
+          className="fixed inset-0 z-[9999] overflow-hidden bg-[#f8f5f0]"
           exit={{
             y: "-100%",
             transition: { duration: 1, ease: [0.76, 0, 0.24, 1] }
           }}
         >
-          <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-[#f8f5f0]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(197,168,128,0.18),_transparent_45%),linear-gradient(180deg,_#f8f5f0_0%,_#ffffff_100%)]" />
-            <div className="relative z-10 flex flex-col items-center justify-center px-6 text-center">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(197,168,128,0.20),_transparent_45%),linear-gradient(180deg,_#f8f5f0_0%,_#fffdf9_100%)]" />
+          <video
+            src={motionLogo}
+            autoPlay
+            muted
+            playsInline
+            onEnded={handleVideoEnd}
+            className="absolute inset-0 h-full w-full object-cover object-center opacity-[0.10] pointer-events-none select-none"
+          />
+          <div className="relative z-10 flex h-full w-full items-center justify-center px-6 text-center">
+            <div className="flex flex-col items-center justify-center">
               <img
                 src={logo}
                 alt="FLAIS GRANITO"
-                className="w-[180px] sm:w-[220px] md:w-[260px] h-auto object-contain drop-shadow-sm mb-6"
+                className="w-[190px] sm:w-[240px] md:w-[280px] h-auto object-contain drop-shadow-sm"
               />
-              <div className="flex items-center gap-3 text-[#5D4037]">
+              <div className="mt-6 flex items-center gap-3 text-[#5D4037]">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#5D4037] animate-pulse" />
                 <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.35em]">
                   Loading experience
                 </span>
               </div>
             </div>
-            <video
-              src={motionLogo}
-              autoPlay
-              muted
-              playsInline
-              onEnded={handleVideoEnd}
-              className="absolute inset-0 w-[85%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[60%] max-w-6xl h-auto object-contain mx-auto opacity-90"
-            />
           </div>
         </motion.div>
       )}
