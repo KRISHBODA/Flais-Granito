@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -9,11 +9,27 @@ import {
   RotateCw, 
   Calculator, 
   MapPin, 
-  ChevronLeft 
+  ChevronLeft,
+  ArrowRight
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import api from '../utils/api';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
+
+const ProductImage = ({ src, alt }) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className={`w-full h-full transition-all duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}>
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+      />
+    </div>
+  );
+};
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -25,6 +41,21 @@ const ProductDetails = () => {
     },
     enabled: !!id,
   });
+
+  const { data: relatedProducts = [] } = useQuery({
+    queryKey: ['related-products', product?.category],
+    queryFn: async () => {
+      if (!product?.category) return [];
+      const res = await api.get(`/products?category=${product.category}`);
+      return res.data.products || [];
+    },
+    enabled: !!product?.category,
+  });
+
+  const filteredRelated = useMemo(() => {
+    if (!product) return [];
+    return relatedProducts.filter(item => item._id !== product._id);
+  }, [relatedProducts, product]);
 
   const loadError = isError ? 'Failed to load product details.' : '';
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -276,6 +307,48 @@ const ProductDetails = () => {
 
           </div>
         </div>
+
+        {/* Related Products Section */}
+        {filteredRelated.length > 0 && (
+          <div className="border-t border-zinc-100 mt-20 pt-16">
+            <h2 className="text-2xl sm:text-3xl font-sans font-bold text-zinc-950 mb-8 uppercase tracking-wide">
+              More from the {product.category || 'this Collection'}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {filteredRelated.slice(0, 4).map((item) => (
+                <div
+                  key={item._id}
+                  className="p-4 pb-8 rounded-tl-[3.5rem] rounded-br-[3.5rem] rounded-tr-[1.25rem] rounded-bl-[1.25rem] bg-[#FAF8F5] border border-[#D2C9B1]/30 group flex flex-col h-full transform-gpu transition-all duration-500 hover:shadow-xl hover:border-[#5D4037]/30"
+                >
+                  <Link to={`/products/${item.slug || item._id}`} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 transform-gpu">
+                    <ProductImage
+                      src={getOptimizedImageUrl(item.images?.[0] || item.image || 'https://via.placeholder.com/400x400?text=No+Image', 600)}
+                      alt={item.title || item.name}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                  </Link>
+                  <div className="pt-6 px-2 flex flex-col flex-1">
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#5D4037] bg-[#5D4037]/5 px-2.5 py-0.5 rounded border border-[#5D4037]/10">{item.category || 'Standard'}</span>
+                    </div>
+                    <h3 className="font-sans font-bold text-2xl text-zinc-900 mb-6">
+                      {item.title || item.name}
+                    </h3>
+                    <div className="mt-auto">
+                      <Link to={`/products/${item.slug || item._id}`} className="inline-flex items-center group/btn relative py-2">
+                        <div className="absolute left-[-12px] w-10 h-10 bg-[#D2C9B1] rounded-full transition-all duration-500 ease-out group-hover/btn:w-[calc(100%+24px)] group-hover/btn:bg-[#5D4037]"></div>
+                        <span className="relative z-10 flex items-center text-sm font-medium text-zinc-900 group-hover/btn:text-white transition-colors duration-300 pl-4">
+                          View More <ArrowRight size={16} className="ml-3 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                        </span>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
