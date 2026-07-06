@@ -1,4 +1,5 @@
 const Contact = require("../models/Contact");
+const { validateEmail } = require("../services/emailValidation.service");
 
 // @desc    Create a contact message
 // @route   POST /api/contact
@@ -24,6 +25,15 @@ exports.createMessage = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Phone number must include a valid country code starting with '+' (for example, +91 98765 43210)"
+      });
+    }
+
+    // Validate email format + DNS MX records
+    const emailResult = await validateEmail(email);
+    if (!emailResult.valid) {
+      return res.status(400).json({
+        success: false,
+        message: emailResult.message || "Please enter a valid email address."
       });
     }
 

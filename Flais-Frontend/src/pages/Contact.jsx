@@ -6,7 +6,8 @@ import SEO from '../components/SEO';
 import contactHero from '../assets/contact_hero.jpg';
 import api from '../utils/api';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
-import { validatePhoneNumberLength, isValidPhoneNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
+import { validatePhoneNumberLength, isValidPhoneNumber, parsePhoneNumberFromString, getExampleNumber } from 'libphonenumber-js';
+import examples from 'libphonenumber-js/mobile/examples';
 
 const countryCodes = [
   { code: '+91', name: 'India IN', iso: 'IN' },
@@ -284,6 +285,16 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentCountry = countryCodes[selectedCountryIndex] || countryCodes[0];
+
+  // Dynamically derive max phone digits from libphonenumber-js metadata
+  const getMaxDigits = (iso) => {
+    try {
+      const example = getExampleNumber(iso, examples);
+      return example ? example.nationalNumber.length : 15;
+    } catch { return 15; }
+  };
+
+  const currentMaxDigits = getMaxDigits(currentCountry?.iso);
 
   const validatePhoneNumberInput = (phone, iso) => {
     if (!phone || !phone.trim()) {
@@ -578,9 +589,20 @@ const Contact = () => {
                       onChange={(e) => {
                         const idx = parseInt(e.target.value);
                         setSelectedCountryIndex(idx);
+                        const newIso = countryCodes[idx]?.iso;
+                        const newMax = getMaxDigits(newIso);
                         if (formData.phone) {
-                          const error = validatePhoneNumberInput(formData.phone, countryCodes[idx]?.iso);
-                          setPhoneError(error || '');
+                          // Trim digits to new country's max
+                          const digits = formData.phone.replace(/\D/g, '');
+                          if (digits.length > newMax) {
+                            const trimmed = digits.substring(0, newMax);
+                            setFormData(prev => ({ ...prev, phone: trimmed }));
+                            const error = validatePhoneNumberInput(trimmed, newIso);
+                            setPhoneError(error || '');
+                          } else {
+                            const error = validatePhoneNumberInput(formData.phone, newIso);
+                            setPhoneError(error || '');
+                          }
                         }
                       }}
                       className="bg-zinc-50 border-none rounded-xl p-3 sm:p-4 focus:ring-2 focus:ring-beige-500 text-zinc-700 font-medium text-xs sm:text-sm outline-none cursor-pointer select-none w-[110px] sm:w-[125px] shrink-0"
@@ -602,6 +624,9 @@ const Contact = () => {
                       value={formData.phone}
                       onChange={(e) => {
                         const val = e.target.value.replace(/[^0-9 \-()]/g, '');
+                        // Count only digits (ignore formatting chars)
+                        const digitCount = val.replace(/\D/g, '').length;
+                        if (digitCount > currentMaxDigits) return; // Block extra digits
                         setFormData(prev => ({ ...prev, phone: val }));
                         const error = validatePhoneNumberInput(val, currentCountry?.iso);
                         setPhoneError(error || '');
