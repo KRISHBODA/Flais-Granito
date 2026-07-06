@@ -87,9 +87,6 @@ const Blog = () => {
                       loading="lazy" 
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105 img-reveal" 
                     />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-1 rounded-full text-xs font-bold text-zinc-900 border border-zinc-100">
-                      Blog
-                    </div>
                   </Link>
                   <div className="p-8 space-y-4 flex-grow flex flex-col">
                     <div className="flex items-center text-xs text-zinc-400 space-x-4">
