@@ -1,7 +1,20 @@
 import axios from 'axios';
 
+const getBackendBaseUrl = () => {
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    return `http://${hostname}:8000`;
+  }
+  if (import.meta.env.VITE_BACKEND_URL) {
+    return import.meta.env.VITE_BACKEND_URL.trim().replace(/\/$/, '');
+  }
+  return 'http://localhost:8000';
+};
+
+const backendUrl = getBackendBaseUrl();
+
 const api = axios.create({
-  baseURL: `${(import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim()}/api`,
+  baseURL: `${backendUrl}/api`,
   withCredentials: false,
   timeout: 120000,
 });
@@ -34,7 +47,6 @@ export const getImageUrl = (url) => {
     return url;
   }
   
-  const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
   const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
   
   if (cleanUrl.startsWith('media/') || cleanUrl.startsWith('uploads/')) {

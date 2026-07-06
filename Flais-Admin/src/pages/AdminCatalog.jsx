@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Edit, Trash2, Upload, X, Save, BookOpen, Eye, FileText, Link, Settings, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { getImageUrl } from '../utils/api';
 
 const emptyCatalog = { title: '', description: '', image: '', link: '' };
 
@@ -102,7 +103,7 @@ const CatalogModal = ({ catalog, onSave, onClose }) => {
             </label>
             {preview ? (
               <div className="relative rounded-xl overflow-hidden h-44 bg-slate-100">
-                <img loading="lazy" src={preview} alt="preview" className="w-full h-full object-cover" />
+                <img loading="lazy" src={getImageUrl(preview)} alt="preview" className="w-full h-full object-cover" />
                 <button
                   onClick={() => { setPreview(''); setForm(f => ({ ...f, image: '' })); }}
                   className="absolute top-2 right-2 bg-white/80 rounded-full p-1 hover:bg-white shadow"
@@ -436,7 +437,7 @@ const AdminCatalog = () => {
               <div className="relative h-48 overflow-hidden bg-slate-100">
                 {cat.image ? (
                   <img loading="lazy"
-                    src={cat.image}
+                    src={getImageUrl(cat.image)}
                     alt={cat.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
