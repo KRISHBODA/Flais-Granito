@@ -28,4 +28,19 @@ api.interceptors.response.use(
   }
 );
 
+export const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
+  const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+  
+  if (cleanUrl.startsWith('media/') || cleanUrl.startsWith('uploads/')) {
+    return `${backendUrl}/${cleanUrl}`;
+  }
+  return `${backendUrl}/media/${cleanUrl}`;
+};
+
 export default api;

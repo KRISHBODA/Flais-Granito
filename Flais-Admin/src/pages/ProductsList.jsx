@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Plus, Search, Filter, MoreVertical, Edit, Trash2, ChevronLeft, ChevronRight, Layers, FileText, Package, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CatalogFilters from './CatalogFilters.jsx';
+import { getImageUrl } from '../utils/api';
 
 const ProductsList = () => {
   const [activeTab, setActiveTab] = useState('inventory');
@@ -208,7 +209,7 @@ const ProductsList = () => {
                       <tr key={product._id} className="transition-colors hover:bg-slate-50/50">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
-                            <img loading="lazy" src={product.images?.[0] || 'https://via.placeholder.com/150'} alt="" className="h-12 w-12 rounded-lg object-cover border" />
+                            <img loading="lazy" src={getImageUrl(product.images?.[0]) || 'https://via.placeholder.com/150'} alt="" className="h-12 w-12 rounded-lg object-cover border" />
                             <div>
                               <h4 className="font-bold text-slate-900">{product.title || product.name}</h4>
                               <p className="text-xs text-slate-400 font-mono">ID: {product._id.slice(-6).toUpperCase()}</p>

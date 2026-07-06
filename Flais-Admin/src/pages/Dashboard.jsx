@@ -18,7 +18,7 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import api from '../utils/api';
+import api, { getImageUrl } from '../utils/api';
 
 // Keeping visitor chart as dummy for now as per your request
 const visitorChartData = [
@@ -214,7 +214,7 @@ const visitorChartData = [
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <img loading="lazy" 
-                            src={product.images?.[0] || 'https://via.placeholder.com/40'} 
+                            src={getImageUrl(product.images?.[0]) || 'https://via.placeholder.com/40'} 
                             alt={product.title} 
                             className="h-10 w-10 rounded-lg object-cover bg-slate-100" 
                           />

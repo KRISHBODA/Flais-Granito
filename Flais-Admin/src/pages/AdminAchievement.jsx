@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, ShieldCheck, Award, Film, Plus, Edit, Trash2, Save, Layout, Video, ShieldAlert, PlusCircle, Leaf, Globe, Star, TrendingUp, FileText, Calculator, Ruler, Scissors, Grid, Construction, Move, Layers, Upload, Loader2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api from '../utils/api';
+import api, { getImageUrl } from '../utils/api';
 
 // Helper map to render Lucide Icons dynamically
 const ICON_MAP = {
@@ -687,7 +687,7 @@ const AdminAchievement = () => {
                   <div key={vd.id} className="p-5 hover:bg-slate-50/50 transition-colors flex justify-between items-start gap-4">
                     <div className="flex gap-3 items-start">
                       <div className="w-16 h-20 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 p-1">
-                        <img loading="lazy" src={vd.image} className="max-w-full max-h-full object-contain" alt="" />
+                        <img loading="lazy" src={getImageUrl(vd.image)} className="max-w-full max-h-full object-contain" alt="" />
                       </div>
                       <div className="space-y-1">
                         <h4 className="font-bold text-slate-900">{vd.title}</h4>
@@ -798,7 +798,7 @@ const AdminAchievement = () => {
                     className="w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 file:hover:bg-blue-100"
                   />
                   {currentVerDoc.image && (
-                    <img src={currentVerDoc.image} alt="preview" className="h-14 mt-2 rounded border border-slate-100 object-cover" />
+                    <img src={getImageUrl(currentVerDoc.image)} alt="preview" className="h-14 mt-2 rounded border border-slate-100 object-cover" />
                   )}
                 </div>
                 <button type="submit" className="w-full bg-[#0145F2] text-white p-2.5 rounded-xl font-bold text-xs hover:bg-blue-700 transition-colors">
@@ -1511,9 +1511,9 @@ const AdminAchievement = () => {
               {pageSettings.heroMedia && (
                 <div className="mt-2 h-20 w-36 border border-slate-200 rounded overflow-hidden">
                   {pageSettings.heroMedia.startsWith('data:video/') || pageSettings.heroMedia.includes('.mp4') ? (
-                    <video src={pageSettings.heroMedia} className="h-full w-full object-cover" muted />
+                    <video src={getImageUrl(pageSettings.heroMedia)} className="h-full w-full object-cover" muted />
                   ) : (
-                    <img src={pageSettings.heroMedia} alt="preview" className="h-full w-full object-cover" />
+                    <img src={getImageUrl(pageSettings.heroMedia)} alt="preview" className="h-full w-full object-cover" />
                   )}
                 </div>
               )}
@@ -1667,7 +1667,7 @@ const AdminAchievement = () => {
               />
               {awardsSettings.image && (
                 <div className="mt-2 h-24 w-32 border border-slate-200 rounded overflow-hidden p-1">
-                  <img src={awardsSettings.image} alt="preview" className="h-full w-full object-cover rounded" />
+                  <img src={getImageUrl(awardsSettings.image)} alt="preview" className="h-full w-full object-cover rounded" />
                 </div>
               )}
             </div>

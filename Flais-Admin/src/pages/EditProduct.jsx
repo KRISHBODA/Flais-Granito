@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios'; // Import axios
 import { ArrowLeft, Upload, X, Save, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/api';
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -70,7 +71,7 @@ const EditProduct = () => {
             application: data.product.application || '',
             link360: data.product.link360 || '',
           });
-          setImage(data.product.images?.[0] || '');
+          setImage(getImageUrl(data.product.images?.[0]) || '');
         }
       } catch (error) {
         toast.error("Product not found");

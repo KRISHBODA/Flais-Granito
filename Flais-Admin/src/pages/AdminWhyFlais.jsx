@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { getImageUrl } from '../utils/api';
 import aboutHeroImg from '../assets/about-hero-new.jpg';
 
 const iconMap = { Shield, Sparkles, Layout, Layers, Flag, Clock, Globe, Info };
@@ -346,7 +347,7 @@ const AdminWhyFlais = () => {
                   <span className="text-xs font-semibold text-slate-500">Uploading...</span>
                 </div>
               ) : aboutSettings.heroImage ? (
-                <img loading="lazy" src={aboutSettings.heroImage} className="w-full h-full object-cover" alt="" />
+                <img loading="lazy" src={getImageUrl(aboutSettings.heroImage)} className="w-full h-full object-cover" alt="" />
               ) : (
                 <div className="flex flex-col items-center gap-1 text-slate-400">
                   <Image size={24} className="opacity-60" />
@@ -370,7 +371,7 @@ const AdminWhyFlais = () => {
                   <span className="text-xs font-semibold text-slate-500">Uploading...</span>
                 </div>
               ) : aboutSettings.narrativeImage ? (
-                <img loading="lazy" src={aboutSettings.narrativeImage} className="w-full h-full object-cover" alt="" />
+                <img loading="lazy" src={getImageUrl(aboutSettings.narrativeImage)} className="w-full h-full object-cover" alt="" />
               ) : (
                 <div className="flex flex-col items-center gap-1 text-slate-400">
                   <Image size={24} className="opacity-60" />
@@ -394,7 +395,7 @@ const AdminWhyFlais = () => {
                   <span className="text-xs font-semibold text-slate-500">Uploading...</span>
                 </div>
               ) : aboutSettings.manuImage ? (
-                <img loading="lazy" src={aboutSettings.manuImage} className="w-full h-full object-cover" alt="" />
+                <img loading="lazy" src={getImageUrl(aboutSettings.manuImage)} className="w-full h-full object-cover" alt="" />
               ) : (
                 <div className="flex flex-col items-center gap-1 text-slate-400">
                   <Image size={24} className="opacity-60" />
@@ -418,7 +419,7 @@ const AdminWhyFlais = () => {
                   <span className="text-xs font-semibold text-slate-500">Uploading...</span>
                 </div>
               ) : aboutSettings.sustainImage ? (
-                <img loading="lazy" src={aboutSettings.sustainImage} className="w-full h-full object-cover" alt="" />
+                <img loading="lazy" src={getImageUrl(aboutSettings.sustainImage)} className="w-full h-full object-cover" alt="" />
               ) : (
                 <div className="flex flex-col items-center gap-1 text-slate-400">
                   <Image size={24} className="opacity-60" />
@@ -701,7 +702,7 @@ const AdminWhyFlais = () => {
                     const file = e.target.files[0];
                     if (file) handleUpload(file, 'sustainImage');
                   }} className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 file:hover:bg-blue-100" />
-                  {aboutSettings.sustainImage && <img src={aboutSettings.sustainImage} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />}
+                  {aboutSettings.sustainImage && <img src={getImageUrl(aboutSettings.sustainImage)} alt="preview" className="h-10 mt-1 rounded object-cover border border-slate-100" />}
                 </div>
               </div>
             </div>
