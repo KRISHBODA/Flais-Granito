@@ -96,6 +96,10 @@ const Home = () => {
       seen.add(key);
       return true;
     });
+    // Duplicate slides if list size is small (< 8) to ensure Swiper loop mode works perfectly with slidesPerView: 'auto'
+    if (list.length > 1 && list.length < 8) {
+      return [...list, ...list];
+    }
     return list;
   }, [choicesList]);
   const initialCollectionSlide = collectionSlides.length > 0
@@ -127,10 +131,15 @@ const Home = () => {
   const [videoHasPlayed, setVideoHasPlayed] = useState(false);
   const [collectionsVideoLoading, setCollectionsVideoLoading] = useState(true);
   const [collectionsVideoHasPlayed, setCollectionsVideoHasPlayed] = useState(false);
+  const [collectionsImageErrors, setCollectionsImageErrors] = useState({});
   const videoRef = useIntersectionVideoRef();
   const collectionsVideoRef = useIntersectionVideoRef();
   const handleCollectionsSwiper = (swiper) => {
     setCollectionsSwiper(swiper);
+  };
+
+  const handleCollectionsImageError = (key) => {
+    setCollectionsImageErrors(prev => ({ ...prev, [key]: true }));
   };
 
   useLayoutEffect(() => {
@@ -563,8 +572,6 @@ const Home = () => {
                 slidesPerView={1}
                 centeredSlides={false}
                 loop={true}
-                loopedSlides={collectionSlides.length}
-                loopAdditionalSlides={collectionSlides.length}
                 loopPreventsSliding={false}
                 speed={700}
                 autoplay={{
@@ -588,13 +595,20 @@ const Home = () => {
                 {collectionSlides.map((col, index) => (
                   <SwiperSlide key={`${col._id || col.id || col.name}-${index}`}>
                     <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-none" style={{ transform: 'translateZ(0)' }}>
-                      <img
-                        loading="eager"
-                        src={getOptimizedImageUrl(col.image, 800)}
-                        alt={col.name}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                        style={{ backfaceVisibility: 'hidden' }}
-                      />
+                      {!collectionsImageErrors[`${col._id || col.id || col.name}-${index}`] ? (
+                        <img
+                          loading="eager"
+                          src={getOptimizedImageUrl(col.image, 800)}
+                          alt={col.name}
+                          onError={() => handleCollectionsImageError(`${col._id || col.id || col.name}-${index}`)}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                          style={{ backfaceVisibility: 'hidden' }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-[#FAF8F5] flex items-center justify-center border border-zinc-200/50">
+                          <span className="text-[10px] text-zinc-400 font-sans tracking-[0.25em] uppercase font-semibold">{col.name}</span>
+                        </div>
+                      )}
 
                       {/* Base overlay for inactive slide contrast */}
                       <div className="absolute inset-0 bg-black/5 transition-colors duration-500" />

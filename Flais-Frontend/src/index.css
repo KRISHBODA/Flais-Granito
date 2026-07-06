@@ -452,7 +452,7 @@ html.lenis body {
 /* Default Mobile Slide Layout: single fixed slide for consistent arrow steps */
 .collections-swiper .swiper-slide {
   width: 100% !important;
-  height: 280px !important;
+  height: 380px !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
@@ -475,31 +475,31 @@ html.lenis body {
 /* Inner card dimensions: square/rectangle for active, vertical rectangle for inactive */
 .collections-swiper .swiper-slide .collections-card-inner {
   width: 100% !important;
-  height: 280px !important;
+  height: 380px !important;
   will-change: width, height;
 }
 
 .collections-swiper .swiper-slide-active .collections-card-inner {
   width: 100% !important;
-  height: 280px !important;
+  height: 380px !important;
 }
 
 /* Tablet styles (min-width: 640px) */
 @media (min-width: 640px) {
   .collections-swiper .swiper-slide {
     width: 72vw !important;
-    height: 350px !important;
+    height: 480px !important;
   }
 
   .collections-swiper .swiper-slide .collections-card-inner {
     width: 100% !important;
-    height: 350px !important;
+    height: 480px !important;
     will-change: width, height;
   }
 
   .collections-swiper .swiper-slide-active .collections-card-inner {
     width: 100% !important;
-    height: 350px !important;
+    height: 480px !important;
   }
 }
 
@@ -507,18 +507,18 @@ html.lenis body {
 @media (min-width: 1024px) {
   .collections-swiper .swiper-slide {
     width: 50vw !important;
-    height: 400px !important;
+    height: 580px !important;
   }
 
   .collections-swiper .swiper-slide .collections-card-inner {
     width: 100% !important;
-    height: 400px !important;
+    height: 580px !important;
     will-change: width, height;
   }
 
   .collections-swiper .swiper-slide-active .collections-card-inner {
     width: 100% !important;
-    height: 400px !important;
+    height: 580px !important;
   }
 }
 
