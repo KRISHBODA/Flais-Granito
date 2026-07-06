@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Calendar, User, ArrowLeft, Share2, MessageSquare } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import SEO from '../components/SEO';
 import api from '../utils/api';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
@@ -116,25 +116,6 @@ const BlogDetails = () => {
       {/* Content */}
       <section className="py-24">
         <div className="container-custom max-w-4xl">
-          <div className="flex justify-between items-center mb-12 border-b border-zinc-100 pb-8">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 rounded-full bg-beige-100 flex items-center justify-center font-bold text-beige-700">
-                A
-              </div>
-              <div>
-                <p className="font-bold text-zinc-900">Admin Author</p>
-                <p className="text-xs text-zinc-500 uppercase tracking-widest">Industry Expert</p>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              <button className="w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 transition-colors">
-                <Share2 size={18} className="text-zinc-500" />
-              </button>
-              <button className="w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 transition-colors">
-                <MessageSquare size={18} className="text-zinc-500" />
-              </button>
-            </div>
-          </div>
 
           <div 
             className="prose prose-lg prose-zinc max-w-none text-zinc-600 leading-relaxed space-y-8"
