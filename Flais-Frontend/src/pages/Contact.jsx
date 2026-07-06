@@ -6,204 +6,205 @@ import SEO from '../components/SEO';
 import contactHero from '../assets/contact_hero.jpg';
 import api from '../utils/api';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
+import { validatePhoneNumberLength, isValidPhoneNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
 
 const countryCodes = [
-  { code: '+91', name: 'India IN' },
-  { code: '+93', name: 'Afghanistan' },
-  { code: '+355', name: 'Albania' },
-  { code: '+213', name: 'Algeria' },
-  { code: '+376', name: 'Andorra' },
-  { code: '+244', name: 'Angola' },
-  { code: '+1-268', name: 'Antigua and Barbuda' },
-  { code: '+54', name: 'Argentina' },
-  { code: '+374', name: 'Armenia' },
-  { code: '+61', name: 'Australia' },
-  { code: '+43', name: 'Austria' },
-  { code: '+994', name: 'Azerbaijan' },
-  { code: '+1-242', name: 'Bahamas' },
-  { code: '+973', name: 'Bahrain' },
-  { code: '+880', name: 'Bangladesh' },
-  { code: '+1-246', name: 'Barbados' },
-  { code: '+375', name: 'Belarus' },
-  { code: '+32', name: 'Belgium' },
-  { code: '+501', name: 'Belize' },
-  { code: '+229', name: 'Benin' },
-  { code: '+975', name: 'Bhutan' },
-  { code: '+591', name: 'Bolivia' },
-  { code: '+387', name: 'Bosnia and Herzegovina' },
-  { code: '+267', name: 'Botswana' },
-  { code: '+55', name: 'Brazil' },
-  { code: '+673', name: 'Brunei' },
-  { code: '+359', name: 'Bulgaria' },
-  { code: '+226', name: 'Burkina Faso' },
-  { code: '+257', name: 'Burundi' },
-  { code: '+855', name: 'Cambodia' },
-  { code: '+237', name: 'Cameroon' },
-  { code: '+1', name: 'Canada' },
-  { code: '+238', name: 'Cape Verde' },
-  { code: '+236', name: 'Central African Republic' },
-  { code: '+235', name: 'Chad' },
-  { code: '+56', name: 'Chile' },
-  { code: '+86', name: 'China' },
-  { code: '+57', name: 'Colombia' },
-  { code: '+269', name: 'Comoros' },
-  { code: '+242', name: 'Congo (Republic)' },
-  { code: '+243', name: 'Congo (Democratic Republic)' },
-  { code: '+506', name: 'Costa Rica' },
-  { code: '+385', name: 'Croatia' },
-  { code: '+53', name: 'Cuba' },
-  { code: '+357', name: 'Cyprus' },
-  { code: '+420', name: 'Czech Republic' },
-  { code: '+45', name: 'Denmark' },
-  { code: '+253', name: 'Djibouti' },
-  { code: '+1-767', name: 'Dominica' },
-  { code: '+1-809', name: 'Dominican Republic' },
-  { code: '+593', name: 'Ecuador' },
-  { code: '+20', name: 'Egypt' },
-  { code: '+503', name: 'El Salvador' },
-  { code: '+240', name: 'Equatorial Guinea' },
-  { code: '+291', name: 'Eritrea' },
-  { code: '+372', name: 'Estonia' },
-  { code: '+251', name: 'Ethiopia' },
-  { code: '+679', name: 'Fiji' },
-  { code: '+358', name: 'Finland' },
-  { code: '+33', name: 'France' },
-  { code: '+241', name: 'Gabon' },
-  { code: '+220', name: 'Gambia' },
-  { code: '+995', name: 'Georgia' },
-  { code: '+49', name: 'Germany' },
-  { code: '+233', name: 'Ghana' },
-  { code: '+30', name: 'Greece' },
-  { code: '+1-473', name: 'Grenada' },
-  { code: '+502', name: 'Guatemala' },
-  { code: '+224', name: 'Guinea' },
-  { code: '+245', name: 'Guinea-Bissau' },
-  { code: '+592', name: 'Guyana' },
-  { code: '+509', name: 'Haiti' },
-  { code: '+504', name: 'Honduras' },
-  { code: '+852', name: 'Hong Kong' },
-  { code: '+36', name: 'Hungary' },
-  { code: '+354', name: 'Iceland' },
-  { code: '+62', name: 'Indonesia' },
-  { code: '+98', name: 'Iran' },
-  { code: '+964', name: 'Iraq' },
-  { code: '+353', name: 'Ireland' },
-  { code: '+972', name: 'Israel' },
-  { code: '+39', name: 'Italy' },
-  { code: '+225', name: 'Ivory Coast' },
-  { code: '+1-876', name: 'Jamaica' },
-  { code: '+81', name: 'Japan' },
-  { code: '+962', name: 'Jordan' },
-  { code: '+7', name: 'Kazakhstan' },
-  { code: '+254', name: 'Kenya' },
-  { code: '+686', name: 'Kiribati' },
-  { code: '+965', name: 'Kuwait' },
-  { code: '+996', name: 'Kyrgyzstan' },
-  { code: '+856', name: 'Laos' },
-  { code: '+371', name: 'Latvia' },
-  { code: '+961', name: 'Lebanon' },
-  { code: '+266', name: 'Lesotho' },
-  { code: '+231', name: 'Liberia' },
-  { code: '+218', name: 'Libya' },
-  { code: '+423', name: 'Liechtenstein' },
-  { code: '+370', name: 'Lithuania' },
-  { code: '+352', name: 'Luxembourg' },
-  { code: '+853', name: 'Macao' },
-  { code: '+389', name: 'Macedonia' },
-  { code: '+261', name: 'Madagascar' },
-  { code: '+265', name: 'Malawi' },
-  { code: '+60', name: 'Malaysia' },
-  { code: '+960', name: 'Maldives' },
-  { code: '+223', name: 'Mali' },
-  { code: '+356', name: 'Malta' },
-  { code: '+692', name: 'Marshall Islands' },
-  { code: '+222', name: 'Mauritania' },
-  { code: '+230', name: 'Mauritius' },
-  { code: '+52', name: 'Mexico' },
-  { code: '+691', name: 'Micronesia' },
-  { code: '+373', name: 'Moldova' },
-  { code: '+377', name: 'Monaco' },
-  { code: '+976', name: 'Mongolia' },
-  { code: '+382', name: 'Montenegro' },
-  { code: '+212', name: 'Morocco' },
-  { code: '+258', name: 'Mozambique' },
-  { code: '+95', name: 'Myanmar' },
-  { code: '+264', name: 'Namibia' },
-  { code: '+674', name: 'Nauru' },
-  { code: '+977', name: 'Nepal' },
-  { code: '+31', name: 'Netherlands' },
-  { code: '+64', name: 'New Zealand' },
-  { code: '+505', name: 'Nicaragua' },
-  { code: '+227', name: 'Niger' },
-  { code: '+234', name: 'Nigeria' },
-  { code: '+850', name: 'North Korea' },
-  { code: '+47', name: 'Norway' },
-  { code: '+968', name: 'Oman' },
-  { code: '+92', name: 'Pakistan' },
-  { code: '+680', name: 'Palau' },
-  { code: '+507', name: 'Panama' },
-  { code: '+675', name: 'Papua New Guinea' },
-  { code: '+595', name: 'Paraguay' },
-  { code: '+51', name: 'Peru' },
-  { code: '+63', name: 'Philippines' },
-  { code: '+48', name: 'Poland' },
-  { code: '+351', name: 'Portugal' },
-  { code: '+974', name: 'Qatar' },
-  { code: '+40', name: 'Romania' },
-  { code: '+7', name: 'Russia' },
-  { code: '+250', name: 'Rwanda' },
-  { code: '+1-869', name: 'Saint Kitts and Nevis' },
-  { code: '+1-758', name: 'Saint Lucia' },
-  { code: '+1-784', name: 'Saint Vincent' },
-  { code: '+685', name: 'Samoa' },
-  { code: '+378', name: 'San Marino' },
-  { code: '+239', name: 'Sao Tome and Principe' },
-  { code: '+966', name: 'Saudi Arabia' },
-  { code: '+221', name: 'Senegal' },
-  { code: '+381', name: 'Serbia' },
-  { code: '+248', name: 'Seychelles' },
-  { code: '+232', name: 'Sierra Leone' },
-  { code: '+65', name: 'Singapore' },
-  { code: '+421', name: 'Slovakia' },
-  { code: '+386', name: 'Slovenia' },
-  { code: '+677', name: 'Solomon Islands' },
-  { code: '+252', name: 'Somalia' },
-  { code: '+27', name: 'South Africa' },
-  { code: '+82', name: 'South Korea' },
-  { code: '+211', name: 'South Sudan' },
-  { code: '+94', name: 'Sri Lanka' },
-  { code: '+249', name: 'Sudan' },
-  { code: '+597', name: 'Suriname' },
-  { code: '+268', name: 'Swaziland' },
-  { code: '+46', name: 'Sweden' },
-  { code: '+41', name: 'Switzerland' },
-  { code: '+963', name: 'Syria' },
-  { code: '+886', name: 'Taiwan' },
-  { code: '+992', name: 'Tajikistan' },
-  { code: '+255', name: 'Tanzania' },
-  { code: '+66', name: 'Thailand' },
-  { code: '+670', name: 'Timor-Leste' },
-  { code: '+228', name: 'Togo' },
-  { code: '+676', name: 'Tonga' },
-  { code: '+1-868', name: 'Trinidad and Tobago' },
-  { code: '+216', name: 'Tunisia' },
-  { code: '+90', name: 'Turkey' },
-  { code: '+993', name: 'Turkmenistan' },
-  { code: '+688', name: 'Tuvalu' },
-  { code: '+256', name: 'Uganda' },
-  { code: '+380', name: 'Ukraine' },
-  { code: '+971', name: 'United Arab Emirates' },
-  { code: '+44', name: 'United Kingdom' },
-  { code: '+1', name: 'United States' },
-  { code: '+598', name: 'Uruguay' },
-  { code: '+998', name: 'Uzbekistan' },
-  { code: '+678', name: 'Vanuatu' },
-  { code: '+379', name: 'Vatican City' },
-  { code: '+58', name: 'Venezuela' },
-  { code: '+84', name: 'Vietnam' },
-  { code: '+967', name: 'Yemen' },
-  { code: '+260', name: 'Zambia' },
-  { code: '+263', name: 'Zimbabwe' }
+  { code: '+91', name: 'India IN', iso: 'IN' },
+  { code: '+93', name: 'Afghanistan', iso: 'AF' },
+  { code: '+355', name: 'Albania', iso: 'AL' },
+  { code: '+213', name: 'Algeria', iso: 'DZ' },
+  { code: '+376', name: 'Andorra', iso: 'AD' },
+  { code: '+244', name: 'Angola', iso: 'AO' },
+  { code: '+1-268', name: 'Antigua and Barbuda', iso: 'AG' },
+  { code: '+54', name: 'Argentina', iso: 'AR' },
+  { code: '+374', name: 'Armenia', iso: 'AM' },
+  { code: '+61', name: 'Australia', iso: 'AU' },
+  { code: '+43', name: 'Austria', iso: 'AT' },
+  { code: '+994', name: 'Azerbaijan', iso: 'AZ' },
+  { code: '+1-242', name: 'Bahamas', iso: 'BS' },
+  { code: '+973', name: 'Bahrain', iso: 'BH' },
+  { code: '+880', name: 'Bangladesh', iso: 'BD' },
+  { code: '+1-246', name: 'Barbados', iso: 'BB' },
+  { code: '+375', name: 'Belarus', iso: 'BY' },
+  { code: '+32', name: 'Belgium', iso: 'BE' },
+  { code: '+501', name: 'Belize', iso: 'BZ' },
+  { code: '+229', name: 'Benin', iso: 'BJ' },
+  { code: '+975', name: 'Bhutan', iso: 'BT' },
+  { code: '+591', name: 'Bolivia', iso: 'BO' },
+  { code: '+387', name: 'Bosnia and Herzegovina', iso: 'BA' },
+  { code: '+267', name: 'Botswana', iso: 'BW' },
+  { code: '+55', name: 'Brazil', iso: 'BR' },
+  { code: '+673', name: 'Brunei', iso: 'BN' },
+  { code: '+359', name: 'Bulgaria', iso: 'BG' },
+  { code: '+226', name: 'Burkina Faso', iso: 'BF' },
+  { code: '+257', name: 'Burundi', iso: 'BI' },
+  { code: '+855', name: 'Cambodia', iso: 'KH' },
+  { code: '+237', name: 'Cameroon', iso: 'CM' },
+  { code: '+1', name: 'Canada', iso: 'CA' },
+  { code: '+238', name: 'Cape Verde', iso: 'CV' },
+  { code: '+236', name: 'Central African Republic', iso: 'CF' },
+  { code: '+235', name: 'Chad', iso: 'TD' },
+  { code: '+56', name: 'Chile', iso: 'CL' },
+  { code: '+86', name: 'China', iso: 'CN' },
+  { code: '+57', name: 'Colombia', iso: 'CO' },
+  { code: '+269', name: 'Comoros', iso: 'KM' },
+  { code: '+242', name: 'Congo (Republic)', iso: 'CG' },
+  { code: '+243', name: 'Congo (Democratic Republic)', iso: 'CD' },
+  { code: '+506', name: 'Costa Rica', iso: 'CR' },
+  { code: '+385', name: 'Croatia', iso: 'HR' },
+  { code: '+53', name: 'Cuba', iso: 'CU' },
+  { code: '+357', name: 'Cyprus', iso: 'CY' },
+  { code: '+420', name: 'Czech Republic', iso: 'CZ' },
+  { code: '+45', name: 'Denmark', iso: 'DK' },
+  { code: '+253', name: 'Djibouti', iso: 'DJ' },
+  { code: '+1-767', name: 'Dominica', iso: 'DM' },
+  { code: '+1-809', name: 'Dominican Republic', iso: 'DO' },
+  { code: '+593', name: 'Ecuador', iso: 'EC' },
+  { code: '+20', name: 'Egypt', iso: 'EG' },
+  { code: '+503', name: 'El Salvador', iso: 'SV' },
+  { code: '+240', name: 'Equatorial Guinea', iso: 'GQ' },
+  { code: '+291', name: 'Eritrea', iso: 'ER' },
+  { code: '+372', name: 'Estonia', iso: 'EE' },
+  { code: '+251', name: 'Ethiopia', iso: 'ET' },
+  { code: '+679', name: 'Fiji', iso: 'FJ' },
+  { code: '+358', name: 'Finland', iso: 'FI' },
+  { code: '+33', name: 'France', iso: 'FR' },
+  { code: '+241', name: 'Gabon', iso: 'GA' },
+  { code: '+220', name: 'Gambia', iso: 'GM' },
+  { code: '+995', name: 'Georgia', iso: 'GE' },
+  { code: '+49', name: 'Germany', iso: 'DE' },
+  { code: '+233', name: 'Ghana', iso: 'GH' },
+  { code: '+30', name: 'Greece', iso: 'GR' },
+  { code: '+1-473', name: 'Grenada', iso: 'GD' },
+  { code: '+502', name: 'Guatemala', iso: 'GT' },
+  { code: '+224', name: 'Guinea', iso: 'GN' },
+  { code: '+245', name: 'Guinea-Bissau', iso: 'GW' },
+  { code: '+592', name: 'Guyana', iso: 'GY' },
+  { code: '+509', name: 'Haiti', iso: 'HT' },
+  { code: '+504', name: 'Honduras', iso: 'HN' },
+  { code: '+852', name: 'Hong Kong', iso: 'HK' },
+  { code: '+36', name: 'Hungary', iso: 'HU' },
+  { code: '+354', name: 'Iceland', iso: 'IS' },
+  { code: '+62', name: 'Indonesia', iso: 'ID' },
+  { code: '+98', name: 'Iran', iso: 'IR' },
+  { code: '+964', name: 'Iraq', iso: 'IQ' },
+  { code: '+353', name: 'Ireland', iso: 'IE' },
+  { code: '+972', name: 'Israel', iso: 'IL' },
+  { code: '+39', name: 'Italy', iso: 'IT' },
+  { code: '+225', name: 'Ivory Coast', iso: 'CI' },
+  { code: '+1-876', name: 'Jamaica', iso: 'JM' },
+  { code: '+81', name: 'Japan', iso: 'JP' },
+  { code: '+962', name: 'Jordan', iso: 'JO' },
+  { code: '+7', name: 'Kazakhstan', iso: 'KZ' },
+  { code: '+254', name: 'Kenya', iso: 'KE' },
+  { code: '+686', name: 'Kiribati', iso: 'KI' },
+  { code: '+965', name: 'Kuwait', iso: 'KW' },
+  { code: '+996', name: 'Kyrgyzstan', iso: 'KG' },
+  { code: '+856', name: 'Laos', iso: 'LA' },
+  { code: '+371', name: 'Latvia', iso: 'LV' },
+  { code: '+961', name: 'Lebanon', iso: 'LB' },
+  { code: '+266', name: 'Lesotho', iso: 'LS' },
+  { code: '+231', name: 'Liberia', iso: 'LR' },
+  { code: '+218', name: 'Libya', iso: 'LY' },
+  { code: '+423', name: 'Liechtenstein', iso: 'LI' },
+  { code: '+370', name: 'Lithuania', iso: 'LT' },
+  { code: '+352', name: 'Luxembourg', iso: 'LU' },
+  { code: '+853', name: 'Macao', iso: 'MO' },
+  { code: '+389', name: 'Macedonia', iso: 'MK' },
+  { code: '+261', name: 'Madagascar', iso: 'MG' },
+  { code: '+265', name: 'Malawi', iso: 'MW' },
+  { code: '+60', name: 'Malaysia', iso: 'MY' },
+  { code: '+960', name: 'Maldives', iso: 'MV' },
+  { code: '+223', name: 'Mali', iso: 'ML' },
+  { code: '+356', name: 'Malta', iso: 'MT' },
+  { code: '+692', name: 'Marshall Islands', iso: 'MH' },
+  { code: '+222', name: 'Mauritania', iso: 'MR' },
+  { code: '+230', name: 'Mauritius', iso: 'MU' },
+  { code: '+52', name: 'Mexico', iso: 'MX' },
+  { code: '+691', name: 'Micronesia', iso: 'FM' },
+  { code: '+373', name: 'Moldova', iso: 'MD' },
+  { code: '+377', name: 'Monaco', iso: 'MC' },
+  { code: '+976', name: 'Mongolia', iso: 'MN' },
+  { code: '+382', name: 'Montenegro', iso: 'ME' },
+  { code: '+212', name: 'Morocco', iso: 'MA' },
+  { code: '+258', name: 'Mozambique', iso: 'MZ' },
+  { code: '+95', name: 'Myanmar', iso: 'MM' },
+  { code: '+264', name: 'Namibia', iso: 'NA' },
+  { code: '+674', name: 'Nauru', iso: 'NR' },
+  { code: '+977', name: 'Nepal', iso: 'NP' },
+  { code: '+31', name: 'Netherlands', iso: 'NL' },
+  { code: '+64', name: 'New Zealand', iso: 'NZ' },
+  { code: '+505', name: 'Nicaragua', iso: 'NI' },
+  { code: '+227', name: 'Niger', iso: 'NE' },
+  { code: '+234', name: 'Nigeria', iso: 'NG' },
+  { code: '+850', name: 'North Korea', iso: 'KP' },
+  { code: '+47', name: 'Norway', iso: 'NO' },
+  { code: '+968', name: 'Oman', iso: 'OM' },
+  { code: '+92', name: 'Pakistan', iso: 'PK' },
+  { code: '+680', name: 'Palau', iso: 'PW' },
+  { code: '+507', name: 'Panama', iso: 'PA' },
+  { code: '+675', name: 'Papua New Guinea', iso: 'PG' },
+  { code: '+595', name: 'Paraguay', iso: 'PY' },
+  { code: '+51', name: 'Peru', iso: 'PE' },
+  { code: '+63', name: 'Philippines', iso: 'PH' },
+  { code: '+48', name: 'Poland', iso: 'PL' },
+  { code: '+351', name: 'Portugal', iso: 'PT' },
+  { code: '+974', name: 'Qatar', iso: 'QA' },
+  { code: '+40', name: 'Romania', iso: 'RO' },
+  { code: '+7', name: 'Russia', iso: 'RU' },
+  { code: '+250', name: 'Rwanda', iso: 'RW' },
+  { code: '+1-869', name: 'Saint Kitts and Nevis', iso: 'KN' },
+  { code: '+1-758', name: 'Saint Lucia', iso: 'LC' },
+  { code: '+1-784', name: 'Saint Vincent', iso: 'VC' },
+  { code: '+685', name: 'Samoa', iso: 'WS' },
+  { code: '+378', name: 'San Marino', iso: 'SM' },
+  { code: '+239', name: 'Sao Tome and Principe', iso: 'ST' },
+  { code: '+966', name: 'Saudi Arabia', iso: 'SA' },
+  { code: '+221', name: 'Senegal', iso: 'SN' },
+  { code: '+381', name: 'Serbia', iso: 'RS' },
+  { code: '+248', name: 'Seychelles', iso: 'SC' },
+  { code: '+232', name: 'Sierra Leone', iso: 'SL' },
+  { code: '+65', name: 'Singapore', iso: 'SG' },
+  { code: '+421', name: 'Slovakia', iso: 'SK' },
+  { code: '+386', name: 'Slovenia', iso: 'SI' },
+  { code: '+677', name: 'Solomon Islands', iso: 'SB' },
+  { code: '+252', name: 'Somalia', iso: 'SO' },
+  { code: '+27', name: 'South Africa', iso: 'ZA' },
+  { code: '+82', name: 'South Korea', iso: 'KR' },
+  { code: '+211', name: 'South Sudan', iso: 'SS' },
+  { code: '+94', name: 'Sri Lanka', iso: 'LK' },
+  { code: '+249', name: 'Sudan', iso: 'SD' },
+  { code: '+597', name: 'Suriname', iso: 'SR' },
+  { code: '+268', name: 'Swaziland', iso: 'SZ' },
+  { code: '+46', name: 'Sweden', iso: 'SE' },
+  { code: '+41', name: 'Switzerland', iso: 'CH' },
+  { code: '+963', name: 'Syria', iso: 'SY' },
+  { code: '+886', name: 'Taiwan', iso: 'TW' },
+  { code: '+992', name: 'Tajikistan', iso: 'TJ' },
+  { code: '+255', name: 'Tanzania', iso: 'TZ' },
+  { code: '+66', name: 'Thailand', iso: 'TH' },
+  { code: '+670', name: 'Timor-Leste', iso: 'TL' },
+  { code: '+228', name: 'Togo', iso: 'TG' },
+  { code: '+676', name: 'Tonga', iso: 'TO' },
+  { code: '+1-868', name: 'Trinidad and Tobago', iso: 'TT' },
+  { code: '+216', name: 'Tunisia', iso: 'TN' },
+  { code: '+90', name: 'Turkey', iso: 'TR' },
+  { code: '+993', name: 'Turkmenistan', iso: 'TM' },
+  { code: '+688', name: 'Tuvalu', iso: 'TV' },
+  { code: '+256', name: 'Uganda', iso: 'UG' },
+  { code: '+380', name: 'Ukraine', iso: 'UA' },
+  { code: '+971', name: 'United Arab Emirates', iso: 'AE' },
+  { code: '+44', name: 'United Kingdom', iso: 'GB' },
+  { code: '+1', name: 'United States', iso: 'US' },
+  { code: '+598', name: 'Uruguay', iso: 'UY' },
+  { code: '+998', name: 'Uzbekistan', iso: 'UZ' },
+  { code: '+678', name: 'Vanuatu', iso: 'VU' },
+  { code: '+379', name: 'Vatican City', iso: 'VA' },
+  { code: '+58', name: 'Venezuela', iso: 'VE' },
+  { code: '+84', name: 'Vietnam', iso: 'VN' },
+  { code: '+967', name: 'Yemen', iso: 'YE' },
+  { code: '+260', name: 'Zambia', iso: 'ZM' },
+  { code: '+263', name: 'Zimbabwe', iso: 'ZW' }
 ];
 
 const defaultPageSettings = {
@@ -278,8 +279,46 @@ const Contact = () => {
     phone: '',
     message: ''
   });
-  const [countryCode, setCountryCode] = useState('+91');
+  const [selectedCountryIndex, setSelectedCountryIndex] = useState(0); // 0 corresponds to India IN (+91)
+  const [phoneError, setPhoneError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const currentCountry = countryCodes[selectedCountryIndex] || countryCodes[0];
+
+  const validatePhoneNumberInput = (phone, iso) => {
+    if (!phone || !phone.trim()) {
+      return "Phone number is required.";
+    }
+
+    // Normalize: strip all spaces, dashes, parentheses
+    const normalized = phone.replace(/[\s\-()]/g, '');
+
+    // Allow formatting characters but check if other non-digits remain
+    if (/[^\d]/.test(normalized)) {
+      return "Please enter a valid phone number for the selected country.";
+    }
+
+    if (!iso) {
+      return normalized.length >= 6 ? null : "Phone number is too short for the selected country.";
+    }
+
+    const lengthResult = validatePhoneNumberLength(normalized, iso);
+    if (lengthResult === 'TOO_SHORT') {
+      return "Phone number is too short for the selected country.";
+    }
+    if (lengthResult === 'TOO_LONG') {
+      return "Phone number is too long for the selected country.";
+    }
+    if (lengthResult === 'INVALID_COUNTRY' || lengthResult === 'NOT_A_NUMBER') {
+      return "Please enter a valid phone number for the selected country.";
+    }
+
+    if (!isValidPhoneNumber(normalized, iso)) {
+      return "Please enter a valid phone number for the selected country.";
+    }
+
+    return null;
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -293,17 +332,23 @@ const Contact = () => {
       return;
     }
 
-    if (formData.phone.trim().length < 6) {
-      toast.error("Please enter a valid mobile number.");
+    const pError = validatePhoneNumberInput(formData.phone, currentCountry.iso);
+    if (pError) {
+      setPhoneError(pError);
+      toast.error(pError);
       return;
     }
+
+    const normalized = formData.phone.replace(/[\s\-()]/g, '');
+    const phoneNumberObject = parsePhoneNumberFromString(normalized, currentCountry.iso);
+    const formattedPhone = phoneNumberObject ? phoneNumberObject.number : `${currentCountry.code}${normalized}`;
 
     try {
       setIsSubmitting(true);
       await api.post('/contact', {
         name: formData.name.trim(),
         email: formData.email,
-        phone: `${countryCode} ${formData.phone}`.trim(),
+        phone: formattedPhone,
         message: formData.message
       });
       toast.success("Message sent successfully!");
@@ -313,9 +358,10 @@ const Contact = () => {
         phone: '',
         message: ''
       });
-      setCountryCode('+91');
+      setSelectedCountryIndex(0);
+      setPhoneError('');
     } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to send message");
+      toast.error(error.response?.data?.message || "Failed to send message");
     } finally {
       setIsSubmitting(false);
     }
@@ -528,16 +574,23 @@ const Contact = () => {
                   <label className="text-sm font-bold text-zinc-700">Phone Number <span className="text-red-500">*</span></label>
                   <div className="flex gap-2">
                     <select
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
+                      value={selectedCountryIndex}
+                      onChange={(e) => {
+                        const idx = parseInt(e.target.value);
+                        setSelectedCountryIndex(idx);
+                        if (formData.phone) {
+                          const error = validatePhoneNumberInput(formData.phone, countryCodes[idx]?.iso);
+                          setPhoneError(error || '');
+                        }
+                      }}
                       className="bg-zinc-50 border-none rounded-xl p-3 sm:p-4 focus:ring-2 focus:ring-beige-500 text-zinc-700 font-medium text-xs sm:text-sm outline-none cursor-pointer select-none w-[110px] sm:w-[125px] shrink-0"
                     >
-                      {countryCodes.map((c) => {
+                      {countryCodes.map((c, idx) => {
                         const shortName = c.name.includes('(') 
                           ? c.name.substring(c.name.indexOf('(') + 1, c.name.indexOf(')'))
                           : c.name.substring(0, 6);
                         return (
-                          <option key={`${c.code}-${c.name}`} value={c.code}>
+                          <option key={`${c.code}-${c.name}`} value={idx}>
                             {c.code} ({shortName})
                           </option>
                         );
@@ -548,14 +601,19 @@ const Contact = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9 -]/g, '');
+                        const val = e.target.value.replace(/[^0-9 \-()]/g, '');
                         setFormData(prev => ({ ...prev, phone: val }));
+                        const error = validatePhoneNumberInput(val, currentCountry?.iso);
+                        setPhoneError(error || '');
                       }}
                       className="flex-1 min-w-0 bg-zinc-50 border-none rounded-xl p-3 sm:p-4 focus:ring-2 focus:ring-beige-500 text-sm sm:text-base" 
                       placeholder="98765 43210" 
                       required
                     />
                   </div>
+                  {phoneError && (
+                    <p className="text-red-500 text-xs mt-1 font-semibold">{phoneError}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-zinc-700">Your Message <span className="text-red-500">*</span></label>
