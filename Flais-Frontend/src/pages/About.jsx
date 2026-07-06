@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Target, Eye, Shield, Award, Users, Zap, ArrowRight, ChevronDown, Boxes, Layers, Component, Sparkles, Mail, Phone, Leaf, Globe, Volume2, VolumeX, Droplets, Sun, Wind, Recycle, Flag, Clock, Info, Loader2 } from 'lucide-react';
+import { Target, Eye, Shield, Award, Users, Zap, ArrowRight, ChevronDown, Boxes, Layers, Component, Sparkles, Mail, Phone, Leaf, Globe, Volume2, VolumeX, Play, Pause, Droplets, Sun, Wind, Recycle, Flag, Clock, Info, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import SEO from '../components/SEO';
 import WorldMap from '../components/WorldMap';
@@ -71,6 +71,7 @@ const About = () => {
 
   const [countriesList, setCountriesList] = React.useState([]);
   const [isMuted, setIsMuted] = React.useState(true);
+  const [isPlaying, setIsPlaying] = React.useState(true);
   const videoRef = React.useRef(null);
   const { scrollYProgress } = useScroll();
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 1.1]);
@@ -183,6 +184,16 @@ const About = () => {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
       setIsMuted(videoRef.current.muted);
+    }
+  };
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play().catch(() => {});
+      }
     }
   };
 
@@ -344,7 +355,8 @@ const About = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-2xl aspect-video md:aspect-[21/9]"
+            className="relative w-full rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-2xl aspect-video md:aspect-[21/9] group/video cursor-pointer"
+            onClick={togglePlay}
           >
             <video
               ref={videoRef}
@@ -355,16 +367,39 @@ const About = () => {
               loop
               playsInline
               preload="auto"
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
               onCanPlay={(e) => {
                 e.currentTarget.play().catch(() => { });
               }}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
+ 
+            {/* Center Big Play/Pause Button Overlay */}
+            <div className={`absolute inset-0 flex items-center justify-center bg-black/10 transition-opacity duration-300 ${isPlaying ? 'opacity-0 group-hover/video:opacity-100' : 'opacity-100 bg-black/30'}`}>
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-white/30 active:scale-95">
+                {isPlaying ? (
+                  <Pause size={28} className="sm:w-8 sm:h-8" />
+                ) : (
+                  <Play size={28} className="sm:w-8 sm:h-8 translate-x-0.5" />
+                )}
+              </div>
+            </div>
 
             {/* Control Overlays */}
-            <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 flex items-center gap-2 sm:gap-4">
+            <div 
+              onClick={(e) => e.stopPropagation()} 
+              className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 flex items-center gap-2 sm:gap-4 z-10"
+            >
               <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Flais Film</span>
+              <button
+                onClick={togglePlay}
+                className="w-8 h-8 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95"
+                title={isPlaying ? "Pause" : "Play"}
+              >
+                {isPlaying ? <Pause size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Play size={16} className="sm:w-[18px] sm:h-[18px]" />}
+              </button>
               <button
                 onClick={toggleMute}
                 className="w-8 h-8 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95"
