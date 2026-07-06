@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import motionLogo from "../assets/Flais motion logo.mp4";
 
@@ -7,6 +6,7 @@ let preloaderShown = false;
 
 const Preloader = () => {
   const [loading, setLoading] = useState(!preloaderShown);
+  const [isFading, setIsFading] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -15,9 +15,14 @@ const Preloader = () => {
       return;
     }
 
+    // Backup timer: if video doesn't end, fade out and unmount after 5 seconds
     const timer = setTimeout(() => {
-      setLoading(false);
-      preloaderShown = true;
+      setIsFading(true);
+      const closeTimer = setTimeout(() => {
+        setLoading(false);
+        preloaderShown = true;
+      }, 500);
+      return () => clearTimeout(closeTimer);
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -35,31 +40,38 @@ const Preloader = () => {
     };
   }, [loading, location.pathname]);
 
-  if (location.pathname.startsWith("/admin")) {
+  const handleVideoEnded = () => {
+    setIsFading(true);
+    setTimeout(() => {
+      setLoading(false);
+      preloaderShown = true;
+    }, 500);
+  };
+
+  if (location.pathname.startsWith("/admin") || !loading) {
     return null;
   }
 
   return (
-    <AnimatePresence>
-      {loading && (
-        <motion.div
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-white"
-        >
-          <video
-            src={motionLogo}
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            onEnded={() => setLoading(false)}
-            className="w-[85%] max-w-[500px] md:max-w-[600px] h-auto object-contain pointer-events-none select-none"
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div
+      style={{
+        transition: "opacity 500ms ease-in-out",
+        opacity: isFading ? 0 : 1,
+      }}
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white ${
+        isFading ? "pointer-events-none" : "pointer-events-auto"
+      }`}
+    >
+      <video
+        src={motionLogo}
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        onEnded={handleVideoEnded}
+        className="w-[85%] max-w-[500px] md:max-w-[600px] h-auto object-contain pointer-events-none select-none"
+      />
+    </div>
   );
 };
 
