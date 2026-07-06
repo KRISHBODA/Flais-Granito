@@ -43,76 +43,31 @@ const Catalog = () => {
     return getOptimizedImageUrl(link);
   };
 
-  const handleAction = async (e, catalog, action) => {
+  const handleAction = (e, catalog, action) => {
     e.preventDefault();
     const link = resolveCatalogUrl(catalog);
     if (!link) return;
 
     if (action === 'view') {
-      // Open a blank tab immediately to bypass popup blocker
-      const newTab = window.open('', '_blank');
-      if (newTab) {
-        newTab.document.title = `Loading ${catalog.title || 'Catalog'}...`;
-        newTab.document.body.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #f8f5f0; color: #5D4037; margin: 0;">
-            <div style="border: 4px solid rgba(93, 64, 55, 0.1); border-top: 4px solid #5D4037; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
-            <p style="font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">Opening ${catalog.title || 'Catalog'}...</p>
-            <style>
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            </style>
-          </div>
-        `;
-      }
-
-      try {
-        const response = await fetch(link);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch PDF (${response.status})`);
-        }
-        const blob = await response.blob();
-        // Force the blob type to be application/pdf so the browser renders it in-viewer
-        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-        const objectUrl = window.URL.createObjectURL(pdfBlob);
-        
-        if (newTab) {
-          newTab.location.href = objectUrl;
-        } else {
-          window.open(objectUrl, '_blank');
-        }
-      } catch (err) {
-        if (newTab) {
-          newTab.location.href = link;
-        } else {
-          window.open(link, '_blank', 'noopener,noreferrer');
-        }
-      }
+      window.open(link, '_blank', 'noopener,noreferrer');
       return;
     }
 
+    // action === 'download'
     const downloadKey = catalog._id || catalog.id || catalog.title;
-    try {
-      setDownloadingKey(downloadKey);
-      const response = await fetch(link);
-      if (!response.ok) {
-        throw new Error(`Failed to download file (${response.status})`);
-      }
-      const blob = await response.blob();
-      const objectUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = objectUrl;
-      a.download = `${(catalog.title || 'catalog').replace(/[^a-z0-9_-]+/gi, '_')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(objectUrl);
-    } catch (err) {
-      window.open(link, '_blank', 'noopener,noreferrer');
-    } finally {
+    setDownloadingKey(downloadKey);
+    setTimeout(() => {
       setDownloadingKey(null);
-    }
+    }, 1500); // 1.5s temporary feedback
+
+    const a = document.createElement('a');
+    a.href = link;
+    a.download = `${(catalog.title || 'catalog').replace(/[^a-z0-9_-]+/gi, '_')}.pdf`;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   if (loading) {
