@@ -114,7 +114,7 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Why FLAIS', path: '/about' },
     { name: 'Collection', path: '/products' },
-    { name: 'Catalog', path: '/catalog' },
+    { name: 'Catalogues', path: '/catalog' },
     {
       name: 'Flais Guide',
       path: '#',
