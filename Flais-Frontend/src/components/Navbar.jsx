@@ -243,7 +243,7 @@ const rowPadding = isOpen
         </div>
 
         {/* CENTER: Nav Links */}
-        <div className="hidden lg:flex items-center justify-between flex-1 mx-10 xl:mx-16">
+        <div className="hidden lg:flex items-center justify-center gap-x-4 xl:gap-x-8 flex-1 mx-4 xl:mx-8">
           {navLinks.map((link) => (
             <div
               key={link.name}
