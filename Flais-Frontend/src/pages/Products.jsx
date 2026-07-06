@@ -8,6 +8,32 @@ import api from '../utils/api';
 import useIntersectionVideoRef from '../hooks/useIntersectionVideoRef';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
 
+const ProductSkeleton = () => (
+  <div className="p-4 pb-8 rounded-tl-[3.5rem] rounded-br-[3.5rem] rounded-tr-[1.25rem] rounded-bl-[1.25rem] bg-[#FAF8F5] border border-[#D2C9B1]/30 flex flex-col h-full animate-pulse">
+    <div className="relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-200" />
+    <div className="pt-6 px-2 flex flex-col flex-1 space-y-4">
+      <div className="h-4 w-20 bg-zinc-200 rounded" />
+      <div className="h-8 w-3/4 bg-zinc-200 rounded" />
+      <div className="h-10 w-28 bg-zinc-200 rounded mt-auto" />
+    </div>
+  </div>
+);
+
+const ProductImage = ({ src, alt }) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className={`w-full h-full transition-all duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}>
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+      />
+    </div>
+  );
+};
+
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filter, setFilter] = useState(searchParams.get('cat') || 'all');
@@ -359,8 +385,10 @@ const Products = () => {
           {/* Product Grid */}
           <div className="w-full lg:flex-1">
             {loading ? (
-              <div className="flex justify-center items-center py-32">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-beige-600"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[...Array(6)].map((_, idx) => (
+                  <ProductSkeleton key={idx} />
+                ))}
               </div>
             ) : (
               <>
@@ -375,11 +403,9 @@ const Products = () => {
                       }}
                     >
                       <Link to={`/products/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 transform-gpu">
-                        <img
+                        <ProductImage
                           src={getOptimizedImageUrl(product.images && product.images.length > 0 ? product.images[0] : (product.image || 'https://via.placeholder.com/400x400?text=No+Image'), 600)}
                           alt={product.title || product.name}
-                          loading="lazy"
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 img-reveal"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                       </Link>
