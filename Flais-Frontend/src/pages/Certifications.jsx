@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Award, ShieldCheck, Globe, Leaf, Star, CheckCircle2, TrendingUp, Trophy, MapPin, Calendar, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
+import { Award, ShieldCheck, Globe, Leaf, Star, CheckCircle2, TrendingUp, Trophy, MapPin, Calendar, ChevronLeft, ChevronRight, Volume2, VolumeX, Play, Pause } from 'lucide-react';
 import SEO from '../components/SEO';
 import api from '../utils/api';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
@@ -149,7 +149,19 @@ const Certifications = () => {
   const exhibitionVideoRef = React.useRef(null);
   const [selectedDoc, setSelectedDoc] = React.useState(null);
   const [isMuted, setIsMuted] = React.useState(true);
+  const [isPlaying, setIsPlaying] = React.useState(true);
   const [loading, setLoading] = React.useState(true);
+
+  const togglePlay = () => {
+    if (exhibitionVideoRef.current) {
+      if (isPlaying) {
+        exhibitionVideoRef.current.pause();
+      } else {
+        exhibitionVideoRef.current.play().catch(() => {});
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
   const [loadError, setLoadError] = React.useState('');
 
   const [pageSettings, setPageSettings] = React.useState({
@@ -349,7 +361,8 @@ const Certifications = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5 group"
+              onClick={togglePlay}
+              className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/5 group/video cursor-pointer"
             >
               <video
                 key={exhibitionVideoSrc}
@@ -364,16 +377,40 @@ const Certifications = () => {
                 <source src={getOptimizedVideoUrl(exhibitionVideoSrc)} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               
-              {/* Mute/Unmute Control Button */}
-              <button
-                onClick={() => setIsMuted(!isMuted)}
-                className="absolute bottom-4 right-4 z-20 flex items-center justify-center p-3 rounded-full bg-zinc-950/75 hover:bg-zinc-950/90 text-white border border-white/10 hover:border-[#c5a880]/30 shadow-lg hover:scale-105 active:scale-95 transition-all duration-300"
-                aria-label={isMuted ? "Unmute video" : "Mute video"}
+              {/* Center Big Play/Pause Button Overlay */}
+              <div className={`absolute inset-0 flex items-center justify-center bg-black/10 transition-opacity duration-300 ${isPlaying ? 'opacity-0 group-hover/video:opacity-100' : 'opacity-100 bg-black/30'}`}>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-white/30 active:scale-95">
+                  {isPlaying ? (
+                    <Pause size={28} className="sm:w-8 sm:h-8" />
+                  ) : (
+                    <Play size={28} className="sm:w-8 sm:h-8 translate-x-0.5" />
+                  )}
+                </div>
+              </div>
+
+              {/* Control Overlays */}
+              <div 
+                onClick={(e) => e.stopPropagation()} 
+                className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 flex items-center gap-2 sm:gap-4 z-10"
               >
-                {isMuted ? <VolumeX size={18} className="text-[#c5a880]" /> : <Volume2 size={18} className="text-white" />}
-              </button>
+                <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Exhibition</span>
+                <button
+                  onClick={togglePlay}
+                  className="w-8 h-8 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95"
+                  title={isPlaying ? "Pause" : "Play"}
+                >
+                  {isPlaying ? <Pause size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Play size={16} className="sm:w-[18px] sm:h-[18px]" />}
+                </button>
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="w-8 h-8 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95"
+                  title={isMuted ? "Unmute" : "Mute"}
+                >
+                  {isMuted ? <VolumeX size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Volume2 size={16} className="sm:w-[18px] sm:h-[18px]" />}
+                </button>
+              </div>
             </motion.div>
           </div>
 
