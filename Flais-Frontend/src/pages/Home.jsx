@@ -136,11 +136,17 @@ const Home = () => {
   useLayoutEffect(() => {
     if (!collectionsSwiper || collectionSlides.length <= 1) return;
 
-    collectionsSwiper.loopDestroy();
-    collectionsSwiper.loopCreate();
-    collectionsSwiper.update();
-    collectionsSwiper.slideToLoop(initialCollectionSlide, 0, false);
-    collectionsSwiper.updateSlidesClasses();
+    try {
+      collectionsSwiper.update();
+      if (typeof collectionsSwiper.slideToLoop === 'function') {
+        collectionsSwiper.slideToLoop(initialCollectionSlide, 0, false);
+      }
+      if (typeof collectionsSwiper.updateSlidesClasses === 'function') {
+        collectionsSwiper.updateSlidesClasses();
+      }
+    } catch (err) {
+      console.warn('Error updating collections swiper:', err);
+    }
   }, [collectionsSwiper, collectionSlides.length, initialCollectionSlide]);
 
   const handleCollectionsPrev = () => {
