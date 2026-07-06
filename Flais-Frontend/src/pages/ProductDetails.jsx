@@ -9,7 +9,6 @@ import {
   RotateCw, 
   Calculator, 
   MapPin, 
-  Info, 
   ChevronLeft 
 } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -274,13 +273,7 @@ const ProductDetails = () => {
               </Link>
             </div>
 
-            {/* Best Results Advisory Note */}
-            <div className="flex items-start gap-2.5 text-[11px] text-zinc-500 bg-zinc-50 p-4 rounded-xl border border-zinc-100 leading-relaxed">
-              <Info size={15} className="text-zinc-400 shrink-0 mt-0.5" />
-              <span>
-                FOR BEST RESULTS, USE GRESBOND <strong className="text-zinc-700 font-bold">VX-1</strong>, <strong className="text-zinc-700 font-bold">VX-2</strong> FOR INTERNAL USE AND <strong className="text-zinc-700 font-bold">EX-5</strong> FOR EXTERNAL USE.
-              </span>
-            </div>
+
           </div>
         </div>
       </div>
