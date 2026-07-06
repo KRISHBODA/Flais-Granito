@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { getImageUrl } from '../utils/api';
 
-const emptyCatalog = { title: '', description: '', image: '', link: '' };
+const emptyCatalog = { title: '', image: '', link: '' };
 
 const uploadToCloudinary = async (BackendUrl, file, label, { raw = false } = {}) => {
   if (!file) {
@@ -135,18 +135,6 @@ const CatalogModal = ({ catalog, onSave, onClose }) => {
               value={form.title}
               onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-[#0145F2] focus:outline-none"
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
-            <textarea
-              rows={3}
-              placeholder="Short description of this catalog..."
-              value={form.description}
-              onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-[#0145F2] focus:outline-none resize-none"
             />
           </div>
 
@@ -380,7 +368,7 @@ const AdminCatalog = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Catalog Management</h1>
           <p className="text-slate-500 text-sm mt-0.5">
-            {activeTab === 'brochures' ? `${catalogs.length} catalog${catalogs.length !== 1 ? 's' : ''} — manage cover images, descriptions, and PDF links.` : 'Customize catalog download page titles, description, and hero media.'}
+            {activeTab === 'brochures' ? `${catalogs.length} catalog${catalogs.length !== 1 ? 's' : ''} — manage cover images and PDF links.` : 'Customize catalog download page titles, subtitle, and hero media.'}
           </p>
         </div>
         {activeTab === 'brochures' && (
@@ -470,7 +458,6 @@ const AdminCatalog = () => {
               <div className="p-5 space-y-3">
                 <div>
                   <h3 className="font-bold text-slate-900 text-base leading-tight">{cat.title}</h3>
-                  <p className="text-slate-500 text-sm mt-1 line-clamp-2 leading-relaxed">{cat.description || '—'}</p>
                 </div>
 
                 {/* PDF Link */}

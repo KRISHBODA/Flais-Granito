@@ -199,12 +199,9 @@ const Catalog = () => {
 
                     {/* Content */}
                     <div className="p-8 space-y-4 flex flex-col flex-grow text-center">
-                      <h3 className="font-display font-bold text-2xl text-zinc-900 group-hover:text-beige-600 transition-colors">
+                      <h3 className="font-display font-bold text-2xl text-zinc-900 group-hover:text-beige-600 transition-colors flex-grow">
                         {catalog.title}
                       </h3>
-                      <p className="text-zinc-500 leading-relaxed text-sm flex-grow">
-                        {catalog.description}
-                      </p>
 
                       <div className="pt-6 border-t border-zinc-100 grid grid-cols-2 gap-4">
                         <button onClick={(e) => handleAction(e, catalog, 'view')} className="flex items-center justify-center text-sm font-bold text-zinc-600 hover:text-beige-600 transition-colors">

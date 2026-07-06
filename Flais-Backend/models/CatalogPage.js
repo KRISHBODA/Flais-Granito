@@ -10,7 +10,6 @@ const catalogPageSchema = new mongoose.Schema(
     catalogs: [
       {
         title: { type: String, required: true },
-        description: { type: String, default: "" },
         image: { type: String, default: "" },
         link: { type: String, default: "" }
       }

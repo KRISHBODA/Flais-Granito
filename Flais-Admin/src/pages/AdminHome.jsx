@@ -122,17 +122,46 @@ const AdminHome = () => {
   const [loading, setLoading] = useState(true);
   const [uploadingField, setUploadingField] = useState(null); // Track which field is uploading
   const getBackendBaseUrl = () => {
-    if (import.meta.env.VITE_BACKEND_URL) {
-      return import.meta.env.VITE_BACKEND_URL.trim().replace(/\/$/, '');
-    }
+    const envUrl = import.meta.env.VITE_BACKEND_URL ? import.meta.env.VITE_BACKEND_URL.trim().replace(/\/$/, '') : '';
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      return `http://${hostname}:8000`;
+    const runtimeUrl = hostname && hostname !== 'localhost' && hostname !== '127.0.0.1'
+      ? `http://${hostname}:8000`
+      : 'http://localhost:8000';
+
+    if (!envUrl) {
+      return runtimeUrl;
     }
-    return 'http://localhost:8000';
+
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
+      return runtimeUrl;
+    }
+
+    return envUrl;
   };
 
   const BackendUrl = getBackendBaseUrl();
+
+  const isLocalHostUrl = (parsedUrl) => parsedUrl.hostname === 'localhost' || parsedUrl.hostname === '127.0.0.1';
+
+  const buildMediaUrl = (pathName) => {
+    if (!pathName) return '';
+    if (pathName.startsWith('/media/')) {
+      return `${BackendUrl}/media/${pathName.replace(/^\/media\//, '')}`;
+    }
+    if (pathName.startsWith('/uploads/')) {
+      return `${BackendUrl}/uploads/${pathName.replace(/^\/uploads\//, '')}`;
+    }
+    if (pathName.startsWith('/')) {
+      return `${BackendUrl}${pathName}`;
+    }
+    if (pathName.startsWith('media/')) {
+      return `${BackendUrl}/media/${pathName.replace(/^media\//, '')}`;
+    }
+    if (pathName.startsWith('uploads/')) {
+      return `${BackendUrl}/uploads/${pathName.replace(/^uploads\//, '')}`;
+    }
+    return `${BackendUrl}/media/${pathName}`;
+  };
 
   const getImageUrl = (url) => {
     if (!url) return '';
@@ -142,29 +171,23 @@ const AdminHome = () => {
     }
 
     if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
+      try {
+        const parsed = new URL(url);
+        if (isLocalHostUrl(parsed)) {
+          return buildMediaUrl(parsed.pathname);
+        }
+        return url;
+      } catch (e) {
+        return url;
+      }
     }
 
-    if (url.startsWith('/media/') || url.startsWith('media/')) {
-      const cleanPath = url.replace(/^\/?media\//, '');
-      return `${BackendUrl}/media/${cleanPath}`;
-    }
-
-    if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
-      const cleanPath = url.replace(/^\/?uploads\//, '');
-      return `${BackendUrl}/uploads/${cleanPath}`;
-    }
-
-    if (url.startsWith('/')) {
-      return `${BackendUrl}${url}`;
-    }
-
-    return `${BackendUrl}/media/${url}`;
+    return buildMediaUrl(url);
   };
 
   const getPreviewUrl = (url) => {
     if (!url) return '';
-    if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
+    if (url.startsWith('blob:') || url.startsWith('data:')) {
       return url;
     }
     return getImageUrl(url);
