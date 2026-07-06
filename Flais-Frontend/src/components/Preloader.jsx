@@ -23,6 +23,18 @@ const Preloader = () => {
     return () => clearTimeout(timer);
   }, [loading]);
 
+  // Disable body scroll when preloader is active
+  useEffect(() => {
+    if (loading && !location.pathname.startsWith("/admin")) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [loading, location.pathname]);
+
   if (location.pathname.startsWith("/admin")) {
     return null;
   }
@@ -30,15 +42,20 @@ const Preloader = () => {
   return (
     <AnimatePresence>
       {loading && (
-        <motion.div className="fixed inset-0 z-[9999] overflow-hidden bg-white">
+        <motion.div
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-white"
+        >
           <video
             src={motionLogo}
             autoPlay
             muted
-            loop
             playsInline
             preload="auto"
-            className="absolute inset-0 h-full w-full object-cover object-center opacity-[100] blur-[1px] scale-105 pointer-events-none select-none"
+            onEnded={() => setLoading(false)}
+            className="w-[85%] max-w-[500px] md:max-w-[600px] h-auto object-contain pointer-events-none select-none"
           />
         </motion.div>
       )}
