@@ -261,10 +261,10 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
     setTotalMB(total ? total / 1024 / 1024 : null);
 
     setLoadingStage((prev) => {
-      if (prev === 'Connecting' && loaded > 0) {
+      if (loaded > 0 && prev === 'Connecting') {
         return 'Downloading PDF';
       }
-      if (percent === 100 && prev === 'Downloading PDF') {
+      if (percent === 100 && prev !== 'Loaded') {
         return 'Preparing Pages';
       }
       return prev;
@@ -279,14 +279,18 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const onDocumentLoadSuccess = useCallback(({ numPages: total }) => {
     setNumPages(total);
     setLoadError(null);
-    setLoadingStage('Preparing Pages');
+    setLoadingStage((prev) => (prev === 'Loaded' ? 'Loaded' : 'Preparing Pages'));
 
     if (stageTimeoutRef.current) {
       window.clearTimeout(stageTimeoutRef.current);
     }
     stageTimeoutRef.current = window.setTimeout(() => {
-      setLoadingStage((prev) => (prev === 'Preparing Pages' ? 'Rendering First Page' : prev));
-    }, 500);
+      setLoadingStage((prev) =>
+        prev === 'Preparing Pages' || prev === 'Downloading PDF'
+          ? 'Rendering First Page'
+          : prev
+      );
+    }, 300);
 
     const now = performance.now();
     const elapsed = loadMetricsRef.current.start
