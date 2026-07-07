@@ -27,6 +27,15 @@
   }
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ── Top Header Bar ────────────────────────────────────────────── */
 .flipbook-header {
   position: absolute;

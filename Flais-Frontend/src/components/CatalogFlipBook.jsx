@@ -11,8 +11,6 @@ import {
   Minimize,
   RotateCcw,
   AlertTriangle,
-  ExternalLink,
-  FileText,
 } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -99,8 +97,6 @@ function calcDimensions(isFullscreen) {
 }
 
 // ── Main Component ───────────────────────────────────────────────
-const LOADING_TIMEOUT_MS = 10_000; // 10 seconds before showing fallback
-
 const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -108,7 +104,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [dimensions, setDimensions] = useState(() => calcDimensions(false));
-  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
   const flipBookRef = useRef(null);
   const overlayRef = useRef(null);
@@ -149,19 +144,10 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // ── Loading timeout — show fallback if PDF takes too long ──────
-  useEffect(() => {
-    if (numPages || loadError) return; // already loaded or errored
-    setLoadingTimedOut(false);
-    const timer = setTimeout(() => setLoadingTimedOut(true), LOADING_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [numPages, loadError, pdfUrl]);
-
   // ── PDF load callbacks ─────────────────────────────────────────
   const onDocumentLoadSuccess = useCallback(({ numPages: total }) => {
     setNumPages(total);
     setLoadError(null);
-    setLoadingTimedOut(false);
   }, []);
 
   const onDocumentLoadError = useCallback((error) => {
@@ -271,48 +257,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
       {/* Book Area */}
       <div className="flipbook-container" onClick={handleOverlayClick}>
-        {/* Show timed-out fallback OVER the Document if loading stalls */}
-        {loadingTimedOut && !numPages && !loadError && (
-          <div className="flipbook-timeout">
-            <div className="flipbook-timeout-icon">
-              <FileText size={36} />
-            </div>
-            <p className="flipbook-timeout-title">Taking longer than expected</p>
-            <p className="flipbook-timeout-message">
-              The catalog viewer is having trouble loading this PDF.
-              You can open it directly instead.
-            </p>
-            <div className="flipbook-timeout-actions">
-              <a
-                href={pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flipbook-open-btn"
-              >
-                <ExternalLink size={16} />
-                Open PDF in New Tab
-              </a>
-              <button
-                className="flipbook-retry-btn"
-                onClick={() => {
-                  setLoadingTimedOut(false);
-                  setLoadError(null);
-                  setNumPages(null);
-                }}
-              >
-                <RotateCcw size={16} />
-                Try Again
-              </button>
-              <button
-                className="flipbook-secondary-btn"
-                onClick={onClose}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-
         <Document
           file={pdfUrl}
           onLoadSuccess={onDocumentLoadSuccess}
@@ -334,26 +278,17 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
                 <AlertTriangle size={28} />
               </div>
               <p className="flipbook-error-title">Unable to Load PDF</p>
-              <p className="flipbook-error-message">
-                The PDF viewer could not start. You can view the file directly.
-              </p>
-              <div className="flipbook-timeout-actions">
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flipbook-open-btn"
-                >
-                  <ExternalLink size={16} />
-                  Open PDF in New Tab
-                </a>
-                <button
-                  className="flipbook-secondary-btn"
-                  onClick={onClose}
-                >
-                  Close
-                </button>
-              </div>
+              <p className="flipbook-error-message">Something went wrong. Please try again.</p>
+              <button
+                className="flipbook-retry-btn"
+                onClick={() => {
+                  setLoadError(null);
+                  setNumPages(null);
+                }}
+              >
+                <RotateCcw size={16} />
+                Try Again
+              </button>
             </div>
           }
         >
@@ -364,27 +299,16 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
               </div>
               <p className="flipbook-error-title">Unable to Load PDF</p>
               <p className="flipbook-error-message">{loadError}</p>
-              <div className="flipbook-timeout-actions">
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flipbook-open-btn"
-                >
-                  <ExternalLink size={16} />
-                  Open PDF in New Tab
-                </a>
-                <button
-                  className="flipbook-retry-btn"
-                  onClick={() => {
-                    setLoadError(null);
-                    setNumPages(null);
-                  }}
-                >
-                  <RotateCcw size={16} />
-                  Try Again
-                </button>
-              </div>
+              <button
+                className="flipbook-retry-btn"
+                onClick={() => {
+                  setLoadError(null);
+                  setNumPages(null);
+                }}
+              >
+                <RotateCcw size={16} />
+                Try Again
+              </button>
             </div>
           ) : numPages ? (
             <>
