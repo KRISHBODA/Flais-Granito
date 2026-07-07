@@ -223,7 +223,7 @@ const rowPadding = isOpen
 
   return (
     <nav className={`fixed left-1/2 -translate-x-1/2 z-50 transition-[background-color,border-color,box-shadow,transform,top,border-radius,width] duration-500 ease-in-out ${navClass}`}>
-      <div className={`flex items-center justify-between w-full ${rowPadding}`}>
+      <div className={`flex items-center justify-between lg:justify-center lg:gap-x-4 xl:gap-x-6 2xl:gap-x-8 w-full ${rowPadding}`}>
 
         {/* LEFT: Logo */}
         <div className="flex items-center flex-shrink-0">
@@ -243,7 +243,7 @@ const rowPadding = isOpen
         </div>
 
         {/* CENTER: Nav Links */}
-        <div className="hidden lg:flex items-center justify-center gap-x-4 xl:gap-x-8 flex-1 mx-4 xl:mx-8">
+        <div className="hidden lg:contents">
           {navLinks.map((link) => (
             <div
               key={link.name}
@@ -312,7 +312,7 @@ const rowPadding = isOpen
         </div>
 
         {/* RIGHT: Enquire + Language + Mobile Toggle */}
-        <div className="flex items-center justify-end gap-4 flex-shrink-0">
+        <div className="flex items-center justify-end gap-4 flex-shrink-0 lg:contents">
 
           {/* Enquire Now — Desktop */}
           <Link
