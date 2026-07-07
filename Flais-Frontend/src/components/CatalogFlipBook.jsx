@@ -120,11 +120,8 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const hideLoaderTimeoutRef = useRef(null);
   const displayProgressRef = useRef(0);
 
-  const [downloadProgress, setDownloadProgress] = useState(0);
-  const [animatedProgress, setAnimatedProgress] = useState(0);
-  const [downloadedMB, setDownloadedMB] = useState(0);
-  const [totalMB, setTotalMB] = useState(0);
-  const [loadingStage, setLoadingStage] = useState('Connecting');
+  const [_downloadProgress, setDownloadProgress] = useState(0);
+  const [_loadingStage, setLoadingStage] = useState('Connecting');
   const [showLoader, setShowLoader] = useState(true);
 
   const STAGE_ORDER = [
@@ -133,36 +130,7 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
     'Preparing Pages',
     'Rendering First Page',
   ];
-
-  const formatMB = (value) => {
-    if (value === null || value === undefined || Number.isNaN(value)) {
-      return '-- MB';
-    }
-    const mb = Number(value);
-    return mb < 10 ? `${mb.toFixed(1)} MB` : `${Math.round(mb)} MB`;
-  };
-
-  const getStageState = (stage) => {
-    if (loadingStage === 'Loaded') {
-      return 'complete';
-    }
-
-    const currentIndex = STAGE_ORDER.indexOf(loadingStage);
-    const stageIndex = STAGE_ORDER.indexOf(stage);
-
-    if (stageIndex < currentIndex) return 'complete';
-    if (stageIndex === currentIndex) return 'active';
-    return 'pending';
-  };
-
-  const getStageItems = () => [
-    { label: 'Connecting...', key: 'Connecting' },
-    { label: 'Downloading PDF...', key: 'Downloading PDF' },
-    { label: 'Preparing Pages...', key: 'Preparing Pages' },
-    { label: 'Rendering First Page...', key: 'Rendering First Page' },
-  ];
-
-  const getDisplayedProgress = () => Math.max(0, Math.min(100, Math.round(animatedProgress)));
+  // Detailed stage UI removed — loader simplified to a spinner and 'Loading...'.
 
   // ── Recalculate on resize ──────────────────────────────────────
   useEffect(() => {
@@ -184,9 +152,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
     const resetTimer = window.setTimeout(() => {
       setDownloadProgress(0);
-      setAnimatedProgress(0);
-      setDownloadedMB(0);
-      setTotalMB(0);
       setLoadingStage('Connecting');
       setShowLoader(true);
     }, 0);
@@ -257,8 +222,7 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
       return percent;
     });
 
-    setDownloadedMB(loaded / 1024 / 1024);
-    setTotalMB(total ? total / 1024 / 1024 : null);
+    // downloadedMB/totalMB removed — keeping progress percent only
 
     setLoadingStage((prev) => {
       if (loaded > 0 && prev === 'Connecting') {
@@ -336,28 +300,7 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
     console.error(`[CatalogFlipBook] Page ${pageNumber} render error`, error);
   }, []);
 
-  useEffect(() => {
-    if (!showLoader) {
-      return;
-    }
-
-    let rafId = 0;
-    const animateProgress = () => {
-      const current = displayProgressRef.current;
-      const next = current + (downloadProgress - current) * 0.16;
-      const smoothed = Math.abs(downloadProgress - next) < 0.25 ? downloadProgress : next;
-
-      displayProgressRef.current = smoothed;
-      setAnimatedProgress(smoothed);
-
-      if (Math.abs(downloadProgress - smoothed) >= 0.25) {
-        rafId = requestAnimationFrame(animateProgress);
-      }
-    };
-
-    rafId = requestAnimationFrame(animateProgress);
-    return () => window.cancelAnimationFrame(rafId);
-  }, [downloadProgress, showLoader]);
+  // Progress smoothing removed — loader shows a simple spinner only.
 
   useEffect(() => {
     return () => {
@@ -589,67 +532,18 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
             >
               <motion.div
-                className="flipbook-loading-card"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: 0.32, ease: 'easeOut' }}
+                className="flipbook-loading-card simple-loader"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flipbook-loading-badge">
-                  <div className="ring-outer">
-                    <div className="ring-inner" />
-                  </div>
-                </div>
-
-                <div className="flipbook-loading-headline">
-                  <div>
-                    <p className="flipbook-loading-title">Loading Catalog</p>
-                    <p className="flipbook-loading-note">A premium PDF experience is being prepared.</p>
-                  </div>
-                  <span className="flipbook-loading-percentage">
-                    {getDisplayedProgress()}%
-                  </span>
-                </div>
-
-                <div className="flipbook-loading-meta">
-                  {formatMB(downloadedMB)} / {formatMB(totalMB)}
-                </div>
-
-                <div className="flipbook-progress-track">
-                  <motion.div
-                    className="flipbook-progress-fill"
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${Math.max(0, Math.min(100, animatedProgress))}%` }}
-                    transition={{ duration: 0.35, ease: 'easeOut' }}
-                  />
-                </div>
-
-                <div className="flipbook-stage-list">
-                  {getStageItems().map((stage) => {
-                    const state = getStageState(stage.key);
-                    return (
-                      <motion.div
-                        key={stage.key}
-                        className={`stage-item ${state}`}
-                        layout
-                        initial={{ opacity: 0.8, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <div className="stage-state">
-                          {state === 'complete' ? '✓' : state === 'active' ? '⏳' : '•'}
-                        </div>
-                        <div>
-                          <p className="stage-label">{stage.label}</p>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                <div className="simple-spinner" aria-hidden="true" />
+                <p className="simple-loading-text">Loading...</p>
               </motion.div>
             </motion.div>
           )}
