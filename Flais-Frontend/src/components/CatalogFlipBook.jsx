@@ -17,11 +17,11 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './CatalogFlipBook.css';
 
-// Configure the PDF.js web worker from /public (same-origin, .js extension).
-// CSP blocks external CDNs and blob workers; the server misserves .mjs files.
-// The worker file is copied from node_modules/pdfjs-dist/build/pdf.worker.min.mjs
-// to public/pdf.worker.min.js during setup.
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+const ASSETS_BASE_URL = import.meta.env.BASE_URL || '/';
+
+// Configure the PDF.js web worker and WASM/ICC asset base paths.
+// Use Vite BASE_URL so URLs are correct when the app is hosted under a subpath.
+pdfjs.GlobalWorkerOptions.workerSrc = `${ASSETS_BASE_URL}pdf.worker.min.js`;
 // ── ForwardRef Page Wrapper ──────────────────────────────────────
 // react-pageflip injects a ref into each child to manage DOM-level
 // flip animations. Every child of HTMLFlipBook MUST forward its ref.
@@ -460,8 +460,8 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
           options={{
             useWasm: true,
             useWorkerFetch: true,
-            wasmUrl: '/',
-            iccUrl: '/',
+            wasmUrl: ASSETS_BASE_URL,
+            iccUrl: ASSETS_BASE_URL,
           }}
           onLoadProgress={onDocumentLoadProgress}
           onLoadSuccess={onDocumentLoadSuccess}
