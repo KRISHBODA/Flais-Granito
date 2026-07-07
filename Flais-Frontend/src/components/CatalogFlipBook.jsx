@@ -25,23 +25,26 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 // ── ForwardRef Page Wrapper ──────────────────────────────────────
 // react-pageflip injects a ref into each child to manage DOM-level
 // flip animations. Every child of HTMLFlipBook MUST forward its ref.
-const FlipPage = forwardRef(({ pageNumber, width, height, isVisible }, ref) => {
-  return (
-    <div className="flipbook-page" ref={ref} style={{ width, height }}>
-      {isVisible ? (
-        <Page
-          pageNumber={pageNumber}
-          width={width}
-          renderTextLayer={false}
-          renderAnnotationLayer={false}
-          loading={
-            <div className="flipbook-page-loading">
-              <div className="page-spinner" />
-              <span>Page {pageNumber}</span>
-            </div>
-          }
-        />
-      ) : (
+const FlipPage = forwardRef(
+  ({ pageNumber, width, height, isVisible, onRenderSuccess, onRenderError }, ref) => {
+    return (
+      <div className="flipbook-page" ref={ref} style={{ width, height }}>
+        {isVisible ? (
+          <Page
+            pageNumber={pageNumber}
+            width={width}
+            renderTextLayer={false}
+            renderAnnotationLayer={false}
+            onRenderSuccess={() => onRenderSuccess?.(pageNumber)}
+            onRenderError={(error) => onRenderError?.(pageNumber, error)}
+            loading={
+              <div className="flipbook-page-loading">
+                <div className="page-spinner" />
+                <span>Page {pageNumber}</span>
+              </div>
+            }
+          />
+        ) : (
         <div className="flipbook-page-loading">
           <div className="page-spinner" />
           <span>Page {pageNumber}</span>
@@ -107,6 +110,12 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
   const flipBookRef = useRef(null);
   const overlayRef = useRef(null);
+  const loadMetricsRef = useRef({
+    start: 0,
+    documentLoaded: 0,
+    firstPageRendered: 0,
+    progressLastPct: 0,
+  });
 
   // ── Recalculate on resize ──────────────────────────────────────
   useEffect(() => {
@@ -114,6 +123,19 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isFullscreen]);
+
+  useEffect(() => {
+    if (!pdfUrl) return;
+
+    loadMetricsRef.current = {
+      start: performance.now(),
+      documentLoaded: 0,
+      firstPageRendered: 0,
+      progressLastPct: 0,
+    };
+
+    console.log('[CatalogFlipBook] PDF load started:', pdfUrl);
+  }, [pdfUrl]);
 
   // ── Lock body scroll while modal is open ───────────────────────
   useEffect(() => {
@@ -158,9 +180,31 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   }, [onClose, flipNext, flipPrev]);
 
   // ── PDF load callbacks ─────────────────────────────────────────
+  const onDocumentLoadProgress = useCallback((progress) => {
+    const loaded = progress?.loaded ?? 0;
+    const total = progress?.total ?? 0;
+
+    if (!total || !loaded) return;
+
+    const percent = Math.round((loaded / total) * 100);
+    if (percent >= loadMetricsRef.current.progressLastPct + 10 || percent === 100) {
+      loadMetricsRef.current.progressLastPct = percent;
+      console.log(`[CatalogFlipBook] Document load progress: ${percent}%`);
+    }
+  }, []);
+
   const onDocumentLoadSuccess = useCallback(({ numPages: total }) => {
     setNumPages(total);
     setLoadError(null);
+    const now = performance.now();
+    const elapsed = loadMetricsRef.current.start
+      ? Math.round(now - loadMetricsRef.current.start)
+      : null;
+    loadMetricsRef.current.documentLoaded = now;
+    console.log(
+      `[CatalogFlipBook] Document loaded (${total} pages)` +
+        (elapsed !== null ? ` in ${elapsed}ms` : '')
+    );
   }, []);
 
   const onDocumentLoadError = useCallback((error) => {
@@ -170,6 +214,25 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
   const onDocumentSourceError = useCallback((error) => {
     console.error('[CatalogFlipBook] Source error', error);
+  }, []);
+
+  const onPageRenderSuccess = useCallback((pageNumber) => {
+    console.log(`[CatalogFlipBook] Page ${pageNumber} rendered`);
+    if (pageNumber === 1 && !loadMetricsRef.current.firstPageRendered) {
+      const now = performance.now();
+      const elapsed = loadMetricsRef.current.start
+        ? Math.round(now - loadMetricsRef.current.start)
+        : null;
+      loadMetricsRef.current.firstPageRendered = now;
+      console.log(
+        `[CatalogFlipBook] First page rendered` +
+          (elapsed !== null ? ` in ${elapsed}ms` : '')
+      );
+    }
+  }, []);
+
+  const onPageRenderError = useCallback((pageNumber, error) => {
+    console.error(`[CatalogFlipBook] Page ${pageNumber} render error`, error);
   }, []);
 
   // ── Zoom ───────────────────────────────────────────────────────
@@ -259,6 +322,7 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
       <div className="flipbook-container" onClick={handleOverlayClick}>
         <Document
           file={pdfUrl}
+          onLoadProgress={onDocumentLoadProgress}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           onSourceError={onDocumentSourceError}
@@ -357,6 +421,8 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
                       width={dimensions.pageWidth}
                       height={dimensions.pageHeight}
                       isVisible={isPageVisible(i)}
+                      onRenderSuccess={onPageRenderSuccess}
+                      onRenderError={onPageRenderError}
                     />
                   ))}
                 </HTMLFlipBook>
