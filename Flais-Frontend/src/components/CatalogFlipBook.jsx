@@ -25,7 +25,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 // ── ForwardRef Page Wrapper ──────────────────────────────────────
 // react-pageflip injects a ref into each child to manage DOM-level
 // flip animations. Every child of HTMLFlipBook MUST forward its ref.
-const FlipPage = forwardRef(({ pageNumber, width, height, isVisible, onRenderSuccess }, ref) => {
+const FlipPage = forwardRef(({ pageNumber, width, height, isVisible }, ref) => {
   return (
     <div className="flipbook-page" ref={ref} style={{ width, height }}>
       {isVisible ? (
@@ -34,7 +34,6 @@ const FlipPage = forwardRef(({ pageNumber, width, height, isVisible, onRenderSuc
           width={width}
           renderTextLayer={false}
           renderAnnotationLayer={false}
-          onRenderSuccess={onRenderSuccess}
           loading={
             <div className="flipbook-page-loading">
               <div className="page-spinner" />
@@ -102,7 +101,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [loadError, setLoadError] = useState(null);
-  const [isFirstPageRendered, setIsFirstPageRendered] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [dimensions, setDimensions] = useState(() => calcDimensions(false));
@@ -163,7 +161,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const onDocumentLoadSuccess = useCallback(({ numPages: total }) => {
     setNumPages(total);
     setLoadError(null);
-    setIsFirstPageRendered(false);
   }, []);
 
   const onDocumentLoadError = useCallback((error) => {
@@ -174,12 +171,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const onDocumentSourceError = useCallback((error) => {
     console.error('[CatalogFlipBook] Source error', error);
   }, []);
-
-  const handleFirstPageRenderSuccess = useCallback(() => {
-    setIsFirstPageRendered(true);
-  }, []);
-
-  const showLoadingOverlay = !isFirstPageRendered && !loadError;
 
   // ── Zoom ───────────────────────────────────────────────────────
   const handleZoomIn = () => {
@@ -264,20 +255,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
         </button>
       </div>
 
-      {/* Loading Overlay */}
-      {showLoadingOverlay && (
-        <div className={`flipbook-loading-overlay${isFirstPageRendered ? ' is-hidden' : ''}`}>
-          <div className="flipbook-loading">
-            <div className="flipbook-loading-spinner">
-              <div className="ring-outer" />
-              <div className="ring-inner" />
-            </div>
-            <span className="flipbook-loading-text">Loading Catalog</span>
-            <span className="flipbook-loading-subtext">Preparing your flipbook experience…</span>
-          </div>
-        </div>
-      )}
-
       {/* Book Area */}
       <div className="flipbook-container" onClick={handleOverlayClick}>
         <Document
@@ -347,7 +324,7 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
               </button>
 
               <div
-                className={`flipbook-book-wrapper ${isFirstPageRendered ? 'is-visible' : 'is-hidden'}`}
+                className="flipbook-book-wrapper"
                 style={{ transform: `scale(${zoom})` }}
               >
                 <HTMLFlipBook
@@ -380,7 +357,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
                       width={dimensions.pageWidth}
                       height={dimensions.pageHeight}
                       isVisible={isPageVisible(i)}
-                      onRenderSuccess={i === 0 ? handleFirstPageRenderSuccess : undefined}
                     />
                   ))}
                 </HTMLFlipBook>
