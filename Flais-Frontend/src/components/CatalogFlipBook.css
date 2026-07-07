@@ -115,6 +115,31 @@
   object-fit: contain;
 }
 
+/*
+ * Fix: page-flip library (.stf__parent) forces canvas to position:absolute,
+ * which collapses react-pdf's .react-pdf__Page wrapper to 0px height,
+ * making all pages appear white/blank. Override to keep canvas in flow.
+ */
+.stf__parent .react-pdf__Page {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: unset !important;
+  min-height: unset !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.stf__parent .react-pdf__Page canvas {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.stf__parent .react-pdf__Page__canvas {
+  position: relative !important;
+}
+
 /* Page loading placeholder */
 .flipbook-page-loading {
   display: flex;

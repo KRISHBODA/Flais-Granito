@@ -16,15 +16,39 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './CatalogFlipBook.css';
 
-// Configure the PDF.js web worker via CDN.
-// Using unpkg CDN guarantees correct MIME type regardless of production server config.
-// Version MUST match the pdfjs-dist version bundled inside react-pdf (5.4.296).
-pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs';
+// Configure the PDF.js web worker using Vite's asset pipeline.
+// This keeps the worker same-origin and avoids CSP issues from external CDNs.
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
+console.log('[CatalogFlipBook] workerSrc configured', pdfjs.GlobalWorkerOptions.workerSrc);
 
 // ── ForwardRef Page Wrapper ──────────────────────────────────────
 // react-pageflip injects a ref into each child to manage DOM-level
 // flip animations. Every child of HTMLFlipBook MUST forward its ref.
 const FlipPage = forwardRef(({ pageNumber, width, height, isVisible }, ref) => {
+  console.log('[CatalogFlipBook] Rendering FlipPage', {
+    pageNumber,
+    width,
+    height,
+    isVisible,
+  });
+
+  useEffect(() => {
+    console.log('[CatalogFlipBook] ForwardRef page mounted', {
+      pageNumber,
+      width,
+      height,
+      isVisible,
+    });
+    return () => {
+      console.log('[CatalogFlipBook] ForwardRef page unmounted', {
+        pageNumber,
+      });
+    };
+  }, [pageNumber, width, height, isVisible]);
+
   return (
     <div className="flipbook-page" ref={ref} style={{ width, height }}>
       {isVisible ? (
@@ -33,6 +57,30 @@ const FlipPage = forwardRef(({ pageNumber, width, height, isVisible }, ref) => {
           width={width}
           renderTextLayer={false}
           renderAnnotationLayer={false}
+          onLoadSuccess={(page) => {
+            console.log('[CatalogFlipBook] Page onLoadSuccess', {
+              pageNumber,
+              page,
+            });
+          }}
+          onLoadError={(error) => {
+            console.log('[CatalogFlipBook] Page onLoadError', {
+              pageNumber,
+              error,
+            });
+          }}
+          onRenderSuccess={(page) => {
+            console.log('[CatalogFlipBook] Page onRenderSuccess', {
+              pageNumber,
+              page,
+            });
+          }}
+          onRenderError={(error) => {
+            console.log('[CatalogFlipBook] Page onRenderError', {
+              pageNumber,
+              error,
+            });
+          }}
           loading={
             <div className="flipbook-page-loading">
               <div className="page-spinner" />
@@ -107,9 +155,79 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const flipBookRef = useRef(null);
   const overlayRef = useRef(null);
 
+  console.log('[CatalogFlipBook] Render', {
+    pdfUrl,
+    catalogTitle,
+    numPages,
+    currentPage,
+    loadError,
+    isFullscreen,
+    zoom,
+    dimensions,
+  });
+
+  useEffect(() => {
+    console.log('[CatalogFlipBook] Component mounted', {
+      pdfUrl,
+      catalogTitle,
+    });
+    return () => {
+      console.log('[CatalogFlipBook] Component unmounted', {
+        pdfUrl,
+        catalogTitle,
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log('[CatalogFlipBook] Received pdfUrl', {
+      pdfUrl,
+      typeofPdfUrl: typeof pdfUrl,
+      isPdf: typeof pdfUrl === 'string' ? pdfUrl.toLowerCase().includes('.pdf') : false,
+      isJpg: typeof pdfUrl === 'string' ? pdfUrl.toLowerCase().includes('.jpg') || pdfUrl.toLowerCase().includes('.jpeg') : false,
+      isPng: typeof pdfUrl === 'string' ? pdfUrl.toLowerCase().includes('.png') : false,
+      isUndefined: typeof pdfUrl === 'undefined',
+    });
+  }, [pdfUrl]);
+
+  useEffect(() => {
+    console.log('[CatalogFlipBook] Calculated dimensions', dimensions);
+  }, [dimensions]);
+
+  useEffect(() => {
+    console.log('[CatalogFlipBook] numPages changed', numPages);
+  }, [numPages]);
+
+  useEffect(() => {
+    console.log('[CatalogFlipBook] Current page changed', currentPage);
+  }, [currentPage]);
+
+  useEffect(() => {
+    console.log('[CatalogFlipBook] fullscreen state changed', isFullscreen);
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    console.log('[CatalogFlipBook] zoom changed', zoom);
+  }, [zoom]);
+
+  useEffect(() => {
+    if (numPages) {
+      console.log('[CatalogFlipBook] HTMLFlipBook mounted', {
+        numPages,
+        currentPage,
+        dimensions,
+      });
+    }
+  }, [numPages, currentPage, dimensions]);
+
   // ── Recalculate on resize ──────────────────────────────────────
   useEffect(() => {
     const handleResize = () => {
+      console.log('[CatalogFlipBook] window resize detected', {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        isFullscreen,
+      });
       setDimensions(calcDimensions(isFullscreen));
     };
     window.addEventListener('resize', handleResize);
@@ -119,8 +237,14 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   // ── Lock body scroll while modal is open ───────────────────────
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
+    console.log('[CatalogFlipBook] Lock body scroll while modal is open', {
+      originalOverflow,
+    });
     document.body.style.overflow = 'hidden';
     return () => {
+      console.log('[CatalogFlipBook] Restore body scroll', {
+        originalOverflow,
+      });
       document.body.style.overflow = originalOverflow;
     };
   }, []);
@@ -128,6 +252,9 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   // ── Keyboard navigation ────────────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e) => {
+      console.log('[CatalogFlipBook] keydown', {
+        key: e.key,
+      });
       if (e.key === 'Escape') {
         onClose();
         return;
@@ -147,38 +274,66 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
   // ── PDF load callbacks ─────────────────────────────────────────
   const onDocumentLoadSuccess = useCallback(({ numPages: total }) => {
+    console.log('[CatalogFlipBook] onLoadSuccess fired', {
+      total,
+      pdfUrl,
+    });
     setNumPages(total);
     setLoadError(null);
   }, []);
 
   const onDocumentLoadError = useCallback((error) => {
+    console.log('[CatalogFlipBook] onLoadError fired', {
+      pdfUrl,
+      error,
+      errorString: error ? String(error) : null,
+      stack: error?.stack,
+    });
     setLoadError(error?.message || 'Failed to load the PDF document.');
   }, []);
 
+  const onDocumentSourceError = useCallback((error) => {
+    console.log('[CatalogFlipBook] onSourceError fired', {
+      pdfUrl,
+      error,
+      errorString: error ? String(error) : null,
+      stack: error?.stack,
+    });
+  }, [pdfUrl]);
+
   // ── Flip navigation ────────────────────────────────────────────
   const flipNext = () => {
+    console.log('[CatalogFlipBook] flipNext invoked');
     flipBookRef.current?.pageFlip()?.flipNext();
   };
 
   const flipPrev = () => {
+    console.log('[CatalogFlipBook] flipPrev invoked');
     flipBookRef.current?.pageFlip()?.flipPrev();
   };
 
   const onFlip = useCallback((e) => {
+    console.log('[CatalogFlipBook] onPageChange / onFlip fired', e);
     setCurrentPage(e.data);
   }, []);
 
   // ── Zoom ───────────────────────────────────────────────────────
   const handleZoomIn = () => {
+    console.log('[CatalogFlipBook] zoom in requested');
     setZoom((prev) => Math.min(prev + 0.2, 2.0));
   };
 
   const handleZoomOut = () => {
+    console.log('[CatalogFlipBook] zoom out requested');
     setZoom((prev) => Math.max(prev - 0.2, 0.6));
   };
 
   // ── Fullscreen ─────────────────────────────────────────────────
   const toggleFullscreen = async () => {
+    console.log('[CatalogFlipBook] fullscreen toggle requested', {
+      currentIsFullscreen: isFullscreen,
+      hasOverlayRef: !!overlayRef.current,
+    });
     try {
       if (!document.fullscreenElement) {
         await overlayRef.current?.requestFullscreen();
@@ -195,6 +350,9 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
   useEffect(() => {
     const handleFSChange = () => {
+      console.log('[CatalogFlipBook] fullscreenchange event', {
+        fullscreenElement: !!document.fullscreenElement,
+      });
       if (!document.fullscreenElement) {
         setIsFullscreen(false);
       }
@@ -224,6 +382,9 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
   // ── Close on overlay click (not on book) ───────────────────────
   const handleOverlayClick = (e) => {
+    console.log('[CatalogFlipBook] overlay click', {
+      targetIsCurrentTarget: e.target === e.currentTarget,
+    });
     if (e.target === e.currentTarget) {
       onClose();
     }
@@ -257,6 +418,7 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
           file={pdfUrl}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
+          onSourceError={onDocumentSourceError}
           loading={
             <div className="flipbook-loading">
               <div className="flipbook-loading-spinner">
@@ -268,6 +430,11 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
           }
           error={null}
         >
+          {console.log('[CatalogFlipBook] Document rendered', {
+            pdfUrl,
+            numPages,
+            loadError,
+          })}
           {loadError ? (
             <div className="flipbook-error">
               <div className="flipbook-error-icon">
@@ -288,6 +455,11 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
             </div>
           ) : numPages ? (
             <>
+              {console.log('[CatalogFlipBook] Rendering FlipBook', {
+                numPages,
+                currentPage,
+                dimensions,
+              })}
               {/* Side navigation arrows */}
               <button
                 className="flipbook-nav-arrow prev"
@@ -303,6 +475,10 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
                 className="flipbook-book-wrapper"
                 style={{ transform: `scale(${zoom})` }}
               >
+                {console.log('[CatalogFlipBook] HTMLFlipBook branch active', {
+                  numPages,
+                  childrenCount: numPages,
+                })}
                 <HTMLFlipBook
                   ref={flipBookRef}
                   width={dimensions.pageWidth}
@@ -325,16 +501,27 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
                   className="flipbook-stpageflip"
                   startPage={0}
                   autoSize={false}
+                  onFlip={(e) => {
+                    console.log('[CatalogFlipBook] HTMLFlipBook onFlip fired', e);
+                    onFlip(e);
+                  }}
                 >
-                  {Array.from({ length: numPages }, (_, i) => (
-                    <FlipPage
-                      key={`page-${i + 1}`}
-                      pageNumber={i + 1}
-                      width={dimensions.pageWidth}
-                      height={dimensions.pageHeight}
-                      isVisible={isPageVisible(i)}
-                    />
-                  ))}
+                  {Array.from({ length: numPages }, (_, i) => {
+                    console.log('[CatalogFlipBook] Rendering page in map', {
+                      pageNumber: i + 1,
+                      currentPage,
+                      isVisible: isPageVisible(i),
+                    });
+                    return (
+                      <FlipPage
+                        key={`page-${i + 1}`}
+                        pageNumber={i + 1}
+                        width={dimensions.pageWidth}
+                        height={dimensions.pageHeight}
+                        isVisible={isPageVisible(i)}
+                      />
+                    );
+                  })}
                 </HTMLFlipBook>
               </div>
 
