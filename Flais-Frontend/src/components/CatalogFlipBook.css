@@ -186,7 +186,6 @@
   border-radius: 50%;
   animation: flipbook-spin 1.1s linear infinite;
   will-change: transform;
-  transform: translateZ(0);
 }
 
 /* ── Bottom Toolbar ────────────────────────────────────────────── */
@@ -287,7 +286,6 @@
   border-left-color: #c5a880;
   animation: flipbook-spin 1.1s linear infinite;
   will-change: transform;
-  transform: translateZ(0);
 }
 
 .flipbook-loading-text {
