@@ -16,10 +16,11 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './CatalogFlipBook.css';
 
-// Configure the PDF.js web worker via cdnjs CDN.
-// The production server serves .mjs with wrong MIME type (application/octet-stream),
-// so we use cdnjs which serves the correct Content-Type header.
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+// Configure the PDF.js web worker from /public (same-origin, .js extension).
+// CSP blocks external CDNs and blob workers; the server misserves .mjs files.
+// The worker file is copied from node_modules/pdfjs-dist/build/pdf.worker.min.mjs
+// to public/pdf.worker.min.js during setup.
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 // ── ForwardRef Page Wrapper ──────────────────────────────────────
 // react-pageflip injects a ref into each child to manage DOM-level
