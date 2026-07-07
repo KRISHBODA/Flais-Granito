@@ -1,107 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Eye, Loader2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import catalogHeader from '../assets/catalog_header.jpg';
 import api from '../utils/api';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
-
-// Utility helper to resolve the direct URL of a catalog.
-// Defined outside the component to prevent recreation on every render.
-const resolveCatalogUrl = (catalog) => {
-  const link = catalog.link && catalog.link !== '#' ? catalog.link : catalog.image;
-  if (link && (link.startsWith('http://') || link.startsWith('https://'))) {
-    return link;
-  }
-  return getOptimizedImageUrl(link);
-};
-
-// Memoized card component to avoid unnecessary list re-renders.
-const CatalogCard = React.memo(({ catalog, index, downloadingKey, handleAction }) => {
-  const isDownloading = downloadingKey === (catalog._id || catalog.id || catalog.title);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 group ring-1 ring-zinc-200 flex flex-col h-full"
-    >
-      {/* Cover Image */}
-      <div className="relative h-80 overflow-hidden bg-zinc-100 flex items-center justify-center">
-        {catalog.image ? (
-          <img loading="lazy"
-            src={getOptimizedImageUrl(catalog.image, 600)}
-            alt={catalog.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex flex-col items-center text-zinc-300">
-            <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">No Cover</span>
-          </div>
-        )}
-
-        {/* Overlay Actions */}
-        <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 backdrop-blur-sm">
-          <button 
-            onClick={(e) => handleAction(e, catalog, 'view')} 
-            className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-900 hover:bg-beige-600 hover:text-white transition-colors shadow-lg translate-y-4 group-hover:translate-y-0 duration-300"
-          >
-            <Eye size={20} />
-          </button>
-          <button
-            onClick={(e) => handleAction(e, catalog, 'download')}
-            disabled={isDownloading}
-            className="w-12 h-12 bg-beige-600 rounded-full flex items-center justify-center text-white hover:bg-zinc-900 transition-colors shadow-lg translate-y-4 group-hover:translate-y-0 duration-300 delay-75 disabled:opacity-70 disabled:cursor-wait"
-          >
-            {isDownloading ? (
-              <Loader2 size={20} className="animate-spin" />
-            ) : (
-              <Download size={20} />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-8 space-y-4 flex flex-col flex-grow text-center">
-        <h3 className="font-display font-bold text-2xl text-zinc-900 group-hover:text-beige-600 transition-colors flex-grow">
-          {catalog.title}
-        </h3>
-
-        <div className="pt-6 border-t border-zinc-100 grid grid-cols-2 gap-4">
-          <button 
-            onClick={(e) => handleAction(e, catalog, 'view')} 
-            className="flex items-center justify-center text-sm font-bold text-zinc-600 hover:text-beige-600 transition-colors"
-          >
-            <Eye size={16} className="mr-2" /> View
-          </button>
-          <button
-            onClick={(e) => handleAction(e, catalog, 'download')}
-            disabled={isDownloading}
-            className="flex items-center justify-center text-sm font-bold text-beige-600 hover:text-zinc-900 transition-colors disabled:opacity-70 disabled:cursor-wait"
-          >
-            {isDownloading ? (
-              <>
-                <Loader2 size={16} className="mr-2 animate-spin" /> Downloading...
-              </>
-            ) : (
-              <>
-                <Download size={16} className="mr-2" /> Download
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-});
-
-CatalogCard.displayName = 'CatalogCard';
 
 const Catalog = () => {
   const [pageSettings, setPageSettings] = useState({
@@ -114,12 +17,11 @@ const Catalog = () => {
   const [downloadingKey, setDownloadingKey] = useState(null);
 
   useEffect(() => {
-    let isMounted = true;
     const fetchCatalogData = async () => {
       try {
         setLoading(true);
         const res = await api.get('/catalog');
-        if (isMounted && res.data.success && res.data.catalog) {
+        if (res.data.success && res.data.catalog) {
           const page = res.data.catalog;
           if (page.pageSettings) setPageSettings(page.pageSettings);
           if (Array.isArray(page.catalogs)) setCatalogsList(page.catalogs);
@@ -127,16 +29,21 @@ const Catalog = () => {
       } catch (err) {
         // Silent catch
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
     fetchCatalogData();
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
-  const handleAction = useCallback((e, catalog, action) => {
+  const resolveCatalogUrl = (catalog) => {
+    const link = catalog.link && catalog.link !== '#' ? catalog.link : catalog.image;
+    if (link && (link.startsWith('http://') || link.startsWith('https://'))) {
+      return link;
+    }
+    return getOptimizedImageUrl(link);
+  };
+
+  const handleAction = (e, catalog, action) => {
     e.preventDefault();
     const link = resolveCatalogUrl(catalog);
     if (!link) return;
@@ -153,17 +60,15 @@ const Catalog = () => {
       setDownloadingKey(null);
     }, 1500); // 1.5s temporary feedback
 
-    // Request attachment-style download from streaming middleware using ?download=1
-    const downloadLink = link.includes('?') ? `${link}&download=1` : `${link}?download=1`;
     const a = document.createElement('a');
-    a.href = downloadLink;
+    a.href = link;
     a.download = `${(catalog.title || 'catalog').replace(/[^a-z0-9_-]+/gi, '_')}.pdf`;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }, []);
+  };
 
   if (loading) {
     return (
@@ -246,15 +151,82 @@ const Catalog = () => {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-12">
-              {catalogsList.map((catalog, index) => (
-                <CatalogCard
-                  key={catalog._id || catalog.id || index}
-                  catalog={catalog}
-                  index={index}
-                  downloadingKey={downloadingKey}
-                  handleAction={handleAction}
-                />
-              ))}
+              {catalogsList.map((catalog, index) => {
+                return (
+                  <motion.div
+                    key={catalog._id || catalog.id || index}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 group ring-1 ring-zinc-200 flex flex-col h-full"
+                  >
+                    {/* Cover Image */}
+                    <div className="relative h-80 overflow-hidden bg-zinc-100 flex items-center justify-center">
+                      {catalog.image ? (
+                        <img loading="lazy"
+                          src={getOptimizedImageUrl(catalog.image, 600)}
+                          alt={catalog.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center text-zinc-300">
+                          <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                          <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">No Cover</span>
+                        </div>
+                      )}
+
+                      {/* Overlay Actions */}
+                      <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 backdrop-blur-sm">
+                        <button onClick={(e) => handleAction(e, catalog, 'view')} className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-900 hover:bg-beige-600 hover:text-white transition-colors shadow-lg translate-y-4 group-hover:translate-y-0 duration-300">
+                          <Eye size={20} />
+                        </button>
+                        <button
+                          onClick={(e) => handleAction(e, catalog, 'download')}
+                          disabled={downloadingKey === (catalog._id || catalog.id || catalog.title)}
+                          className="w-12 h-12 bg-beige-600 rounded-full flex items-center justify-center text-white hover:bg-zinc-900 transition-colors shadow-lg translate-y-4 group-hover:translate-y-0 duration-300 delay-75 disabled:opacity-70 disabled:cursor-wait"
+                        >
+                          {downloadingKey === (catalog._id || catalog.id || catalog.title) ? (
+                            <Loader2 size={20} className="animate-spin" />
+                          ) : (
+                            <Download size={20} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-8 space-y-4 flex flex-col flex-grow text-center">
+                      <h3 className="font-display font-bold text-2xl text-zinc-900 group-hover:text-beige-600 transition-colors flex-grow">
+                        {catalog.title}
+                      </h3>
+
+                      <div className="pt-6 border-t border-zinc-100 grid grid-cols-2 gap-4">
+                        <button onClick={(e) => handleAction(e, catalog, 'view')} className="flex items-center justify-center text-sm font-bold text-zinc-600 hover:text-beige-600 transition-colors">
+                          <Eye size={16} className="mr-2" /> View
+                        </button>
+                        <button
+                          onClick={(e) => handleAction(e, catalog, 'download')}
+                          disabled={downloadingKey === (catalog._id || catalog.id || catalog.title)}
+                          className="flex items-center justify-center text-sm font-bold text-beige-600 hover:text-zinc-900 transition-colors disabled:opacity-70 disabled:cursor-wait"
+                        >
+                          {downloadingKey === (catalog._id || catalog.id || catalog.title) ? (
+                            <>
+                              <Loader2 size={16} className="mr-2 animate-spin" /> Downloading...
+                            </>
+                          ) : (
+                            <>
+                              <Download size={16} className="mr-2" /> Download
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>

@@ -80,9 +80,8 @@ const apiLimiter = createRateLimit({
 app.use("/api", apiLimiter);
 
 // Serve static files (local storage)
-const pdfStreamMiddleware = require("./middleware/pdfStreamMiddleware");
-app.use("/media", pdfStreamMiddleware, express.static(path.join(__dirname, "uploads")));
-app.use("/uploads", pdfStreamMiddleware, express.static(path.join(__dirname, "uploads")));
+app.use("/media", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/admin", require("./routes/adminRoutes"));
