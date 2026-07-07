@@ -16,11 +16,10 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './CatalogFlipBook.css';
 
-// Configure the PDF.js web worker — use the bundled version from react-pdf
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+// Configure the PDF.js web worker.
+// The worker file is copied to public/pdf.worker.min.js (from node_modules/pdfjs-dist/build/)
+// to avoid MIME type issues with .mjs files on production servers.
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 // ── ForwardRef Page Wrapper ──────────────────────────────────────
 // react-pageflip injects a ref into each child to manage DOM-level
