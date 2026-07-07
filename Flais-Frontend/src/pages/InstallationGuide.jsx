@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Move, Scissors, Layers, Grid, Construction, Ruler, FileText } from 'lucide-react';
+import { ChevronDown, Move, Scissors, Layers, Grid, Construction, Ruler } from 'lucide-react';
 import SEO from '../components/SEO';
 import api from '../utils/api';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
-const AccordionItem = ({ title, icon: Icon, content, isOpen, onClick }) => {
+// Memoized Accordion item to prevent unnecessary re-renders.
+const AccordionItem = React.memo(({ title, icon: Icon, content, isOpen, onClick }) => {
   return (
     <div className="bg-zinc-50 mb-4 transition-all duration-300">
       <button
@@ -41,7 +42,9 @@ const AccordionItem = ({ title, icon: Icon, content, isOpen, onClick }) => {
       </AnimatePresence>
     </div>
   );
-};
+});
+
+AccordionItem.displayName = 'AccordionItem';
 
 const ICON_MAP = { Ruler, Scissors, Layers, Grid, Construction, Move };
 
@@ -51,6 +54,7 @@ const InstallationGuide = () => {
     title: "Process for Flais Granito",
     subtitle: "Installation Guide",
     heroImage: "",
+    pdfUrl: "",
     steps: [
       {
         title: 'Use of Tile Levelling System During the Installation',
@@ -86,36 +90,49 @@ const InstallationGuide = () => {
   });
 
   useEffect(() => {
+    let isMounted = true;
     const fetchInstallationData = async () => {
       try {
         const response = await api.get('/flais-guide');
-        if (response.data && response.data.success) {
+        if (isMounted && response.data && response.data.success) {
           const data = response.data.flaisGuide || {};
           if (data.installationGuide) {
-            setSettings({
-              title: data.installationGuide.title || "Process for Flais Granito",
-              subtitle: data.installationGuide.subtitle || "Installation Guide",
-              heroImage: data.installationGuide.heroImage || "",
-              pdfUrl: data.installationGuide.pdfUrl || "",
+            setSettings(prev => ({
+              title: data.installationGuide.title || prev.title,
+              subtitle: data.installationGuide.subtitle || prev.subtitle,
+              heroImage: data.installationGuide.heroImage || prev.heroImage,
+              pdfUrl: data.installationGuide.pdfUrl || prev.pdfUrl,
               steps: data.installationGuide.steps && data.installationGuide.steps.length > 0 
                 ? data.installationGuide.steps 
-                : settings.steps
-            });
+                : prev.steps
+            }));
           }
         }
       } catch (err) {
-              }
+        // Silent catch
+      }
     };
     fetchInstallationData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const toggleItem = (index) => {
-    if (openItems.includes(index)) {
-      setOpenItems(openItems.filter((i) => i !== index));
-    } else {
-      setOpenItems([...openItems, index]);
+  const toggleItem = useCallback((index) => {
+    setOpenItems((prevItems) => {
+      if (prevItems.includes(index)) {
+        return prevItems.filter((i) => i !== index);
+      } else {
+        return [...prevItems, index];
+      }
+    });
+  }, []);
+
+  const handlePdfClick = useCallback(() => {
+    if (settings.pdfUrl) {
+      window.open(getOptimizedImageUrl(settings.pdfUrl), '_blank', 'noopener,noreferrer');
     }
-  };
+  }, [settings.pdfUrl]);
 
   return (
     <div className="min-h-screen bg-white pt-24 font-sans">
@@ -125,7 +142,10 @@ const InstallationGuide = () => {
         keywords="tile installation guide, how to lay tiles, tile levelling system, vitrified tiles installation, tile cutting"
       />
       <section className="relative h-[35vh] sm:h-[40vh] md:h-[50vh] min-h-[280px] sm:min-h-[350px] md:min-h-[400px] flex items-center overflow-hidden mb-12 sm:mb-16 md:mb-20">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${getOptimizedImageUrl(settings.heroImage)})` }}></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center" 
+          style={{ backgroundImage: `url(${getOptimizedImageUrl(settings.heroImage)})` }}
+        ></div>
 
         <div className="relative z-10 container-custom">
           <motion.div
@@ -142,9 +162,7 @@ const InstallationGuide = () => {
             </h2>
             {settings.pdfUrl ? (
               <button
-                onClick={() => {
-                  window.open(getOptimizedImageUrl(settings.pdfUrl), '_blank');
-                }}
+                onClick={handlePdfClick}
                 className="inline-block bg-black hover:bg-zinc-800 text-white font-bold tracking-[0.2em] uppercase py-4 px-10 text-sm shadow-md transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer mt-6"
               >
                 {settings.subtitle}

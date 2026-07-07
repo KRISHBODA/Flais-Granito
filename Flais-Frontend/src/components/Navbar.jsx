@@ -62,20 +62,10 @@ const Navbar = () => {
       // Resolve URL
       resolvedUrl = getOptimizedImageUrl(latestPdfUrl);
 
-      // Fetch PDF binary with cache-busting to prevent browser caching of Cloudinary contents
-      const fetchUrl = resolvedUrl.includes('?') ? `${resolvedUrl}&t=${Date.now()}` : `${resolvedUrl}?t=${Date.now()}`;
-      const pdfRes = await fetch(fetchUrl);
-      if (!pdfRes.ok) {
-        throw new Error("Failed to fetch PDF");
-      }
-      const blob = await pdfRes.blob();
-      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-      const objectUrl = window.URL.createObjectURL(pdfBlob);
-      
       if (newTab) {
-        newTab.location.href = objectUrl;
+        newTab.location.href = resolvedUrl;
       } else {
-        window.open(objectUrl, '_blank');
+        window.open(resolvedUrl, '_blank', 'noopener,noreferrer');
       }
     } catch (err) {
       if (newTab) {
@@ -90,7 +80,7 @@ const Navbar = () => {
           `;
         }
       } else if (resolvedUrl) {
-        window.open(resolvedUrl, '_blank');
+        window.open(resolvedUrl, '_blank', 'noopener,noreferrer');
       }
     }
   };
