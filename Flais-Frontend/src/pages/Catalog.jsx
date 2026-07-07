@@ -159,15 +159,15 @@ const Catalog = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 group ring-1 ring-zinc-200 flex flex-col h-full"
+                    className="group cursor-pointer"
                   >
-                    {/* Cover Image */}
-                    <div className="relative h-80 overflow-hidden bg-zinc-100 flex items-center justify-center">
+                    {/* Cover Image — tall, full display */}
+                    <div className="relative overflow-hidden bg-zinc-100 flex items-center justify-center" style={{ aspectRatio: '3/4' }}>
                       {catalog.image ? (
                         <img loading="lazy"
                           src={getOptimizedImageUrl(catalog.image, 600)}
                           alt={catalog.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                         />
                       ) : (
                         <div className="flex flex-col items-center text-zinc-300">
@@ -178,7 +178,7 @@ const Catalog = () => {
                         </div>
                       )}
 
-                      {/* Overlay Actions */}
+                      {/* Hover Overlay */}
                       <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 backdrop-blur-sm">
                         <button onClick={(e) => handleAction(e, catalog, 'view')} className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-900 hover:bg-beige-600 hover:text-white transition-colors shadow-lg translate-y-4 group-hover:translate-y-0 duration-300">
                           <Eye size={20} />
@@ -198,29 +198,25 @@ const Catalog = () => {
                     </div>
 
                     {/* Content */}
-                    <div className="p-8 space-y-4 flex flex-col flex-grow text-center">
-                      <h3 className="font-display font-bold text-2xl text-zinc-900 group-hover:text-beige-600 transition-colors flex-grow">
+                    <div className="pt-5 text-center">
+                      <h3 className="font-display font-bold text-xl text-zinc-900 group-hover:text-beige-600 transition-colors mb-3">
                         {catalog.title}
                       </h3>
 
-                      <div className="pt-6 border-t border-zinc-100 grid grid-cols-2 gap-4">
-                        <button onClick={(e) => handleAction(e, catalog, 'view')} className="flex items-center justify-center text-sm font-bold text-zinc-600 hover:text-beige-600 transition-colors">
-                          <Eye size={16} className="mr-2" /> View
+                      <div className="flex items-center justify-center gap-0 text-sm font-semibold">
+                        <button
+                          onClick={(e) => handleAction(e, catalog, 'view')}
+                          className="text-zinc-600 hover:text-beige-600 transition-colors px-3"
+                        >
+                          View
                         </button>
+                        <span className="text-zinc-300">|</span>
                         <button
                           onClick={(e) => handleAction(e, catalog, 'download')}
                           disabled={downloadingKey === (catalog._id || catalog.id || catalog.title)}
-                          className="flex items-center justify-center text-sm font-bold text-beige-600 hover:text-zinc-900 transition-colors disabled:opacity-70 disabled:cursor-wait"
+                          className="text-zinc-600 hover:text-beige-600 transition-colors px-3 disabled:opacity-70 disabled:cursor-wait"
                         >
-                          {downloadingKey === (catalog._id || catalog.id || catalog.title) ? (
-                            <>
-                              <Loader2 size={16} className="mr-2 animate-spin" /> Downloading...
-                            </>
-                          ) : (
-                            <>
-                              <Download size={16} className="mr-2" /> Download
-                            </>
-                          )}
+                          {downloadingKey === (catalog._id || catalog.id || catalog.title) ? 'Downloading...' : 'Download'}
                         </button>
                       </div>
                     </div>
