@@ -51,6 +51,9 @@ export default defineConfig({
             if (id.includes('swiper')) {
               return 'vendor-swiper';
             }
+            if (id.includes('pdfjs-dist') || id.includes('react-pdf') || id.includes('page-flip')) {
+              return 'vendor-pdf';
+            }
             if (id.includes('recharts') || id.includes('d3')) {
               return 'vendor-charts';
             }
