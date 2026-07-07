@@ -71,7 +71,7 @@ const About = () => {
 
   const [countriesList, setCountriesList] = React.useState([]);
   const [isMuted, setIsMuted] = React.useState(true);
-  const [isPlaying, setIsPlaying] = React.useState(true);
+  const [isPlaying, setIsPlaying] = React.useState(false);
   const videoRef = React.useRef(null);
   const { scrollYProgress } = useScroll();
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 1.1]);
@@ -362,16 +362,12 @@ const About = () => {
               ref={videoRef}
               key={videos.flaisFilm}
               src={getOptimizedVideoUrl(videos.flaisFilm)}
-              autoPlay
               muted
               loop
               playsInline
               preload="auto"
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
-              onCanPlay={(e) => {
-                e.currentTarget.play().catch(() => { });
-              }}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />

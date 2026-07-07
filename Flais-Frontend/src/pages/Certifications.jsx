@@ -149,7 +149,7 @@ const Certifications = () => {
   const exhibitionVideoRef = React.useRef(null);
   const [selectedDoc, setSelectedDoc] = React.useState(null);
   const [isMuted, setIsMuted] = React.useState(true);
-  const [isPlaying, setIsPlaying] = React.useState(true);
+  const [isPlaying, setIsPlaying] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
 
   const togglePlay = () => {
@@ -367,7 +367,6 @@ const Certifications = () => {
               <video
                 key={exhibitionVideoSrc}
                 ref={exhibitionVideoRef}
-                autoPlay
                 muted={isMuted}
                 loop
                 playsInline
