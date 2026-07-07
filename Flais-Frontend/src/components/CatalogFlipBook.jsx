@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Document, Page, pdfjs } from 'react-pdf';
 import HTMLFlipBook from 'react-pageflip';
 import {
@@ -115,6 +116,53 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
     firstPageRendered: 0,
     progressLastPct: 0,
   });
+  const stageTimeoutRef = useRef(null);
+  const hideLoaderTimeoutRef = useRef(null);
+  const displayProgressRef = useRef(0);
+
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [animatedProgress, setAnimatedProgress] = useState(0);
+  const [downloadedMB, setDownloadedMB] = useState(0);
+  const [totalMB, setTotalMB] = useState(0);
+  const [loadingStage, setLoadingStage] = useState('Connecting');
+  const [showLoader, setShowLoader] = useState(true);
+
+  const STAGE_ORDER = [
+    'Connecting',
+    'Downloading PDF',
+    'Preparing Pages',
+    'Rendering First Page',
+  ];
+
+  const formatMB = (value) => {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      return '-- MB';
+    }
+    const mb = Number(value);
+    return mb < 10 ? `${mb.toFixed(1)} MB` : `${Math.round(mb)} MB`;
+  };
+
+  const getStageState = (stage) => {
+    if (loadingStage === 'Loaded') {
+      return 'complete';
+    }
+
+    const currentIndex = STAGE_ORDER.indexOf(loadingStage);
+    const stageIndex = STAGE_ORDER.indexOf(stage);
+
+    if (stageIndex < currentIndex) return 'complete';
+    if (stageIndex === currentIndex) return 'active';
+    return 'pending';
+  };
+
+  const getStageItems = () => [
+    { label: 'Connecting...', key: 'Connecting' },
+    { label: 'Downloading PDF...', key: 'Downloading PDF' },
+    { label: 'Preparing Pages...', key: 'Preparing Pages' },
+    { label: 'Rendering First Page...', key: 'Rendering First Page' },
+  ];
+
+  const getDisplayedProgress = () => Math.max(0, Math.min(100, Math.round(animatedProgress)));
 
   // ── Recalculate on resize ──────────────────────────────────────
   useEffect(() => {
@@ -132,8 +180,28 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
       firstPageRendered: 0,
       progressLastPct: 0,
     };
+    displayProgressRef.current = 0;
+
+    const resetTimer = window.setTimeout(() => {
+      setDownloadProgress(0);
+      setAnimatedProgress(0);
+      setDownloadedMB(0);
+      setTotalMB(0);
+      setLoadingStage('Connecting');
+      setShowLoader(true);
+    }, 0);
+
+    if (hideLoaderTimeoutRef.current) {
+      window.clearTimeout(hideLoaderTimeoutRef.current);
+      hideLoaderTimeoutRef.current = null;
+    }
+    if (stageTimeoutRef.current) {
+      window.clearTimeout(stageTimeoutRef.current);
+      stageTimeoutRef.current = null;
+    }
 
     console.log('[CatalogFlipBook] PDF load started:', pdfUrl);
+    return () => window.clearTimeout(resetTimer);
   }, [pdfUrl]);
 
   // ── Lock body scroll while modal is open ───────────────────────
@@ -182,10 +250,26 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const onDocumentLoadProgress = useCallback((progress) => {
     const loaded = progress?.loaded ?? 0;
     const total = progress?.total ?? 0;
+    const percent = total ? Math.min(100, Math.round((loaded / total) * 100)) : 0;
 
-    if (!total || !loaded) return;
+    setDownloadProgress((prev) => {
+      if (prev === percent) return prev;
+      return percent;
+    });
 
-    const percent = Math.round((loaded / total) * 100);
+    setDownloadedMB(loaded / 1024 / 1024);
+    setTotalMB(total ? total / 1024 / 1024 : null);
+
+    setLoadingStage((prev) => {
+      if (prev === 'Connecting' && loaded > 0) {
+        return 'Downloading PDF';
+      }
+      if (percent === 100 && prev === 'Downloading PDF') {
+        return 'Preparing Pages';
+      }
+      return prev;
+    });
+
     if (percent >= loadMetricsRef.current.progressLastPct + 10 || percent === 100) {
       loadMetricsRef.current.progressLastPct = percent;
       console.log(`[CatalogFlipBook] Document load progress: ${percent}%`);
@@ -195,6 +279,15 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const onDocumentLoadSuccess = useCallback(({ numPages: total }) => {
     setNumPages(total);
     setLoadError(null);
+    setLoadingStage('Preparing Pages');
+
+    if (stageTimeoutRef.current) {
+      window.clearTimeout(stageTimeoutRef.current);
+    }
+    stageTimeoutRef.current = window.setTimeout(() => {
+      setLoadingStage((prev) => (prev === 'Preparing Pages' ? 'Rendering First Page' : prev));
+    }, 500);
+
     const now = performance.now();
     const elapsed = loadMetricsRef.current.start
       ? Math.round(now - loadMetricsRef.current.start)
@@ -223,6 +316,11 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
         ? Math.round(now - loadMetricsRef.current.start)
         : null;
       loadMetricsRef.current.firstPageRendered = now;
+      setLoadingStage('Loaded');
+      setDownloadProgress(100);
+      hideLoaderTimeoutRef.current = window.setTimeout(() => {
+        setShowLoader(false);
+      }, 360);
       console.log(
         `[CatalogFlipBook] First page rendered` +
           (elapsed !== null ? ` in ${elapsed}ms` : '')
@@ -232,6 +330,40 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
   const onPageRenderError = useCallback((pageNumber, error) => {
     console.error(`[CatalogFlipBook] Page ${pageNumber} render error`, error);
+  }, []);
+
+  useEffect(() => {
+    if (!showLoader) {
+      return;
+    }
+
+    let rafId = 0;
+    const animateProgress = () => {
+      const current = displayProgressRef.current;
+      const next = current + (downloadProgress - current) * 0.16;
+      const smoothed = Math.abs(downloadProgress - next) < 0.25 ? downloadProgress : next;
+
+      displayProgressRef.current = smoothed;
+      setAnimatedProgress(smoothed);
+
+      if (Math.abs(downloadProgress - smoothed) >= 0.25) {
+        rafId = requestAnimationFrame(animateProgress);
+      }
+    };
+
+    rafId = requestAnimationFrame(animateProgress);
+    return () => window.cancelAnimationFrame(rafId);
+  }, [downloadProgress, showLoader]);
+
+  useEffect(() => {
+    return () => {
+      if (stageTimeoutRef.current) {
+        window.clearTimeout(stageTimeoutRef.current);
+      }
+      if (hideLoaderTimeoutRef.current) {
+        window.clearTimeout(hideLoaderTimeoutRef.current);
+      }
+    };
   }, []);
 
   // ── Zoom ───────────────────────────────────────────────────────
@@ -445,6 +577,79 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
             </>
           ) : null}
         </Document>
+
+        <AnimatePresence>
+          {showLoader && (
+            <motion.div
+              className="flipbook-loading-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.28, ease: 'easeOut' }}
+            >
+              <motion.div
+                className="flipbook-loading-card"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.32, ease: 'easeOut' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flipbook-loading-badge">
+                  <div className="ring-outer">
+                    <div className="ring-inner" />
+                  </div>
+                </div>
+
+                <div className="flipbook-loading-headline">
+                  <div>
+                    <p className="flipbook-loading-title">Loading Catalog</p>
+                    <p className="flipbook-loading-note">A premium PDF experience is being prepared.</p>
+                  </div>
+                  <span className="flipbook-loading-percentage">
+                    {getDisplayedProgress()}%
+                  </span>
+                </div>
+
+                <div className="flipbook-loading-meta">
+                  {formatMB(downloadedMB)} / {formatMB(totalMB)}
+                </div>
+
+                <div className="flipbook-progress-track">
+                  <motion.div
+                    className="flipbook-progress-fill"
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${Math.max(0, Math.min(100, animatedProgress))}%` }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                  />
+                </div>
+
+                <div className="flipbook-stage-list">
+                  {getStageItems().map((stage) => {
+                    const state = getStageState(stage.key);
+                    return (
+                      <motion.div
+                        key={stage.key}
+                        className={`stage-item ${state}`}
+                        layout
+                        initial={{ opacity: 0.8, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="stage-state">
+                          {state === 'complete' ? '✓' : state === 'active' ? '⏳' : '•'}
+                        </div>
+                        <div>
+                          <p className="stage-label">{stage.label}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Bottom Toolbar */}
