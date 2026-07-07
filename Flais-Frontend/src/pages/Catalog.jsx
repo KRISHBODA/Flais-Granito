@@ -156,7 +156,7 @@ const Catalog = () => {
               <p className="text-zinc-400 text-sm mt-1">Our team is currently preparing the digital catalogs. Please check back soon!</p>
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-12">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-10">
               {catalogsList.map((catalog, index) => {
                 return (
                   <motion.div
@@ -173,7 +173,7 @@ const Catalog = () => {
                         <img loading="lazy"
                           src={getOptimizedImageUrl(catalog.image, 600)}
                           alt={catalog.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                         />
                       ) : (
                         <div className="flex flex-col items-center text-zinc-300">
@@ -184,35 +184,40 @@ const Catalog = () => {
                         </div>
                       )}
 
-                      {/* Hover Overlay */}
-                      <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 backdrop-blur-sm">
-                        <button onClick={(e) => handleAction(e, catalog, 'view')} className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-900 hover:bg-beige-600 hover:text-white transition-colors shadow-lg translate-y-4 group-hover:translate-y-0 duration-300">
-                          <Eye size={20} />
+                      {/* Action Overlay — always visible on mobile, hover-only on desktop */}
+                      <div className="absolute inset-0 bg-zinc-900/40 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 backdrop-blur-sm">
+                        <button
+                          onClick={(e) => handleAction(e, catalog, 'view')}
+                          className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center text-zinc-900 hover:bg-beige-600 hover:text-white active:scale-95 transition-all shadow-lg"
+                          aria-label="View"
+                        >
+                          <Eye size={18} />
                         </button>
                         <button
                           onClick={(e) => handleAction(e, catalog, 'download')}
                           disabled={downloadingKey === (catalog._id || catalog.id || catalog.title)}
-                          className="w-12 h-12 bg-beige-600 rounded-full flex items-center justify-center text-white hover:bg-zinc-900 transition-colors shadow-lg translate-y-4 group-hover:translate-y-0 duration-300 delay-75 disabled:opacity-70 disabled:cursor-wait"
+                          className="w-10 h-10 sm:w-12 sm:h-12 bg-beige-600 rounded-full flex items-center justify-center text-white hover:bg-zinc-900 active:scale-95 transition-all shadow-lg disabled:opacity-70 disabled:cursor-wait"
+                          aria-label="Download"
                         >
                           {downloadingKey === (catalog._id || catalog.id || catalog.title) ? (
-                            <Loader2 size={20} className="animate-spin" />
+                            <Loader2 size={18} className="animate-spin" />
                           ) : (
-                            <Download size={20} />
+                            <Download size={18} />
                           )}
                         </button>
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="pt-5 text-center">
-                      <h3 className="font-display font-bold text-xl text-zinc-900 group-hover:text-beige-600 transition-colors mb-3">
+                    <div className="pt-3 sm:pt-5 text-center">
+                      <h3 className="font-display font-bold text-sm sm:text-lg md:text-xl text-zinc-900 group-hover:text-beige-600 transition-colors mb-2 sm:mb-3 leading-tight px-1">
                         {catalog.title}
                       </h3>
 
-                      <div className="flex items-center justify-center gap-0 text-sm font-semibold">
+                      <div className="flex items-center justify-center text-xs sm:text-sm font-semibold">
                         <button
                           onClick={(e) => handleAction(e, catalog, 'view')}
-                          className="text-zinc-600 hover:text-beige-600 transition-colors px-3"
+                          className="text-zinc-600 hover:text-beige-600 active:text-beige-600 transition-colors px-2 sm:px-3 py-1"
                         >
                           View
                         </button>
@@ -220,7 +225,7 @@ const Catalog = () => {
                         <button
                           onClick={(e) => handleAction(e, catalog, 'download')}
                           disabled={downloadingKey === (catalog._id || catalog.id || catalog.title)}
-                          className="text-zinc-600 hover:text-beige-600 transition-colors px-3 disabled:opacity-70 disabled:cursor-wait"
+                          className="text-zinc-600 hover:text-beige-600 active:text-beige-600 transition-colors px-2 sm:px-3 py-1 disabled:opacity-70 disabled:cursor-wait"
                         >
                           {downloadingKey === (catalog._id || catalog.id || catalog.title) ? 'Downloading...' : 'Download'}
                         </button>
