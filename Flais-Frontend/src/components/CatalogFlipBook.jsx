@@ -11,6 +11,8 @@ import {
   Minimize,
   RotateCcw,
   AlertTriangle,
+  ExternalLink,
+  FileText,
 } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -26,27 +28,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 // react-pageflip injects a ref into each child to manage DOM-level
 // flip animations. Every child of HTMLFlipBook MUST forward its ref.
 const FlipPage = forwardRef(({ pageNumber, width, height, isVisible }, ref) => {
-  console.log('[CatalogFlipBook] Rendering FlipPage', {
-    pageNumber,
-    width,
-    height,
-    isVisible,
-  });
-
-  useEffect(() => {
-    console.log('[CatalogFlipBook] ForwardRef page mounted', {
-      pageNumber,
-      width,
-      height,
-      isVisible,
-    });
-    return () => {
-      console.log('[CatalogFlipBook] ForwardRef page unmounted', {
-        pageNumber,
-      });
-    };
-  }, [pageNumber, width, height, isVisible]);
-
   return (
     <div className="flipbook-page" ref={ref} style={{ width, height }}>
       {isVisible ? (
@@ -55,30 +36,6 @@ const FlipPage = forwardRef(({ pageNumber, width, height, isVisible }, ref) => {
           width={width}
           renderTextLayer={false}
           renderAnnotationLayer={false}
-          onLoadSuccess={(page) => {
-            console.log('[CatalogFlipBook] Page onLoadSuccess', {
-              pageNumber,
-              page,
-            });
-          }}
-          onLoadError={(error) => {
-            console.log('[CatalogFlipBook] Page onLoadError', {
-              pageNumber,
-              error,
-            });
-          }}
-          onRenderSuccess={(page) => {
-            console.log('[CatalogFlipBook] Page onRenderSuccess', {
-              pageNumber,
-              page,
-            });
-          }}
-          onRenderError={(error) => {
-            console.log('[CatalogFlipBook] Page onRenderError', {
-              pageNumber,
-              error,
-            });
-          }}
           loading={
             <div className="flipbook-page-loading">
               <div className="page-spinner" />
@@ -142,6 +99,8 @@ function calcDimensions(isFullscreen) {
 }
 
 // ── Main Component ───────────────────────────────────────────────
+const LOADING_TIMEOUT_MS = 10_000; // 10 seconds before showing fallback
+
 const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -149,85 +108,14 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [dimensions, setDimensions] = useState(() => calcDimensions(false));
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
   const flipBookRef = useRef(null);
   const overlayRef = useRef(null);
 
-  console.log('[CatalogFlipBook] Render', {
-    pdfUrl,
-    catalogTitle,
-    numPages,
-    currentPage,
-    loadError,
-    isFullscreen,
-    zoom,
-    dimensions,
-  });
-
-  useEffect(() => {
-    console.log('[CatalogFlipBook] Component mounted', {
-      pdfUrl,
-      catalogTitle,
-    });
-    return () => {
-      console.log('[CatalogFlipBook] Component unmounted', {
-        pdfUrl,
-        catalogTitle,
-      });
-    };
-  }, []);
-
-  useEffect(() => {
-    console.log('[CatalogFlipBook] Received pdfUrl', {
-      pdfUrl,
-      typeofPdfUrl: typeof pdfUrl,
-      isPdf: typeof pdfUrl === 'string' ? pdfUrl.toLowerCase().includes('.pdf') : false,
-      isJpg: typeof pdfUrl === 'string' ? pdfUrl.toLowerCase().includes('.jpg') || pdfUrl.toLowerCase().includes('.jpeg') : false,
-      isPng: typeof pdfUrl === 'string' ? pdfUrl.toLowerCase().includes('.png') : false,
-      isUndefined: typeof pdfUrl === 'undefined',
-    });
-  }, [pdfUrl]);
-
-  useEffect(() => {
-    console.log('[CatalogFlipBook] Calculated dimensions', dimensions);
-  }, [dimensions]);
-
-  useEffect(() => {
-    console.log('[CatalogFlipBook] numPages changed', numPages);
-  }, [numPages]);
-
-  useEffect(() => {
-    console.log('[CatalogFlipBook] Current page changed', currentPage);
-  }, [currentPage]);
-
-  useEffect(() => {
-    console.log('[CatalogFlipBook] fullscreen state changed', isFullscreen);
-  }, [isFullscreen]);
-
-  useEffect(() => {
-    console.log('[CatalogFlipBook] zoom changed', zoom);
-  }, [zoom]);
-
-  useEffect(() => {
-    if (numPages) {
-      console.log('[CatalogFlipBook] HTMLFlipBook mounted', {
-        numPages,
-        currentPage,
-        dimensions,
-      });
-    }
-  }, [numPages, currentPage, dimensions]);
-
   // ── Recalculate on resize ──────────────────────────────────────
   useEffect(() => {
-    const handleResize = () => {
-      console.log('[CatalogFlipBook] window resize detected', {
-        innerWidth: window.innerWidth,
-        innerHeight: window.innerHeight,
-        isFullscreen,
-      });
-      setDimensions(calcDimensions(isFullscreen));
-    };
+    const handleResize = () => setDimensions(calcDimensions(isFullscreen));
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isFullscreen]);
@@ -235,14 +123,8 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   // ── Lock body scroll while modal is open ───────────────────────
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
-    console.log('[CatalogFlipBook] Lock body scroll while modal is open', {
-      originalOverflow,
-    });
     document.body.style.overflow = 'hidden';
     return () => {
-      console.log('[CatalogFlipBook] Restore body scroll', {
-        originalOverflow,
-      });
       document.body.style.overflow = originalOverflow;
     };
   }, []);
@@ -250,9 +132,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   // ── Keyboard navigation ────────────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e) => {
-      console.log('[CatalogFlipBook] keydown', {
-        key: e.key,
-      });
       if (e.key === 'Escape') {
         onClose();
         return;
@@ -270,68 +149,54 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  // ── Loading timeout — show fallback if PDF takes too long ──────
+  useEffect(() => {
+    if (numPages || loadError) return; // already loaded or errored
+    setLoadingTimedOut(false);
+    const timer = setTimeout(() => setLoadingTimedOut(true), LOADING_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [numPages, loadError, pdfUrl]);
+
   // ── PDF load callbacks ─────────────────────────────────────────
   const onDocumentLoadSuccess = useCallback(({ numPages: total }) => {
-    console.log('[CatalogFlipBook] onLoadSuccess fired', {
-      total,
-      pdfUrl,
-    });
     setNumPages(total);
     setLoadError(null);
+    setLoadingTimedOut(false);
   }, []);
 
   const onDocumentLoadError = useCallback((error) => {
-    console.log('[CatalogFlipBook] onLoadError fired', {
-      pdfUrl,
-      error,
-      errorString: error ? String(error) : null,
-      stack: error?.stack,
-    });
+    console.error('[CatalogFlipBook] Load error', error);
     setLoadError(error?.message || 'Failed to load the PDF document.');
   }, []);
 
   const onDocumentSourceError = useCallback((error) => {
-    console.log('[CatalogFlipBook] onSourceError fired', {
-      pdfUrl,
-      error,
-      errorString: error ? String(error) : null,
-      stack: error?.stack,
-    });
+    console.error('[CatalogFlipBook] Source error', error);
   }, [pdfUrl]);
 
   // ── Flip navigation ────────────────────────────────────────────
   const flipNext = () => {
-    console.log('[CatalogFlipBook] flipNext invoked');
     flipBookRef.current?.pageFlip()?.flipNext();
   };
 
   const flipPrev = () => {
-    console.log('[CatalogFlipBook] flipPrev invoked');
     flipBookRef.current?.pageFlip()?.flipPrev();
   };
 
   const onFlip = useCallback((e) => {
-    console.log('[CatalogFlipBook] onPageChange / onFlip fired', e);
     setCurrentPage(e.data);
   }, []);
 
   // ── Zoom ───────────────────────────────────────────────────────
   const handleZoomIn = () => {
-    console.log('[CatalogFlipBook] zoom in requested');
     setZoom((prev) => Math.min(prev + 0.2, 2.0));
   };
 
   const handleZoomOut = () => {
-    console.log('[CatalogFlipBook] zoom out requested');
     setZoom((prev) => Math.max(prev - 0.2, 0.6));
   };
 
   // ── Fullscreen ─────────────────────────────────────────────────
   const toggleFullscreen = async () => {
-    console.log('[CatalogFlipBook] fullscreen toggle requested', {
-      currentIsFullscreen: isFullscreen,
-      hasOverlayRef: !!overlayRef.current,
-    });
     try {
       if (!document.fullscreenElement) {
         await overlayRef.current?.requestFullscreen();
@@ -348,9 +213,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
   useEffect(() => {
     const handleFSChange = () => {
-      console.log('[CatalogFlipBook] fullscreenchange event', {
-        fullscreenElement: !!document.fullscreenElement,
-      });
       if (!document.fullscreenElement) {
         setIsFullscreen(false);
       }
@@ -380,9 +242,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
   // ── Close on overlay click (not on book) ───────────────────────
   const handleOverlayClick = (e) => {
-    console.log('[CatalogFlipBook] overlay click', {
-      targetIsCurrentTarget: e.target === e.currentTarget,
-    });
     if (e.target === e.currentTarget) {
       onClose();
     }
@@ -412,6 +271,48 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
       {/* Book Area */}
       <div className="flipbook-container" onClick={handleOverlayClick}>
+        {/* Show timed-out fallback OVER the Document if loading stalls */}
+        {loadingTimedOut && !numPages && !loadError && (
+          <div className="flipbook-timeout">
+            <div className="flipbook-timeout-icon">
+              <FileText size={36} />
+            </div>
+            <p className="flipbook-timeout-title">Taking longer than expected</p>
+            <p className="flipbook-timeout-message">
+              The catalog viewer is having trouble loading this PDF.
+              You can open it directly instead.
+            </p>
+            <div className="flipbook-timeout-actions">
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flipbook-open-btn"
+              >
+                <ExternalLink size={16} />
+                Open PDF in New Tab
+              </a>
+              <button
+                className="flipbook-retry-btn"
+                onClick={() => {
+                  setLoadingTimedOut(false);
+                  setLoadError(null);
+                  setNumPages(null);
+                }}
+              >
+                <RotateCcw size={16} />
+                Try Again
+              </button>
+              <button
+                className="flipbook-secondary-btn"
+                onClick={onClose}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
         <Document
           file={pdfUrl}
           onLoadSuccess={onDocumentLoadSuccess}
@@ -424,15 +325,38 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
                 <div className="ring-inner" />
               </div>
               <span className="flipbook-loading-text">Loading Catalog</span>
+              <span className="flipbook-loading-subtext">Preparing your flipbook experience…</span>
             </div>
           }
-          error={null}
+          error={
+            <div className="flipbook-error">
+              <div className="flipbook-error-icon">
+                <AlertTriangle size={28} />
+              </div>
+              <p className="flipbook-error-title">Unable to Load PDF</p>
+              <p className="flipbook-error-message">
+                The PDF viewer could not start. You can view the file directly.
+              </p>
+              <div className="flipbook-timeout-actions">
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flipbook-open-btn"
+                >
+                  <ExternalLink size={16} />
+                  Open PDF in New Tab
+                </a>
+                <button
+                  className="flipbook-secondary-btn"
+                  onClick={onClose}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          }
         >
-          {console.log('[CatalogFlipBook] Document rendered', {
-            pdfUrl,
-            numPages,
-            loadError,
-          })}
           {loadError ? (
             <div className="flipbook-error">
               <div className="flipbook-error-icon">
@@ -440,24 +364,30 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
               </div>
               <p className="flipbook-error-title">Unable to Load PDF</p>
               <p className="flipbook-error-message">{loadError}</p>
-              <button
-                className="flipbook-retry-btn"
-                onClick={() => {
-                  setLoadError(null);
-                  setNumPages(null);
-                }}
-              >
-                <RotateCcw size={16} />
-                Try Again
-              </button>
+              <div className="flipbook-timeout-actions">
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flipbook-open-btn"
+                >
+                  <ExternalLink size={16} />
+                  Open PDF in New Tab
+                </a>
+                <button
+                  className="flipbook-retry-btn"
+                  onClick={() => {
+                    setLoadError(null);
+                    setNumPages(null);
+                  }}
+                >
+                  <RotateCcw size={16} />
+                  Try Again
+                </button>
+              </div>
             </div>
           ) : numPages ? (
             <>
-              {console.log('[CatalogFlipBook] Rendering FlipBook', {
-                numPages,
-                currentPage,
-                dimensions,
-              })}
               {/* Side navigation arrows */}
               <button
                 className="flipbook-nav-arrow prev"
@@ -473,10 +403,6 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
                 className="flipbook-book-wrapper"
                 style={{ transform: `scale(${zoom})` }}
               >
-                {console.log('[CatalogFlipBook] HTMLFlipBook branch active', {
-                  numPages,
-                  childrenCount: numPages,
-                })}
                 <HTMLFlipBook
                   ref={flipBookRef}
                   width={dimensions.pageWidth}
@@ -499,27 +425,16 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
                   className="flipbook-stpageflip"
                   startPage={0}
                   autoSize={false}
-                  onFlip={(e) => {
-                    console.log('[CatalogFlipBook] HTMLFlipBook onFlip fired', e);
-                    onFlip(e);
-                  }}
                 >
-                  {Array.from({ length: numPages }, (_, i) => {
-                    console.log('[CatalogFlipBook] Rendering page in map', {
-                      pageNumber: i + 1,
-                      currentPage,
-                      isVisible: isPageVisible(i),
-                    });
-                    return (
-                      <FlipPage
-                        key={`page-${i + 1}`}
-                        pageNumber={i + 1}
-                        width={dimensions.pageWidth}
-                        height={dimensions.pageHeight}
-                        isVisible={isPageVisible(i)}
-                      />
-                    );
-                  })}
+                  {Array.from({ length: numPages }, (_, i) => (
+                    <FlipPage
+                      key={`page-${i + 1}`}
+                      pageNumber={i + 1}
+                      width={dimensions.pageWidth}
+                      height={dimensions.pageHeight}
+                      isVisible={isPageVisible(i)}
+                    />
+                  ))}
                 </HTMLFlipBook>
               </div>
 

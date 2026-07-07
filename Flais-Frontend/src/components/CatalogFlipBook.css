@@ -275,6 +275,14 @@
   text-transform: uppercase;
 }
 
+.flipbook-loading-subtext {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.04em;
+}
+
 /* ── Error State ───────────────────────────────────────────────── */
 .flipbook-error {
   display: flex;
@@ -332,6 +340,108 @@
 .flipbook-retry-btn:hover {
   background: rgba(163, 135, 114, 0.35);
   transform: translateY(-1px);
+}
+
+/* ── Timeout / Fallback State ─────────────────────────────────── */
+.flipbook-timeout {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 40px 24px;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: flipbook-fade-in 0.4s ease;
+}
+
+.flipbook-timeout-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(163, 135, 114, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c5a880;
+  margin-bottom: 4px;
+}
+
+.flipbook-timeout-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.02em;
+}
+
+.flipbook-timeout-message {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  max-width: 360px;
+  line-height: 1.6;
+}
+
+.flipbook-timeout-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.flipbook-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #c5a880, #a38772);
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  letter-spacing: 0.03em;
+  box-shadow: 0 4px 16px rgba(163, 135, 114, 0.3);
+}
+
+.flipbook-open-btn:hover {
+  background: linear-gradient(135deg, #d4b892, #b09680);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(163, 135, 114, 0.45);
+}
+
+.flipbook-secondary-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.flipbook-secondary-btn:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 /* ── Fullscreen mode adjustments ───────────────────────────────── */
