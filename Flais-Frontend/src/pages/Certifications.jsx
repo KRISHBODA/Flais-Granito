@@ -378,16 +378,6 @@ const Certifications = () => {
               </video>
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               
-              {/* Center Big Play/Pause Button Overlay */}
-              <div className={`absolute inset-0 flex items-center justify-center bg-black/10 transition-opacity duration-300 ${isPlaying ? 'opacity-0 group-hover/video:opacity-100' : 'opacity-100 bg-black/30'}`}>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-white/30 active:scale-95">
-                  {isPlaying ? (
-                    <Pause size={28} className="sm:w-8 sm:h-8" />
-                  ) : (
-                    <Play size={28} className="sm:w-8 sm:h-8 translate-x-0.5" />
-                  )}
-                </div>
-              </div>
 
               {/* Control Overlays */}
               <div 
