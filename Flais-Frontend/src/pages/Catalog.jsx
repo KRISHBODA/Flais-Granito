@@ -86,7 +86,7 @@ const Catalog = () => {
 
   return (
     <div className="pt-24 min-h-screen bg-zinc-50">
-      <SEO 
+      <SEO
         title={pageSettings.heroTitle}
         description={pageSettings.heroSubtitle}
         keywords="download tile catalog, tiles brochure, tile collections PDF, vitrified tiles catalog"
@@ -95,26 +95,26 @@ const Catalog = () => {
       <section className="relative h-[200px] sm:h-[250px] md:h-[300px] flex items-center justify-center overflow-hidden">
         {pageSettings.heroMedia ? (
           /\.(mp4|webm|ogg|mov|m4v)$/i.test(pageSettings.heroMedia) ? (
-            <video 
-              src={getOptimizedVideoUrl(pageSettings.heroMedia)} 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              className="absolute inset-0 w-full h-full object-cover" 
+            <video
+              src={getOptimizedVideoUrl(pageSettings.heroMedia)}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
             />
           ) : (
-            <img loading="lazy" 
-              src={getOptimizedImageUrl(pageSettings.heroMedia, 1200)} 
-              alt="Our Catalogs" 
-              className="absolute inset-0 w-full h-full object-cover" 
+            <img loading="lazy"
+              src={getOptimizedImageUrl(pageSettings.heroMedia, 1200)}
+              alt="Our Catalogs"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           )
         ) : (
-          <img loading="lazy" 
-            src={catalogHeader} 
-            alt="Our Catalogs" 
-            className="absolute inset-0 w-full h-full object-cover" 
+          <img loading="lazy"
+            src={catalogHeader}
+            alt="Our Catalogs"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         )}
         <div className="absolute inset-0 bg-black/60" />
@@ -167,7 +167,7 @@ const Catalog = () => {
                         <img loading="lazy"
                           src={getOptimizedImageUrl(catalog.image, 600)}
                           alt={catalog.title}
-                          className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                       ) : (
                         <div className="flex flex-col items-center text-zinc-300">
