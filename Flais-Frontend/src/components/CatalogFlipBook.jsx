@@ -21,7 +21,6 @@ import './CatalogFlipBook.css';
 // The worker file is copied from node_modules/pdfjs-dist/build/pdf.worker.min.mjs
 // to public/pdf.worker.min.js during setup.
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-
 // ── ForwardRef Page Wrapper ──────────────────────────────────────
 // react-pageflip injects a ref into each child to manage DOM-level
 // flip animations. Every child of HTMLFlipBook MUST forward its ref.
@@ -322,6 +321,12 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
       <div className="flipbook-container" onClick={handleOverlayClick}>
         <Document
           file={pdfUrl}
+          options={{
+            useWasm: true,
+            useWorkerFetch: true,
+            wasmUrl: '/',
+            iccUrl: '/',
+          }}
           onLoadProgress={onDocumentLoadProgress}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
