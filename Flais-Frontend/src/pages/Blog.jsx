@@ -86,6 +86,10 @@ const Blog = () => {
                       alt={post.title} 
                       loading="lazy" 
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105 img-reveal" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/600x400?text=Flais+Granito';
+                      }}
                     />
                   </Link>
                   <div className="p-8 space-y-4 flex-grow flex flex-col">

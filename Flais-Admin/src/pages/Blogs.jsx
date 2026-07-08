@@ -116,12 +116,24 @@ const Blogs = () => {
                   <tr key={blog._id} className="hover:bg-slate-50">
                     <td className="p-6 flex items-center gap-4">
                       {blog.image ? (
-                        <img loading="lazy" src={getImageUrl(blog.image)} className="w-12 h-12 rounded object-cover" alt="" />
-                      ) : (
-                        <div className="w-12 h-12 rounded bg-slate-100 flex items-center justify-center text-slate-400">
-                          <FileText size={20} />
-                        </div>
-                      )}
+                        <img 
+                          loading="lazy" 
+                          src={getImageUrl(blog.image)} 
+                          className="w-12 h-12 rounded object-cover" 
+                          alt="" 
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            const sibling = e.target.nextSibling;
+                            if (sibling) sibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div 
+                        className="w-12 h-12 rounded bg-slate-100 flex items-center justify-center text-slate-400"
+                        style={{ display: blog.image ? 'none' : 'flex' }}
+                      >
+                        <FileText size={20} />
+                      </div>
                       <span className="font-bold">{blog.title}</span>
                     </td>
                     <td className="p-6 text-slate-500">{new Date(blog.createdAt).toLocaleDateString()}</td>

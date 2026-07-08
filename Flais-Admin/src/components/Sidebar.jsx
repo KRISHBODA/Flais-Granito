@@ -1,7 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
   Package, 
   Layers, 
   MessageSquare, 
@@ -18,15 +17,12 @@ import {
 import toast from 'react-hot-toast'; // Optional: for a nice notification
 
 const navItems = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-
   { name: 'Home', path: '/admin/home', icon: Home },
   { name: 'Why FLAIS', path: '/admin/why-flais', icon: Info },
   { name: 'Collection', path: '/admin/products', icon: Package },
   { name: 'Flais Park', path: '/admin/flais-park', icon: MapPin },
   { name: 'Catalog', path: '/admin/catalog', icon: BookOpen },
   { name: 'Achievement', path: '/admin/achievement', icon: Trophy },
-  // { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Contact', path: '/admin/messages', icon: MessageSquare },
   { name: 'Blog', path: '/admin/blogs', icon: FileText },
   { name: 'Settings', path: '/admin/settings', icon: Settings },

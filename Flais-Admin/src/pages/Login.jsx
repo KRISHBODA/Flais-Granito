@@ -29,7 +29,7 @@ const Login = () => {
         // Save token for auth
         localStorage.setItem('adminToken', response.data.token);
         
-        navigate('/admin/dashboard');
+        navigate('/admin/home');
       }
     } catch (error) {
       // FIX: Ensure we extract the string message to avoid crash
@@ -111,7 +111,7 @@ const Login = () => {
             </button>
           </div>
           <p className="mt-8 text-center text-[10px] text-slate-400 uppercase tracking-widest">
-            &copy; 2026 Flais Granito Dashboard
+            &copy; 2026 Flais Granito Admin
           </p>
         </form>
       </div>

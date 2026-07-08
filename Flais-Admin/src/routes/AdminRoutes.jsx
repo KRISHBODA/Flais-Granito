@@ -5,7 +5,6 @@ import { jwtDecode } from 'jwt-decode';
 
 // Lazy load pages
 const Login = lazy(() => import('../pages/Login.jsx'));
-const Dashboard = lazy(() => import('../pages/Dashboard.jsx'));
 const ProductsList = lazy(() => import('../pages/ProductsList.jsx'));
 const AddProduct = lazy(() => import('../pages/AddProduct.jsx'));
 const EditProduct = lazy(() => import('../pages/EditProduct.jsx'));
@@ -65,8 +64,7 @@ const AdminRoutes = () => {
         {/* PROTECTED ROUTES GROUP */}
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
+            <Route index element={<Navigate to="/admin/home" replace />} />
             <Route path="products" element={<ProductsList />} />
             <Route path="products/add" element={<AddProduct />} />
             <Route path="products/edit/:id" element={<EditProduct />} />

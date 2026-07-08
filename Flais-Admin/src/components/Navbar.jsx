@@ -77,16 +77,7 @@ const Navbar = ({ setSidebarOpen }) => {
                 className="fixed inset-0 z-0" 
                 onClick={() => setShowProfileMenu(false)}
               ></div>
-              
               <div className="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white py-2 shadow-xl z-10">
-                <Link 
-                  to="/admin/dashboard" 
-                  className="flex w-full items-center px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-                  onClick={() => setShowProfileMenu(false)}
-                >
-                  <User size={16} className="mr-2" /> My Profile
-                </Link>
-                
                 <Link 
                   to="/admin/settings" 
                   className="flex w-full items-center px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
