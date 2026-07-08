@@ -452,7 +452,7 @@ const Certifications = () => {
               muted
               playsInline
               loop
-              className="w-full h-full object-cover opacity-80"
+              className="w-full h-full object-cover"
               key={pageSettings.heroMedia}
             >
               <source src={getOptimizedVideoUrl(pageSettings.heroMedia)} type="video/mp4" />
@@ -461,11 +461,10 @@ const Certifications = () => {
             <img
               src={getOptimizedImageUrl(pageSettings.heroMedia) || ''}
               alt={pageSettings.heroTitle}
-              className="w-full h-full object-cover opacity-80"
+              className="w-full h-full object-cover"
             />
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#f8f5f0] via-[#f8f5f0]/80 to-transparent"></div>
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <motion.div

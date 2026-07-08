@@ -95,9 +95,9 @@ const InstallationGuide = () => {
       try {
         setLoading(true);
         setLoadError('');
-        const res = await api.get('/installation-guide');
-        if (res.data && res.data.success && res.data.installationGuide) {
-          const data = res.data.installationGuide;
+        const res = await api.get('/flais-guide');
+        if (res.data && res.data.success && res.data.flaisGuide && res.data.flaisGuide.installationGuide) {
+          const data = res.data.flaisGuide.installationGuide;
           setSettings({
             title: data.title || "Process for Flais Granito",
             subtitle: data.subtitle || "Installation Guide",
