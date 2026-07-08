@@ -39,79 +39,6 @@ const loadVideoFromDB = () => {
   });
 };
 
-const defaultExhibitions = [
-  {
-    id: 1,
-    name: 'CERSAIE',
-    location: 'Bologna, Italy',
-    year: '2025',
-    description: 'Showcasing our futuristic large-format slabs and bio-active surfaces to the European architecture and design community.'
-  },
-  {
-    id: 2,
-    name: 'COVERINGS',
-    location: 'Atlanta, USA',
-    year: '2024',
-    description: 'Unveiling eco-friendly porcelain stoneware and high-durability outdoor tile collections to the North American market.'
-  },
-  {
-    id: 3,
-    name: 'ACETECH',
-    location: 'Mumbai, India',
-    year: '2024',
-    description: 'Award-winning stall design featuring premium marble-gloss and electra series tiles for luxury residential projects.'
-  },
-  {
-    id: 4,
-    name: 'VIBRANT CERAMIC EXPO',
-    location: 'Gujarat, India',
-    year: '2024',
-    description: 'Highlighting green manufacturing practices and large-scale industrial surface solutions for global distributors.'
-  },
-  {
-    id: 5,
-    name: 'BATIMAT',
-    location: 'Paris, France',
-    year: '2023',
-    description: 'Presenting our high-performance facade cladding systems and thin porcelain panels to European contractors.'
-  },
-  {
-    id: 6,
-    name: 'BIG 5 SHOW',
-    location: 'Dubai, UAE',
-    year: '2023',
-    description: 'Introducing heat-reflective outdoor slabs and heavy-duty tiles specifically engineered for the Middle Eastern climate.'
-  },
-  {
-    id: 7,
-    name: 'CEVISAMA',
-    location: 'Valencia, Spain',
-    year: '2023',
-    description: 'Demonstrating our ultra-thin format tiles and slip-resistant grip technologies for modern European commercial developments.'
-  },
-  {
-    id: 8,
-    name: 'INDEX DUBAI',
-    location: 'Dubai, UAE',
-    year: '2022',
-    description: 'Exhibiting high-end interior solutions, designer slabs, and custom vanity collections for luxury hospitality projects in the Gulf.'
-  },
-  {
-    id: 9,
-    name: 'KBC SHANGHAI',
-    location: 'Shanghai, China',
-    year: '2022',
-    description: 'Unveiling our high-gloss polished series and anti-bacterial bathroom surface integrations for global designers.'
-  },
-  {
-    id: 10,
-    name: 'MOSBUILD',
-    location: 'Moscow, Russia',
-    year: '2022',
-    description: 'Presenting frost-resistant external facades and structural heavy-duty floor slabs to architects of the region.'
-  }
-];
-
 const defaultCertifications = [
   {
     id: 1,
@@ -178,7 +105,7 @@ const Certifications = () => {
     return /\.(mp4|webm|ogg|mov)/i.test(media) || media.includes('video') || media.includes('stream');
   }, [pageSettings.heroMedia]);
 
-  const [exhibitions, setExhibitions] = React.useState(defaultExhibitions);
+  const [exhibitions, setExhibitions] = React.useState([]);
 
   // Pagination states - set itemsPerPage to 8 (showing 8 cards in two rows of 4 on desktop)
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -404,113 +331,115 @@ const Certifications = () => {
           </div>
 
           {/* Exhibition Highlights */}
-          <div id="certifications-exhibitions-grid-section" className="pt-16 border-t border-zinc-900 scroll-mt-32">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between pb-4"
-            >
-              <div>
-                <h3 className="text-2xl md:text-3xl font-display font-bold text-white mb-2">Exhibition Highlights</h3>
-                <p className="text-zinc-400 text-sm md:text-base font-light">Explore our flagship pavilions and global showcases across the years.</p>
-              </div>
-              {totalPages > 1 && (
-                <div className="mt-4 md:mt-0 text-[10px] text-zinc-400 font-bold uppercase tracking-wider bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg">
-                  Page {currentPage} of {totalPages}
+          {exhibitions.length > 0 && (
+            <div id="certifications-exhibitions-grid-section" className="pt-16 border-t border-zinc-900 scroll-mt-32">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between pb-4"
+              >
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-display font-bold text-white mb-2">Exhibition Highlights</h3>
+                  <p className="text-zinc-400 text-sm md:text-base font-light">Explore our flagship pavilions and global showcases across the years.</p>
                 </div>
-              )}
-            </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {paginatedExhibitions.map((exh, index) => (
-                <motion.div
-                  key={exh.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.06, duration: 0.45 }}
-                  className="group relative bg-zinc-900/50 border border-zinc-800/85 rounded-2xl p-6 hover:bg-zinc-900 hover:border-[#c5a880]/30 transition-all duration-300 flex flex-col justify-between"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-[#c5a880] text-xs font-bold uppercase tracking-wider bg-[#c5a880]/10 px-2.5 py-1 rounded-md border border-[#c5a880]/20">
-                        <Calendar size={12} />
-                        {exh.year}
-                      </div>
-                      <span className="text-zinc-600 group-hover:text-[#c5a880]/80 transition-colors">
-                        <Globe size={18} />
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h4 className="text-xl font-bold text-white group-hover:text-[#c5a880] transition-colors">{exh.name}</h4>
-                      <div className="flex items-center gap-1 text-zinc-500 text-xs">
-                        <MapPin size={12} className="text-[#c5a880]" />
-                        {exh.location}
-                      </div>
-                    </div>
-
-                    <p className="text-zinc-400 text-xs leading-relaxed font-light font-sans pt-2">
-                      {exh.description}
-                    </p>
+                {totalPages > 1 && (
+                  <div className="mt-4 md:mt-0 text-[10px] text-zinc-400 font-bold uppercase tracking-wider bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg">
+                    Page {currentPage} of {totalPages}
                   </div>
+                )}
+              </motion.div>
 
-                  <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-500 group-hover:text-[#c5a880] transition-colors">
-                    <span>Premium Pavilion</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#c5a880] animate-pulse"></span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Pagination buttons: Capsule styling matching user's custom design */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center mt-16">
-                <div className="inline-flex items-center bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className={`w-10 h-10 flex items-center justify-center border-r border-zinc-200 transition-colors duration-200 ${
-                      currentPage === 1
-                        ? 'text-zinc-300 bg-zinc-50/50 cursor-not-allowed'
-                        : 'text-[#c5a880] hover:bg-zinc-50 active:bg-zinc-100'
-                    }`}
-                    aria-label="Previous Page"
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {paginatedExhibitions.map((exh, index) => (
+                  <motion.div
+                    key={exh.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.06, duration: 0.45 }}
+                    className="group relative bg-zinc-900/50 border border-zinc-800/85 rounded-2xl p-6 hover:bg-zinc-900 hover:border-[#c5a880]/30 transition-all duration-300 flex flex-col justify-between"
                   >
-                    <ChevronLeft size={16} />
-                  </button>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-[#c5a880] text-xs font-bold uppercase tracking-wider bg-[#c5a880]/10 px-2.5 py-1 rounded-md border border-[#c5a880]/20">
+                          <Calendar size={12} />
+                          {exh.year}
+                        </div>
+                        <span className="text-zinc-600 group-hover:text-[#c5a880]/80 transition-colors">
+                          <Globe size={18} />
+                        </span>
+                      </div>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <div className="space-y-2">
+                        <h4 className="text-xl font-bold text-white group-hover:text-[#c5a880] transition-colors">{exh.name}</h4>
+                        <div className="flex items-center gap-1 text-zinc-300 text-xs">
+                          <MapPin size={12} className="text-[#c5a880]" />
+                          {exh.location}
+                        </div>
+                      </div>
+
+                      <p className="text-zinc-400 text-xs leading-relaxed font-light font-sans pt-2">
+                        {exh.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-500 group-hover:text-[#c5a880] transition-colors">
+                      <span>Premium Pavilion</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#c5a880] animate-pulse"></span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Pagination buttons: Capsule styling matching user's custom design */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center mt-16">
+                  <div className="inline-flex items-center bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
                     <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`w-10 h-10 flex items-center justify-center font-bold text-sm transition-colors duration-200 border-r border-zinc-200 ${
-                        currentPage === page
-                          ? 'bg-[#c5a880] text-white font-bold'
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={`w-10 h-10 flex items-center justify-center border-r border-zinc-200 transition-colors duration-200 ${
+                        currentPage === 1
+                          ? 'text-zinc-300 bg-zinc-50/50 cursor-not-allowed'
                           : 'text-[#c5a880] hover:bg-zinc-50 active:bg-zinc-100'
                       }`}
+                      aria-label="Previous Page"
                     >
-                      {page}
+                      <ChevronLeft size={16} />
                     </button>
-                  ))}
 
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className={`w-10 h-10 flex items-center justify-center transition-colors duration-200 ${
-                      currentPage === totalPages
-                        ? 'text-zinc-300 bg-zinc-50/50 cursor-not-allowed'
-                        : 'text-[#c5a880] hover:bg-zinc-50 active:bg-zinc-100'
-                    }`}
-                    aria-label="Next Page"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`w-10 h-10 flex items-center justify-center font-bold text-sm transition-colors duration-200 border-r border-zinc-200 ${
+                          currentPage === page
+                            ? 'bg-[#c5a880] text-white font-bold'
+                            : 'text-[#c5a880] hover:bg-zinc-50 active:bg-zinc-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`w-10 h-10 flex items-center justify-center transition-colors duration-200 ${
+                        currentPage === totalPages
+                          ? 'text-zinc-300 bg-zinc-50/50 cursor-not-allowed'
+                          : 'text-[#c5a880] hover:bg-zinc-50 active:bg-zinc-100'
+                      }`}
+                      aria-label="Next Page"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
