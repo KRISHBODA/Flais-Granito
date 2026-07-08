@@ -461,7 +461,7 @@ const Certifications = () => {
             <img
               src={getOptimizedImageUrl(pageSettings.heroMedia) || ''}
               alt={pageSettings.heroTitle}
-              className="w-full h-full object-cover opacity-[0.15] mix-blend-multiply"
+              className="w-full h-full object-cover opacity-80"
             />
           )}
         </div>
