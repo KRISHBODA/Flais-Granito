@@ -91,14 +91,14 @@ const Catalog = () => {
   }
 
   return (
-    <div className="pt-24 min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50">
       <SEO
         title={pageSettings.heroTitle}
         description={pageSettings.heroSubtitle}
         keywords="download tile catalog, tiles brochure, tile collections PDF, vitrified tiles catalog"
       />
       {/* Header */}
-      <section className="relative h-[200px] sm:h-[250px] md:h-[300px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[300px] sm:h-[350px] md:h-[400px] flex items-center justify-center overflow-hidden">
         {pageSettings.heroMedia ? (
           /\.(mp4|webm|ogg|mov|m4v)$/i.test(pageSettings.heroMedia) ? (
             <video
@@ -124,7 +124,7 @@ const Catalog = () => {
           />
         )}
         <div className="absolute inset-0 bg-black/60" />
-        <div className="container-custom relative z-10 text-center space-y-4">
+        <div className="container-custom relative z-10 text-center space-y-4 pt-16 sm:pt-20">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

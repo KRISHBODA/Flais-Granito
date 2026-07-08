@@ -4,6 +4,7 @@ import { ChevronDown, Move, Scissors, Layers, Grid, Construction, Ruler, FileTex
 import SEO from '../components/SEO';
 import api from '../utils/api';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
+import installationHero from '../assets/catalog_header.jpg';
 
 const AccordionItem = ({ title, icon: Icon, content, isOpen, onClick }) => {
   return (
@@ -46,7 +47,7 @@ const AccordionItem = ({ title, icon: Icon, content, isOpen, onClick }) => {
 const ICON_MAP = { Ruler, Scissors, Layers, Grid, Construction, Move };
 
 const InstallationGuide = () => {
-  const [openItems, setOpenItems] = useState([]); // All items closed by default
+  const [openItems, setOpenItems] = useState([]);
   const [settings, setSettings] = useState({
     title: "Process for Flais Granito",
     subtitle: "Installation Guide",
@@ -58,55 +59,60 @@ const InstallationGuide = () => {
         content: 'To ensure a perfectly flat surface, especially for large format slabs, we strongly recommend using a high-quality tile levelling system (wedges and clips). This prevents lippage during the adhesive curing process and ensures that adjacent tiles are perfectly flush with one another. Apply the clips near the corners and along the edges as per the manufacturer\'s spacing guidelines.'
       },
       {
-        title: 'Joints',
-        icon: 'Grid',
-        content: 'Never install tiles butt-jointed. A minimum grout joint of 2mm to 3mm is mandatory for indoor installations, and 3mm to 5mm for outdoor or high-stress areas. Joints accommodate structural movements, thermal expansion, and dimensional tolerances. Use high-quality, flexible epoxy or cementitious grout that matches the tile color for a seamless look.'
+        title: 'Cutting',
+        icon: 'Scissors',
+        content: 'For straight cuts, use a professional manual rail cutter designed for thin slabs. For complex or curved cuts, L-shaped cutouts, or internal corners, use a wet diamond saw or dry angle grinder with a continuous rim diamond blade. Smooth all cut edges with a diamond sanding pad to avoid micro-cracks.'
       },
       {
-        title: 'Laying With Adhesives',
+        title: 'Laying With Adhesives (Class C2TE S1/S2)',
         icon: 'Layers',
-        content: 'Always use the double-spreading (back-buttering) technique for large formats. Apply the adhesive to both the substrate using a notched trowel and to the back of the tile using a flat trowel. This ensures 100% coverage and eliminates voids that could cause cracking upon impact. Choose a highly deformable adhesive (Class C2TE S1 or S2) suitable for porcelain stoneware.'
+        content: 'Always use a high-performance cementitious adhesive classified as C2TE S1 or S2 (highly deformable). Apply the adhesive using the double-coating (back-buttering) method: use a 10-15mm slanted-notch trowel on the substrate (floor/wall) and a 3-4mm flat trowel on the back of the porcelain slab. Ensure the adhesive ribs run parallel to prevent air pockets.'
+      },
+      {
+        title: 'Joint Size',
+        icon: 'Grid',
+        content: 'Never butt-joint porcelain slabs. A minimum grout joint of 2mm is required for indoor floor and wall applications, and 3mm or more for outdoor installations or areas subjected to high thermal expansion. Use high-performance, polymer-modified cementitious or epoxy grouts.'
       },
       {
         title: 'Substrate / Base / Screed',
         icon: 'Construction',
-        content: 'The substrate must be perfectly level, fully cured, structurally sound, dry, and clean from dust, grease, or paint. Any unevenness in the base will reflect on the final surface. For large formats, the acceptable tolerance is typically less than 3mm over a 2-meter straightedge. Use self-levelling compounds if necessary before installation.'
+        content: 'The substrate must be perfectly flat (deviation < 2mm over a 2m straight edge), clean, dry, stable, and completely cured. Level any uneven areas with a self-levelling compound prior to installation. Any residual moisture or dust will compromise the adhesive bond.'
       },
       {
-        title: 'Cutting',
-        icon: 'Scissors',
-        content: 'Use professional-grade cutting tools designed for porcelain stoneware. For straight cuts, a high-quality manual tile cutter with a sharp scoring wheel is sufficient. For L-cuts, holes, or complex shapes, use a wet saw with a continuous rim diamond blade. Always handle cut edges carefully and use a diamond polishing pad to smooth any sharp or chipped edges.'
-      },
-      {
-        title: 'Handling',
+        title: 'Move & Handle with Care',
         icon: 'Move',
-        content: 'Large format tiles require special care during handling to prevent breakage. Always carry the slabs vertically, never horizontally. For very large slabs (e.g., 1200x2400mm or larger), use professional handling equipment such as suction cup frames and carrying bars. Ensure the work area is clear of debris to prevent accidental chipping of the edges.'
+        content: 'Thin porcelain slabs are flexible and fragile before installation. Always handle them using a suction cup frame system with structural reinforcing bars. Do not bend or twist the slabs, and always lift them vertically. Protect the corners and edges from direct impacts at all times.'
       }
-    ]
+    ],
+    pdfUrl: ""
   });
 
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
   useEffect(() => {
-    const fetchInstallationData = async () => {
+    const fetchGuideData = async () => {
       try {
-        const response = await api.get('/flais-guide');
-        if (response.data && response.data.success) {
-          const data = response.data.flaisGuide || {};
-          if (data.installationGuide) {
-            setSettings({
-              title: data.installationGuide.title || "Process for Flais Granito",
-              subtitle: data.installationGuide.subtitle || "Installation Guide",
-              heroImage: data.installationGuide.heroImage || "",
-              pdfUrl: data.installationGuide.pdfUrl || "",
-              steps: data.installationGuide.steps && data.installationGuide.steps.length > 0 
-                ? data.installationGuide.steps 
-                : settings.steps
-            });
-          }
+        setLoading(true);
+        setLoadError('');
+        const res = await api.get('/installation-guide');
+        if (res.data && res.data.success && res.data.installationGuide) {
+          const data = res.data.installationGuide;
+          setSettings({
+            title: data.title || "Process for Flais Granito",
+            subtitle: data.subtitle || "Installation Guide",
+            heroImage: data.heroImage || "",
+            steps: Array.isArray(data.steps) && data.steps.length > 0 ? data.steps : settings.steps,
+            pdfUrl: data.pdfUrl || ""
+          });
         }
       } catch (err) {
-              }
+        setLoadError('Failed to load installation guide data.');
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchInstallationData();
+    fetchGuideData();
   }, []);
 
   const toggleItem = (index) => {
@@ -118,16 +124,16 @@ const InstallationGuide = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-24 font-sans">
+    <div className="min-h-screen bg-white font-sans">
       <SEO 
         title="Tile Installation Guide & Best Practices"
         description="Step-by-step guide for tile installation. Learn about substrate preparation, laying with Class C2TE S1/S2 adhesives, joint sizes, cutting porcelain, and levelling systems."
         keywords="tile installation guide, how to lay tiles, tile levelling system, vitrified tiles installation, tile cutting"
       />
       <section className="relative h-[35vh] sm:h-[40vh] md:h-[50vh] min-h-[280px] sm:min-h-[350px] md:min-h-[400px] flex items-center overflow-hidden mb-12 sm:mb-16 md:mb-20">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${getOptimizedImageUrl(settings.heroImage)})` }}></div>
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${settings.heroImage ? getOptimizedImageUrl(settings.heroImage) : installationHero})` }}></div>
 
-        <div className="relative z-10 container-custom">
+        <div className="relative z-10 container-custom pt-16 sm:pt-20">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
