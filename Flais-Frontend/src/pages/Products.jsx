@@ -338,7 +338,7 @@ const Products = () => {
               {/* Size Filter */}
               <div>
                 <h3 className="text-lg font-bold text-zinc-900 mb-6 border-b-2 border-zinc-900 pb-1 inline-block">
-                  Size
+                  Available Size
                 </h3>
                 <ul className="space-y-1">
                   {[

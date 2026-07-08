@@ -214,13 +214,13 @@ const ProductsList = () => {
                               <h4 className="font-bold text-slate-900">{product.title || product.name}</h4>
                               <p className="text-xs text-slate-400 font-mono">ID: {product._id.slice(-6).toUpperCase()}</p>
                               <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-1 text-[10px] text-slate-500 font-semibold uppercase">
-                                <span>Size: {product.size || '-'}</span>
+                                <span>Available Size: {product.size || '-'}</span>
                                 <span>•</span>
                                 <span>Thick: {product.thickness || '-'}</span>
                                 <span>•</span>
-                                <span>Finish: {product.finishes || '-'}</span>
+                                <span>Available Finish: {product.finishes || '-'}</span>
                                 <span>•</span>
-                                <span>Color: {product.color || '-'}</span>
+                                <span>Body Type: {product.color || '-'}</span>
                               </div>
                             </div>
                           </div>

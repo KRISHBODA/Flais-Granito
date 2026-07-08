@@ -6,7 +6,7 @@ const uploadService = require("../services/storage/UploadService");
 // @access  Private/Admin
 exports.createProduct = async (req, res) => {
   try {
-    const { title, slug, description, price, category, stock, featured, size, color, thickness, finishes, application, link360 } = req.body;
+    const { title, slug, description, price, category, stock, featured, size, color, thickness, finishes, application, link360, randoms, collection: productCollection, tagReview } = req.body;
 
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
@@ -31,6 +31,9 @@ exports.createProduct = async (req, res) => {
       finishes,
       application,
       link360,
+      randoms,
+      productCollection,
+      tagReview,
     });
 
     res.status(201).json({
@@ -110,7 +113,7 @@ exports.updateProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    const { title, slug, description, price, category, stock, featured, size, color, thickness, finishes, application, link360 } = req.body;
+    const { title, slug, description, price, category, stock, featured, size, color, thickness, finishes, application, link360, randoms, collection: productCollection, tagReview } = req.body;
 
     let updateData = {
       title,
@@ -126,6 +129,9 @@ exports.updateProduct = async (req, res) => {
       finishes: finishes !== undefined ? finishes : product.finishes,
       application: application !== undefined ? application : product.application,
       link360: link360 !== undefined ? link360 : product.link360,
+      randoms: randoms !== undefined ? randoms : product.randoms,
+      productCollection: productCollection !== undefined ? productCollection : product.productCollection,
+      tagReview: tagReview !== undefined ? tagReview : product.tagReview,
     };
 
     let remainingImages = [];

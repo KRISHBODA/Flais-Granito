@@ -58,6 +58,18 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    randoms: {
+      type: String,
+      default: '',
+    },
+    productCollection: {
+      type: String,
+      default: '',
+    },
+    tagReview: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

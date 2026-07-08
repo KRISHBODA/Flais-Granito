@@ -22,6 +22,9 @@ const EditProduct = () => {
     finishes: '',
     application: '',
     link360: '',
+    randoms: '',
+    collection: '',
+    tagReview: '',
   });
   const [existingImages, setExistingImages] = useState([]);
   const [newImageFiles, setNewImageFiles] = useState([]);
@@ -71,6 +74,9 @@ const EditProduct = () => {
             finishes: data.product.finishes || '',
             application: data.product.application || '',
             link360: data.product.link360 || '',
+            randoms: data.product.randoms || '',
+            collection: data.product.productCollection || '',
+            tagReview: data.product.tagReview || '',
           });
           setExistingImages(data.product.images || []);
         }
@@ -145,6 +151,9 @@ const EditProduct = () => {
       data.append("finishes", formData.finishes);
       data.append("application", formData.application);
       data.append("link360", formData.link360);
+      data.append("randoms", formData.randoms);
+      data.append("collection", formData.collection);
+      data.append("tagReview", formData.tagReview);
 
       data.append("existingImages", JSON.stringify(existingImages));
       if (newImageFiles && newImageFiles.length > 0) {
@@ -211,7 +220,7 @@ const EditProduct = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Size</label>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">Available Size</label>
                   <input
                     type="text"
                     name="size"
@@ -222,7 +231,7 @@ const EditProduct = () => {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Color</label>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">Body Type</label>
                   <input
                     type="text"
                     name="color"
@@ -244,13 +253,46 @@ const EditProduct = () => {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Finishes</label>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">Available Finish</label>
                   <input
                     type="text"
                     name="finishes"
                     value={formData.finishes}
                     onChange={handleInputChange}
                     placeholder="e.g. Matt"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm transition-all focus:border-[#0145F2] focus:outline-none focus:ring-1 focus:ring-[#0145F2]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">Randoms</label>
+                  <input
+                    type="text"
+                    name="randoms"
+                    value={formData.randoms}
+                    onChange={handleInputChange}
+                    placeholder="e.g. 4"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm transition-all focus:border-[#0145F2] focus:outline-none focus:ring-1 focus:ring-[#0145F2]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">Collection</label>
+                  <input
+                    type="text"
+                    name="collection"
+                    value={formData.collection}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Marquina"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm transition-all focus:border-[#0145F2] focus:outline-none focus:ring-1 focus:ring-[#0145F2]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">Tag/Review</label>
+                  <input
+                    type="text"
+                    name="tagReview"
+                    value={formData.tagReview}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Premium / 5 Star"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm transition-all focus:border-[#0145F2] focus:outline-none focus:ring-1 focus:ring-[#0145F2]"
                   />
                 </div>

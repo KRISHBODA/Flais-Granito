@@ -64,7 +64,7 @@ const ProductDetails = () => {
   // Dynamic spec extraction from title / description
   const getProductSpecs = () => {
     if (!product) {
-      return { size: 'N/A', finish: 'N/A', color: 'N/A', thickness: 'N/A', application: '' };
+      return { size: 'N/A', finish: 'N/A', color: 'N/A', thickness: 'N/A', application: '', randoms: '', collection: '', tagReview: '' };
     }
 
     return {
@@ -73,10 +73,13 @@ const ProductDetails = () => {
       color: product.color || 'N/A',
       thickness: product.thickness || 'N/A',
       application: product.application || '',
+      randoms: product.randoms || '',
+      collection: product.productCollection || '',
+      tagReview: product.tagReview || '',
     };
   };
 
-  const { size, finish, color, thickness, application } = getProductSpecs();
+  const { size, finish, color, thickness, application, randoms, collection, tagReview } = getProductSpecs();
 
   if (loading) {
     return (
@@ -236,20 +239,13 @@ const ProductDetails = () => {
                 {product.title || product.name}
               </h1>
               
-              {/* Material and Type Subheaders */}
-              <div className="flex flex-wrap items-center gap-3 text-zinc-500">
-                <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider">
-                  <Layers size={14} className="text-[#C0A060]" />
-                  {(product.application || "WALL TILE - FLOOR TILE").toUpperCase()}
-                </span>
-              </div>
             </div>
 
             {/* Sizes, Finishes, Thickness, Color Specification Grid */}
             <div className="border-y border-zinc-200 py-5 grid grid-cols-2 gap-y-4 gap-x-4">
               <div className="border-r border-zinc-200 pr-4">
                 <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Sizes
+                  Available Size
                 </span>
                 <span className="text-zinc-800 font-bold text-sm">
                   {size}
@@ -257,7 +253,7 @@ const ProductDetails = () => {
               </div>
               <div className="pl-6">
                 <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Finishes
+                  Available Finish
                 </span>
                 <span className="text-zinc-800 font-bold text-sm">
                   {finish}
@@ -273,27 +269,44 @@ const ProductDetails = () => {
               </div>
               <div className="border-t border-zinc-200 pt-4 pl-6">
                 <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Color
+                  Body Type
                 </span>
                 <span className="text-zinc-800 font-bold text-sm">
                   {color}
                 </span>
               </div>
-              {application && (
-                <>
-                  <div className="border-t border-r border-zinc-200 pt-4 pr-4">
-                    <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                      Application
-                    </span>
-                    <span className="text-zinc-800 font-bold text-sm">
-                      {application}
-                    </span>
-                  </div>
-                  <div className="border-t border-zinc-200 pt-4 pl-6">
-                    {/* Empty cell to balance the grid */}
-                  </div>
-                </>
-              )}
+              <div className="border-t border-r border-zinc-200 pt-4 pr-4">
+                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                  Application
+                </span>
+                <span className="text-zinc-800 font-bold text-sm">
+                  {application || 'N/A'}
+                </span>
+              </div>
+              <div className="border-t border-zinc-200 pt-4 pl-6">
+                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                  Randoms
+                </span>
+                <span className="text-zinc-800 font-bold text-sm">
+                  {randoms || 'N/A'}
+                </span>
+              </div>
+              <div className="border-t border-r border-zinc-200 pt-4 pr-4">
+                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                  Collection
+                </span>
+                <span className="text-zinc-800 font-bold text-sm">
+                  {collection || 'N/A'}
+                </span>
+              </div>
+              <div className="border-t border-zinc-200 pt-4 pl-6">
+                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                  Tag/Review
+                </span>
+                <span className="text-zinc-800 font-bold text-sm">
+                  {tagReview || 'N/A'}
+                </span>
+              </div>
             </div>
 
             {/* Experience Our Tools Section */}
