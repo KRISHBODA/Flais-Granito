@@ -124,7 +124,7 @@ const Catalog = () => {
           />
         )}
         <div className="absolute inset-0 bg-black/60" />
-        <div className="container-custom relative z-10 text-center space-y-4 pt-16 sm:pt-20">
+        <div className="container-custom relative z-10 text-center space-y-4 pt-24 sm:pt-28 md:pt-32">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

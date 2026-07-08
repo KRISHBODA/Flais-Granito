@@ -130,10 +130,10 @@ const InstallationGuide = () => {
         description="Step-by-step guide for tile installation. Learn about substrate preparation, laying with Class C2TE S1/S2 adhesives, joint sizes, cutting porcelain, and levelling systems."
         keywords="tile installation guide, how to lay tiles, tile levelling system, vitrified tiles installation, tile cutting"
       />
-      <section className="relative h-[35vh] sm:h-[40vh] md:h-[50vh] min-h-[280px] sm:min-h-[350px] md:min-h-[400px] flex items-center overflow-hidden mb-12 sm:mb-16 md:mb-20">
+      <section className="relative h-[40vh] sm:h-[50vh] md:h-[50vh] min-h-[340px] sm:min-h-[380px] md:min-h-[420px] flex items-center overflow-hidden mb-12 sm:mb-16 md:mb-20">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${settings.heroImage ? getOptimizedImageUrl(settings.heroImage) : installationHero})` }}></div>
 
-        <div className="relative z-10 container-custom pt-16 sm:pt-20">
+        <div className="relative z-10 container-custom pt-24 sm:pt-28 md:pt-32">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
