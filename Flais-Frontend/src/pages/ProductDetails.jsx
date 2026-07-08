@@ -277,12 +277,19 @@ const ProductDetails = () => {
                 Experience Our Tools
               </span>
               <div className="flex flex-wrap gap-x-8 gap-y-6 items-center">
-                <Link to="/calculator" className="flex items-center gap-3 group">
-                  <div className="w-12 h-12 rounded-full border border-[#C0A060] flex items-center justify-center text-[#C0A060] group-hover:bg-[#C0A060] group-hover:text-white transition-all shadow-sm">
-                    <RotateCw size={18} />
-                  </div>
-                  <span className="text-[10px] font-bold text-zinc-600 tracking-wider">360° VIEW</span>
-                </Link>
+                {product?.link360 && (
+                  <a 
+                    href={product.link360} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-3 group"
+                  >
+                    <div className="w-12 h-12 rounded-full border border-[#C0A060] flex items-center justify-center text-[#C0A060] group-hover:bg-[#C0A060] group-hover:text-white transition-all shadow-sm">
+                      <RotateCw size={18} />
+                    </div>
+                    <span className="text-[10px] font-bold text-zinc-600 tracking-wider">360° VIEW</span>
+                  </a>
+                )}
                 
                 <Link to="/calculator" className="flex items-center gap-3 group">
                   <div className="w-12 h-12 rounded-full border border-[#C0A060] flex items-center justify-center text-[#C0A060] group-hover:bg-[#C0A060] group-hover:text-white transition-all shadow-sm">
