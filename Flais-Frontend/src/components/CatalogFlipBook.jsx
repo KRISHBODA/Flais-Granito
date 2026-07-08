@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback, forwardRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Document, Page, pdfjs } from 'react-pdf';
 import HTMLFlipBook from 'react-pageflip';
@@ -109,6 +109,15 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
   const [dimensions, setDimensions] = useState(() => calcDimensions(false));
 
   const flipBookRef = useRef(null);
+  const options = useMemo(
+    () => ({
+      useWasm: true,
+      useWorkerFetch: true,
+      wasmUrl: ASSETS_BASE_URL,
+      iccUrl: ASSETS_BASE_URL,
+    }),
+    []
+  );
   const overlayRef = useRef(null);
   const loadMetricsRef = useRef({
     start: 0,
@@ -400,12 +409,7 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
       <div className="flipbook-container" onClick={handleOverlayClick}>
         <Document
           file={pdfUrl}
-          options={{
-            useWasm: true,
-            useWorkerFetch: true,
-            wasmUrl: ASSETS_BASE_URL,
-            iccUrl: ASSETS_BASE_URL,
-          }}
+          options={options}
           onLoadProgress={onDocumentLoadProgress}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
@@ -544,6 +548,14 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
               >
                 <div className="simple-spinner" aria-hidden="true" />
                 <p className="simple-loading-text">Loading...</p>
+                <div style={{ marginTop: 8 }}>
+                  <button
+                    className="flipbook-open-raw"
+                    onClick={() => window.open(pdfUrl, '_blank')}
+                  >
+                    Open PDF
+                  </button>
+                </div>
               </motion.div>
             </motion.div>
           )}
