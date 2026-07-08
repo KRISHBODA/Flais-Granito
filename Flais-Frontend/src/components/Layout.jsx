@@ -8,7 +8,18 @@ import WhatsAppButton from './WhatsAppButton';
 const Layout = ({ children }) => {
   const { pathname } = useLocation();
 
-  // Scroll reset is now handled by SmoothScroll component using Lenis
+  const isViewerPage = pathname.startsWith('/catalog/view');
+
+  if (isViewerPage) {
+    return (
+      <div className="flex flex-col min-h-screen bg-zinc-950">
+        <Toaster position="top-right" />
+        <main className="flex-grow">
+          {children}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">

@@ -1,13 +1,10 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Eye, Loader2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import catalogHeader from '../assets/catalog_header.jpg';
 import api from '../utils/api';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
-
-// Lazy-load the flipbook viewer so it doesn't impact initial page load
-const CatalogFlipBook = lazy(() => import('../components/CatalogFlipBook'));
 
 const Catalog = () => {
   const [pageSettings, setPageSettings] = useState({
@@ -18,8 +15,6 @@ const Catalog = () => {
   const [catalogsList, setCatalogsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [downloadingKey, setDownloadingKey] = useState(null);
-  const [viewerPdf, setViewerPdf] = useState(null);
-  const [viewerTitle, setViewerTitle] = useState('');
 
   useEffect(() => {
     const fetchCatalogData = async () => {
@@ -54,8 +49,8 @@ const Catalog = () => {
     if (!link) return;
 
     if (action === 'view') {
-      setViewerPdf(link);
-      setViewerTitle(catalog.title || 'Catalog');
+      const viewerUrl = `/catalog/view?pdf=${encodeURIComponent(link)}&title=${encodeURIComponent(catalog.title || 'Catalog')}`;
+      window.open(viewerUrl, '_blank');
       return;
     }
 
@@ -234,16 +229,6 @@ const Catalog = () => {
         </div>
       </section>
 
-      {/* FlipBook Viewer Modal */}
-      {viewerPdf && (
-        <Suspense fallback={null}>
-          <CatalogFlipBook
-            pdfUrl={viewerPdf}
-            catalogTitle={viewerTitle}
-            onClose={() => { setViewerPdf(null); setViewerTitle(''); }}
-          />
-        </Suspense>
-      )}
     </div>
   );
 };
