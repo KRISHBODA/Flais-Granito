@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import motionLogo from "../assets/Flais motion logo.mp4";
+import motionLogo from "../assets/Logo Animation 3 (1).mp4";
 
 let preloaderShown = false;
 
