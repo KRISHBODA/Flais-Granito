@@ -59,6 +59,8 @@ const ProductDetails = () => {
 
   const loadError = isError ? 'Failed to load product details.' : '';
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
   // Dynamic spec extraction from title / description
   const getProductSpecs = () => {
     if (!product) {
@@ -115,6 +117,26 @@ const ProductDetails = () => {
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
+  const minSwipeDistance = 50;
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      nextImage();
+    } else if (isRightSwipe) {
+      prevImage();
+    }
+  };
+
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -164,7 +186,10 @@ const ProductDetails = () => {
                 src={allImages[currentImageIndex]} 
                 alt={product.title || product.name} 
                 loading="lazy" 
-                className="w-full h-full object-cover transition-all duration-500" 
+                className="w-full h-full object-cover transition-all duration-500 select-none cursor-grab active:cursor-grabbing" 
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-center px-6 bg-zinc-50 text-zinc-400">

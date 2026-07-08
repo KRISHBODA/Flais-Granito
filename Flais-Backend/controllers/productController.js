@@ -128,14 +128,37 @@ exports.updateProduct = async (req, res) => {
       link360: link360 !== undefined ? link360 : product.link360,
     };
 
+    let remainingImages = [];
+    if (req.body.existingImages) {
+      try {
+        remainingImages = JSON.parse(req.body.existingImages);
+      } catch (e) {
+        remainingImages = Array.isArray(req.body.existingImages)
+          ? req.body.existingImages
+          : [req.body.existingImages];
+      }
+    } else {
+      if ('existingImages' in req.body) {
+        remainingImages = [];
+      } else {
+        remainingImages = product.images || [];
+      }
+    }
+
+    // Delete physically removed images from disk
+    const deletedImages = (product.images || []).filter(img => !remainingImages.includes(img));
+    for (const imgPath of deletedImages) {
+      await uploadService.delete(imgPath);
+    }
+
+    let newImages = [];
     if (req.files && req.files.length > 0) {
-      const newImages = [];
       for (const file of req.files) {
         const uploadResult = await uploadService.upload(file, "products");
         newImages.push(uploadResult.path);
       }
-      updateData.images = [...product.images, ...newImages];
     }
+    updateData.images = [...remainingImages, ...newImages];
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,

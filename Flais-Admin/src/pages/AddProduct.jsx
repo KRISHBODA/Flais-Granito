@@ -28,8 +28,8 @@ const AddProduct = () => {
     finishes: '',
     link360: '',
   });
-  const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState([]);
   const [appOptions, setAppOptions] = useState([]);
@@ -56,19 +56,36 @@ const AddProduct = () => {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      setImage(file);
-
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        setPreview(reader.result);
-      };
-
-      reader.readAsDataURL(file);
+    const files = Array.from(e.target.files);
+    if (images.length + files.length > 8) {
+      toast.error("You can upload a maximum of 8 images.");
+      return;
     }
+
+    const newFiles = [...images, ...files].slice(0, 8);
+    setImages(newFiles);
+
+    const newPreviews = [];
+    let loadedCount = 0;
+
+    newFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newPreviews.push(reader.result);
+        loadedCount++;
+        if (loadedCount === newFiles.length) {
+          setPreviews(newPreviews);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index) => {
+    const newImages = images.filter((_, i) => i !== index);
+    const newPreviews = previews.filter((_, i) => i !== index);
+    setImages(newImages);
+    setPreviews(newPreviews);
   };
 
   const handleSubmit = async (e) => {
@@ -91,8 +108,10 @@ const AddProduct = () => {
       data.append("application", formData.application);
       data.append("link360", formData.link360);
 
-      if (image) {
-        data.append("images", image);
+      if (images && images.length > 0) {
+        images.forEach((img) => {
+          data.append("images", img);
+        });
       }
       const token = localStorage.getItem('adminToken');
       const response = await axios.post(
@@ -220,25 +239,35 @@ const AddProduct = () => {
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <h3 className="mb-6 text-lg font-bold text-slate-900">Piece Media</h3>
             <div className="relative">
-              {preview ? (
-                <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200">
-                  <img loading="lazy" src={preview} alt="Preview" className="h-full w-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setImage(null)}
-                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex aspect-square w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-[#0145F2] hover:bg-blue-50/30">
-                  <Upload className="mb-3 text-slate-400" size={32} />
-                  <span className="text-sm font-semibold text-slate-600">Upload Piece Image</span>
-                  <span className="mt-1 text-xs text-slate-400">PNG, JPG, WebP up to 10MB</span>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                </label>
-              )}
+              <div className="space-y-4">
+                {previews.length > 0 && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {previews.map((prev, idx) => (
+                      <div key={idx} className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200 group">
+                        <img loading="lazy" src={prev} alt={`Preview ${idx + 1}`} className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+                        >
+                          <X size={15} />
+                        </button>
+                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 text-[10px] font-bold text-white bg-black/60 rounded">
+                          #{idx + 1}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {previews.length < 8 && (
+                  <label className="flex aspect-[2/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-[#0145F2] hover:bg-blue-50/30">
+                    <Upload className="mb-2 text-slate-400" size={24} />
+                    <span className="text-xs font-semibold text-slate-600">Upload Images ({previews.length}/8)</span>
+                    <span className="mt-0.5 text-[10px] text-slate-400">PNG, JPG, WebP up to 10MB</span>
+                    <input type="file" multiple className="hidden" accept="image/*" onChange={handleImageChange} />
+                  </label>
+                )}
+              </div>
             </div>
           </div>
 
