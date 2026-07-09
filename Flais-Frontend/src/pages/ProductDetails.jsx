@@ -181,165 +181,168 @@ const ProductDetails = () => {
           </nav>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-stretch">
           {/* Left: Image Carousel */}
-          <div className="relative aspect-[4/3] md:aspect-[1.1] w-full rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100 shadow-md group">
-            {allImages.length > 0 ? (
-              <img 
-                src={allImages[currentImageIndex]} 
-                alt={product.title || product.name} 
-                loading="lazy" 
-                className="w-full h-full object-cover transition-all duration-500 select-none cursor-grab active:cursor-grabbing" 
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-center px-6 bg-zinc-50 text-zinc-400">
-                <div>
-                  <p className="font-semibold text-zinc-600">No product image available</p>
-                  <p className="mt-1 text-sm">This product has not been assigned any images yet.</p>
+          <div className="relative aspect-[4/3] md:aspect-[1.1] lg:aspect-auto lg:h-full w-full rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100 shadow-md group">
+            <div className="w-full h-full lg:absolute lg:inset-0">
+              {allImages.length > 0 ? (
+                <img 
+                  src={allImages[currentImageIndex]} 
+                  alt={product.title || product.name} 
+                  loading="lazy" 
+                  className="w-full h-full object-cover transition-all duration-500 select-none cursor-grab active:cursor-grabbing" 
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-center px-6 bg-zinc-50 text-zinc-400">
+                  <div>
+                    <p className="font-semibold text-zinc-600">No product image available</p>
+                    <p className="mt-1 text-sm">This product has not been assigned any images yet.</p>
+                  </div>
                 </div>
-              </div>
-            )}
-            {allImages.length > 1 && (
-              <>
-                <button 
-                  onClick={prevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-zinc-700 hover:bg-white hover:scale-105 transition-all active:scale-95 z-10"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <button 
-                  onClick={nextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-zinc-700 hover:bg-white hover:scale-105 transition-all active:scale-95 z-10"
-                >
-                  <ChevronRight size={20} />
-                </button>
-                {/* Carousel Indicator Dots */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                  {allImages.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentImageIndex(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        currentImageIndex === i ? 'bg-[#5D4037] w-4' : 'bg-white/60'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
+              )}
+              {allImages.length > 1 && (
+                <>
+                  <button 
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-zinc-700 hover:bg-white hover:scale-105 transition-all active:scale-95 z-10"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button 
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-zinc-700 hover:bg-white hover:scale-105 transition-all active:scale-95 z-10"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                  {/* Carousel Indicator Dots */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                    {allImages.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentImageIndex(i)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          currentImageIndex === i ? 'bg-[#5D4037] w-4' : 'bg-white/60'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Right: Premium Information Panel */}
+          <div className="flex flex-col justify-between h-full py-2 gap-y-8">
             <div className="space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-zinc-900 tracking-tight">
-                {product.title || product.name}
-              </h1>
-              
-            </div>
+              <div className="space-y-4">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-zinc-900 tracking-tight">
+                  {product.title || product.name}
+                </h1>
+              </div>
 
-            {/* Sizes, Finishes, Thickness, Color Specification Grid */}
-            <div className="border-y border-zinc-200 py-5 grid grid-cols-2 gap-y-4 gap-x-4">
-              <div className="border-r border-zinc-200 pr-4">
-                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Available Size
-                </span>
-                <span className="text-zinc-800 font-bold text-sm">
-                  {size}
-                </span>
+              {/* Sizes, Finishes, Thickness, Color Specification Grid */}
+              <div className="border-y border-zinc-200 py-5 grid grid-cols-2 gap-y-4 gap-x-4">
+                <div className="border-r border-zinc-200 pr-4">
+                  <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                    Available Size
+                  </span>
+                  <span className="text-zinc-800 font-bold text-sm">
+                    {size}
+                  </span>
+                </div>
+                <div className="pl-6">
+                  <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                    Available Finish
+                  </span>
+                  <span className="text-zinc-800 font-bold text-sm">
+                    {finish}
+                  </span>
+                </div>
+                <div className="border-t border-r border-zinc-200 pt-4 pr-4">
+                  <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                    Thickness
+                  </span>
+                  <span className="text-zinc-800 font-bold text-sm">
+                    {thickness}
+                  </span>
+                </div>
+                <div className="border-t border-zinc-200 pt-4 pl-6">
+                  <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                    Body Type
+                  </span>
+                  <span className="text-zinc-800 font-bold text-sm">
+                    {color}
+                  </span>
+                </div>
+                <div className="border-t border-r border-zinc-200 pt-4 pr-4">
+                  <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                    Application
+                  </span>
+                  <span className="text-zinc-800 font-bold text-sm">
+                    {application || 'N/A'}
+                  </span>
+                </div>
+                <div className="border-t border-zinc-200 pt-4 pl-6">
+                  <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                    Randoms
+                  </span>
+                  <span className="text-zinc-800 font-bold text-sm">
+                    {randoms || 'N/A'}
+                  </span>
+                </div>
+                <div className="border-t border-r border-zinc-200 pt-4 pr-4">
+                  <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                    Collection
+                  </span>
+                  <span className="text-zinc-800 font-bold text-sm">
+                    {collection || 'N/A'}
+                  </span>
+                </div>
+                <div className="border-t border-zinc-200 pt-4 pl-6">
+                  <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                    Tag/Review
+                  </span>
+                  <span className="text-zinc-800 font-bold text-sm">
+                    {tagReview || 'N/A'}
+                  </span>
+                </div>
               </div>
-              <div className="pl-6">
-                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Available Finish
-                </span>
-                <span className="text-zinc-800 font-bold text-sm">
-                  {finish}
-                </span>
-              </div>
-              <div className="border-t border-r border-zinc-200 pt-4 pr-4">
-                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Thickness
-                </span>
-                <span className="text-zinc-800 font-bold text-sm">
-                  {thickness}
-                </span>
-              </div>
-              <div className="border-t border-zinc-200 pt-4 pl-6">
-                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Body Type
-                </span>
-                <span className="text-zinc-800 font-bold text-sm">
-                  {color}
-                </span>
-              </div>
-              <div className="border-t border-r border-zinc-200 pt-4 pr-4">
-                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Application
-                </span>
-                <span className="text-zinc-800 font-bold text-sm">
-                  {application || 'N/A'}
-                </span>
-              </div>
-              <div className="border-t border-zinc-200 pt-4 pl-6">
-                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Randoms
-                </span>
-                <span className="text-zinc-800 font-bold text-sm">
-                  {randoms || 'N/A'}
-                </span>
-              </div>
-              <div className="border-t border-r border-zinc-200 pt-4 pr-4">
-                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Collection
-                </span>
-                <span className="text-zinc-800 font-bold text-sm">
-                  {collection || 'N/A'}
-                </span>
-              </div>
-              <div className="border-t border-zinc-200 pt-4 pl-6">
-                <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
-                  Tag/Review
-                </span>
-                <span className="text-zinc-800 font-bold text-sm">
-                  {tagReview || 'N/A'}
-                </span>
-              </div>
-            </div>
 
-            {/* Experience Our Tools Section */}
-            <div className="space-y-4">
-              <span className="block text-xs font-bold uppercase tracking-widest text-[#C0A060]">
-                Experience Our Tools
-              </span>
-              <div className="flex flex-wrap gap-x-8 gap-y-6 items-center">
-                {product?.link360 && (
-                  <a 
-                    href={product.link360} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-3 group"
-                  >
+              {/* Experience Our Tools Section */}
+              <div className="space-y-4">
+                <span className="block text-xs font-bold uppercase tracking-widest text-[#C0A060]">
+                  Experience Our Tools
+                </span>
+                <div className="flex flex-wrap gap-x-8 gap-y-6 items-center">
+                  {product?.link360 && (
+                    <a 
+                      href={product.link360} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="flex items-center gap-3 group"
+                    >
+                      <div className="w-12 h-12 rounded-full border border-[#C0A060] flex items-center justify-center text-[#C0A060] group-hover:bg-[#C0A060] group-hover:text-white transition-all shadow-sm">
+                        <RotateCw size={18} />
+                      </div>
+                      <span className="text-[10px] font-bold text-zinc-600 tracking-wider">360° VIEW</span>
+                    </a>
+                  )}
+                  
+                  <Link to="/calculator" className="flex items-center gap-3 group">
                     <div className="w-12 h-12 rounded-full border border-[#C0A060] flex items-center justify-center text-[#C0A060] group-hover:bg-[#C0A060] group-hover:text-white transition-all shadow-sm">
-                      <RotateCw size={18} />
+                      <Calculator size={18} />
                     </div>
-                    <span className="text-[10px] font-bold text-zinc-600 tracking-wider">360° VIEW</span>
-                  </a>
-                )}
-                
-                <Link to="/calculator" className="flex items-center gap-3 group">
-                  <div className="w-12 h-12 rounded-full border border-[#C0A060] flex items-center justify-center text-[#C0A060] group-hover:bg-[#C0A060] group-hover:text-white transition-all shadow-sm">
-                    <Calculator size={18} />
-                  </div>
-                  <span className="text-[10px] font-bold text-zinc-600 tracking-wider">TILE CALCULATOR</span>
-                </Link>
+                    <span className="text-[10px] font-bold text-zinc-600 tracking-wider">TILE CALCULATOR</span>
+                  </Link>
+                </div>
               </div>
             </div>
 
             {/* Actions: Where to Buy Button */}
-            <div className="pt-2">
+            <div>
               <Link
                 to="/where-to-buy"
                 className="w-full sm:w-auto px-8 py-4 bg-zinc-950 hover:bg-zinc-900 text-white rounded-lg font-bold flex items-center justify-center gap-2.5 transition-colors uppercase tracking-wider text-xs shadow-md active:scale-98"
@@ -348,8 +351,6 @@ const ProductDetails = () => {
                 <MapPin size={15} />
               </Link>
             </div>
-
-
           </div>
         </div>
 
