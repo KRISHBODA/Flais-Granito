@@ -1,13 +1,10 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Eye, Loader2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import catalogHeader from '../assets/catalog_header.jpg';
 import api from '../utils/api';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
-
-// Lazy-load the flipbook viewer so it doesn't impact initial page load
-const CatalogFlipBook = lazy(() => import('../components/CatalogFlipBook'));
 
 const Catalog = () => {
   const [pageSettings, setPageSettings] = useState({
@@ -18,8 +15,6 @@ const Catalog = () => {
   const [catalogsList, setCatalogsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [downloadingKey, setDownloadingKey] = useState(null);
-  const [viewerPdf, setViewerPdf] = useState(null);
-  const [viewerTitle, setViewerTitle] = useState('');
 
   useEffect(() => {
     const fetchCatalogData = async () => {
@@ -54,26 +49,40 @@ const Catalog = () => {
     if (!link) return;
 
     if (action === 'view') {
-      setViewerPdf(link);
-      setViewerTitle(catalog.title || 'Catalog');
+      const viewerUrl = `/catalog/view?pdf=${encodeURIComponent(link)}&title=${encodeURIComponent(catalog.title || 'Catalog')}`;
+      window.open(viewerUrl, '_blank');
       return;
     }
 
     // action === 'download'
     const downloadKey = catalog._id || catalog.id || catalog.title;
     setDownloadingKey(downloadKey);
-    setTimeout(() => {
-      setDownloadingKey(null);
-    }, 1500); // 1.5s temporary feedback
 
-    const a = document.createElement('a');
-    a.href = link;
-    a.download = `${(catalog.title || 'catalog').replace(/[^a-z0-9_-]+/gi, '_')}.pdf`;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const filename = `${(catalog.title || 'catalog').replace(/[^a-z0-9_-]+/gi, '_')}.pdf`;
+
+    fetch(link)
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.blob();
+      })
+      .then((blob) => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
+      })
+      .catch((err) => {
+        console.error('Download failed:', err);
+        // Fallback: open in new tab if blob fetch fails
+        window.open(link, '_blank');
+      })
+      .finally(() => {
+        setDownloadingKey(null);
+      });
   };
 
   if (loading) {
@@ -220,16 +229,6 @@ const Catalog = () => {
         </div>
       </section>
 
-      {/* FlipBook Viewer Modal */}
-      {viewerPdf && (
-        <Suspense fallback={null}>
-          <CatalogFlipBook
-            pdfUrl={viewerPdf}
-            catalogTitle={viewerTitle}
-            onClose={() => { setViewerPdf(null); setViewerTitle(''); }}
-          />
-        </Suspense>
-      )}
     </div>
   );
 };
