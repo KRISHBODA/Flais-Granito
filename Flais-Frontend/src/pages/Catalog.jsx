@@ -49,7 +49,10 @@ const Catalog = () => {
     if (!link) return;
 
     if (action === 'view') {
-      const viewerUrl = `/catalog/view?pdf=${encodeURIComponent(link)}&title=${encodeURIComponent(catalog.title || 'Catalog')}`;
+      let viewerUrl = `/catalog/view?pdf=${encodeURIComponent(link)}&title=${encodeURIComponent(catalog.title || 'Catalog')}`;
+      if (catalog.flipPath) {
+        viewerUrl += `&flip=${encodeURIComponent(catalog.flipPath)}`;
+      }
       window.open(viewerUrl, '_blank');
       return;
     }

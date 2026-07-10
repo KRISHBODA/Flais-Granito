@@ -7,6 +7,7 @@ const CatalogViewer = () => {
   const navigate = useNavigate();
   const pdfUrl = searchParams.get('pdf');
   const title = searchParams.get('title') || 'Catalog';
+  const flipPath = searchParams.get('flip') || '';
 
   const handleClose = () => {
     // If we can close the window/tab, close it. Otherwise, go back to catalog.
@@ -37,6 +38,7 @@ const CatalogViewer = () => {
     <div className="w-full h-screen bg-zinc-950 relative overflow-hidden">
       <CatalogFlipBook
         pdfUrl={pdfUrl}
+        flipPath={flipPath}
         catalogTitle={title}
         onClose={handleClose}
       />

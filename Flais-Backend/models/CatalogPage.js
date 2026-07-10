@@ -11,7 +11,13 @@ const catalogPageSchema = new mongoose.Schema(
       {
         title: { type: String, required: true },
         image: { type: String, default: "" },
-        link: { type: String, default: "" }
+        link: { type: String, default: "" },
+        flipPath: { type: String, default: "" },
+        conversionStatus: {
+          type: String,
+          enum: ["none", "pending", "processing", "completed", "failed"],
+          default: "none"
+        }
       }
     ]
   },
