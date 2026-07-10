@@ -22,6 +22,18 @@ const ASSETS_BASE_URL = import.meta.env.BASE_URL || '/';
 // Configure the PDF.js web worker and WASM/ICC asset base paths.
 // Use Vite BASE_URL so URLs are correct when the app is hosted under a subpath.
 pdfjs.GlobalWorkerOptions.workerSrc = `${ASSETS_BASE_URL}pdf.worker.min.js`;
+
+// ── Storage URL for resolving flipbook image paths ───────────────
+const getStorageBaseUrl = () => {
+  if (import.meta.env.VITE_STORAGE_URL) {
+    return import.meta.env.VITE_STORAGE_URL.trim().replace(/\/$/, '');
+  }
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    return `http://${hostname}:8000/media`;
+  }
+  return 'http://localhost:8000/media';
+};
 // ── ForwardRef Page Wrapper ──────────────────────────────────────
 // react-pageflip injects a ref into each child to manage DOM-level
 // flip animations. Every child of HTMLFlipBook MUST forward its ref.
@@ -55,6 +67,32 @@ const FlipPage = forwardRef(
 });
 
 FlipPage.displayName = 'FlipPage';
+
+// ── ForwardRef Image Page Wrapper (for pre-rendered flipbooks) ───
+// Used when flipPath is available — renders a lightweight <img> instead
+// of the heavy react-pdf <Page> canvas.
+const FlipPageImage = forwardRef(({ src, pageNumber, width, height, isVisible }, ref) => {
+  return (
+    <div className="flipbook-page" ref={ref} style={{ width, height }}>
+      {isVisible ? (
+        <img
+          src={src}
+          alt={`Page ${pageNumber}`}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          loading="lazy"
+          draggable={false}
+        />
+      ) : (
+        <div className="flipbook-page-loading">
+          <div className="page-spinner" />
+          <span>Page {pageNumber}</span>
+        </div>
+      )}
+    </div>
+  );
+});
+
+FlipPageImage.displayName = 'FlipPageImage';
 
 // ── Dimension Calculator ─────────────────────────────────────────
 // Returns page dimensions that fit within the available viewport
@@ -100,13 +138,18 @@ function calcDimensions(isFullscreen) {
 }
 
 // ── Main Component ───────────────────────────────────────────────
-const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
+const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [loadError, setLoadError] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [dimensions, setDimensions] = useState(() => calcDimensions(false));
+
+  // ── Pre-rendered flipbook state ──────────────────────────────────
+  const [flipManifest, setFlipManifest] = useState(null);
+  const [flipMode, setFlipMode] = useState(false); // true = use images, false = use react-pdf
+  const [flipLoading, setFlipLoading] = useState(!!flipPath);
 
   const flipBookRef = useRef(null);
   const options = useMemo(
@@ -140,6 +183,44 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
     'Rendering First Page',
   ];
   // Detailed stage UI removed — loader simplified to a spinner and 'Loading...'.
+
+  // ── Load flipbook manifest if flipPath is provided ─────────────
+  useEffect(() => {
+    if (!flipPath) {
+      setFlipMode(false);
+      setFlipLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const storageBase = getStorageBaseUrl();
+    const manifestUrl = `${storageBase}/${flipPath}/manifest.json`;
+
+    setFlipLoading(true);
+    fetch(manifestUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Manifest fetch failed: ${res.status}`);
+        return res.json();
+      })
+      .then((manifest) => {
+        if (cancelled) return;
+        setFlipManifest(manifest);
+        setNumPages(manifest.totalPages);
+        setFlipMode(true);
+        setFlipLoading(false);
+        setShowLoader(false);
+        console.log(`[CatalogFlipBook] Flipbook manifest loaded: ${manifest.totalPages} pages`);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.warn('[CatalogFlipBook] Flipbook manifest failed, falling back to PDF:', err.message);
+        setFlipMode(false);
+        setFlipLoading(false);
+        // Fall through to normal PDF rendering
+      });
+
+    return () => { cancelled = true; };
+  }, [flipPath]);
 
   // ── Recalculate on resize ──────────────────────────────────────
   useEffect(() => {
@@ -407,130 +488,201 @@ const CatalogFlipBook = ({ pdfUrl, catalogTitle, onClose }) => {
 
       {/* Book Area */}
       <div className="flipbook-container" onClick={handleOverlayClick}>
-        <Document
-          file={pdfUrl}
-          options={options}
-          onLoadProgress={onDocumentLoadProgress}
-          onLoadSuccess={onDocumentLoadSuccess}
-          onLoadError={onDocumentLoadError}
-          onSourceError={onDocumentSourceError}
-          loading={
-            <div className="flipbook-loading">
-              <div className="flipbook-loading-spinner">
-                <div className="ring-outer" />
-                <div className="ring-inner" />
-              </div>
-              <span className="flipbook-loading-text">Loading Catalog</span>
-              <span className="flipbook-loading-subtext">Preparing your flipbook experience…</span>
-            </div>
-          }
-          error={
-            <div className="flipbook-error">
-              <div className="flipbook-error-icon">
-                <AlertTriangle size={28} />
-              </div>
-              <p className="flipbook-error-title">Unable to Load PDF</p>
-              <p className="flipbook-error-message">Something went wrong. Please try again.</p>
-              <button
-                className="flipbook-retry-btn"
-                onClick={() => {
-                  setLoadError(null);
-                  setNumPages(null);
-                }}
-              >
-                <RotateCcw size={16} />
-                Try Again
-              </button>
-            </div>
-          }
-        >
-          {loadError ? (
-            <div className="flipbook-error">
-              <div className="flipbook-error-icon">
-                <AlertTriangle size={28} />
-              </div>
-              <p className="flipbook-error-title">Unable to Load PDF</p>
-              <p className="flipbook-error-message">{loadError}</p>
-              <button
-                className="flipbook-retry-btn"
-                onClick={() => {
-                  setLoadError(null);
-                  setNumPages(null);
-                }}
-              >
-                <RotateCcw size={16} />
-                Try Again
-              </button>
-            </div>
-          ) : numPages ? (
-            <>
-              {/* Side navigation arrows */}
-              <button
-                className="flipbook-nav-arrow prev"
-                onClick={flipPrev}
-                disabled={currentPage === 0}
-                title="Previous page"
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={22} />
-              </button>
-
-              <div
-                className="flipbook-book-wrapper"
-                style={{ transform: `scale(${zoom})` }}
-              >
-                <HTMLFlipBook
-                  ref={flipBookRef}
-                  width={dimensions.pageWidth}
-                  height={dimensions.pageHeight}
-                  size="fixed"
-                  minWidth={180}
-                  minHeight={250}
-                  maxWidth={800}
-                  maxHeight={1130}
-                  showCover={dimensions.showCover}
-                  mobileScrollSupport={true}
-                  usePortrait={dimensions.isMobile}
-                  onFlip={onFlip}
-                  flippingTime={600}
-                  useMouseEvents={true}
-                  swipeDistance={30}
-                  showPageCorners={true}
-                  maxShadowOpacity={0.4}
-                  drawShadow={true}
-                  className="flipbook-stpageflip"
-                  startPage={0}
-                  autoSize={false}
+        {/* ── Mode A: Pre-rendered Image Flipbook ──────────────────── */}
+        {flipMode && flipManifest ? (
+          <>
+            {numPages ? (
+              <>
+                {/* Side navigation arrows */}
+                <button
+                  className="flipbook-nav-arrow prev"
+                  onClick={flipPrev}
+                  disabled={currentPage === 0}
+                  title="Previous page"
+                  aria-label="Previous page"
                 >
-                  {Array.from({ length: numPages }, (_, i) => (
-                    <FlipPage
-                      key={`page-${i + 1}`}
-                      pageNumber={i + 1}
-                      width={dimensions.pageWidth}
-                      height={dimensions.pageHeight}
-                      isVisible={isPageVisible(i)}
-                      onRenderSuccess={onPageRenderSuccess}
-                      onRenderError={onPageRenderError}
-                    />
-                  ))}
-                </HTMLFlipBook>
-              </div>
+                  <ChevronLeft size={22} />
+                </button>
 
-              <button
-                className="flipbook-nav-arrow next"
-                onClick={flipNext}
-                disabled={numPages && currentPage >= numPages - 1}
-                title="Next page"
-                aria-label="Next page"
-              >
-                <ChevronRight size={22} />
-              </button>
-            </>
-          ) : null}
-        </Document>
+                <div
+                  className="flipbook-book-wrapper"
+                  style={{ transform: `scale(${zoom})` }}
+                >
+                  <HTMLFlipBook
+                    ref={flipBookRef}
+                    width={dimensions.pageWidth}
+                    height={dimensions.pageHeight}
+                    size="fixed"
+                    minWidth={180}
+                    minHeight={250}
+                    maxWidth={800}
+                    maxHeight={1130}
+                    showCover={dimensions.showCover}
+                    mobileScrollSupport={true}
+                    usePortrait={dimensions.isMobile}
+                    onFlip={onFlip}
+                    flippingTime={600}
+                    useMouseEvents={true}
+                    swipeDistance={30}
+                    showPageCorners={true}
+                    maxShadowOpacity={0.4}
+                    drawShadow={true}
+                    className="flipbook-stpageflip"
+                    startPage={0}
+                    autoSize={false}
+                  >
+                    {flipManifest.pages.map((filename, i) => (
+                      <FlipPageImage
+                        key={`flip-${i + 1}`}
+                        src={`${getStorageBaseUrl()}/${flipPath}/${filename}`}
+                        pageNumber={i + 1}
+                        width={dimensions.pageWidth}
+                        height={dimensions.pageHeight}
+                        isVisible={isPageVisible(i)}
+                      />
+                    ))}
+                  </HTMLFlipBook>
+                </div>
+
+                <button
+                  className="flipbook-nav-arrow next"
+                  onClick={flipNext}
+                  disabled={numPages && currentPage >= numPages - 1}
+                  title="Next page"
+                  aria-label="Next page"
+                >
+                  <ChevronRight size={22} />
+                </button>
+              </>
+            ) : null}
+          </>
+        ) : (
+          /* ── Mode B: Original PDF.js Flipbook (fallback) ──────── */
+          <Document
+            file={pdfUrl}
+            options={options}
+            onLoadProgress={onDocumentLoadProgress}
+            onLoadSuccess={onDocumentLoadSuccess}
+            onLoadError={onDocumentLoadError}
+            onSourceError={onDocumentSourceError}
+            loading={
+              <div className="flipbook-loading">
+                <div className="flipbook-loading-spinner">
+                  <div className="ring-outer" />
+                  <div className="ring-inner" />
+                </div>
+                <span className="flipbook-loading-text">Loading Catalog</span>
+                <span className="flipbook-loading-subtext">Preparing your flipbook experience…</span>
+              </div>
+            }
+            error={
+              <div className="flipbook-error">
+                <div className="flipbook-error-icon">
+                  <AlertTriangle size={28} />
+                </div>
+                <p className="flipbook-error-title">Unable to Load PDF</p>
+                <p className="flipbook-error-message">Something went wrong. Please try again.</p>
+                <button
+                  className="flipbook-retry-btn"
+                  onClick={() => {
+                    setLoadError(null);
+                    setNumPages(null);
+                  }}
+                >
+                  <RotateCcw size={16} />
+                  Try Again
+                </button>
+              </div>
+            }
+          >
+            {loadError ? (
+              <div className="flipbook-error">
+                <div className="flipbook-error-icon">
+                  <AlertTriangle size={28} />
+                </div>
+                <p className="flipbook-error-title">Unable to Load PDF</p>
+                <p className="flipbook-error-message">{loadError}</p>
+                <button
+                  className="flipbook-retry-btn"
+                  onClick={() => {
+                    setLoadError(null);
+                    setNumPages(null);
+                  }}
+                >
+                  <RotateCcw size={16} />
+                  Try Again
+                </button>
+              </div>
+            ) : numPages ? (
+              <>
+                {/* Side navigation arrows */}
+                <button
+                  className="flipbook-nav-arrow prev"
+                  onClick={flipPrev}
+                  disabled={currentPage === 0}
+                  title="Previous page"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+
+                <div
+                  className="flipbook-book-wrapper"
+                  style={{ transform: `scale(${zoom})` }}
+                >
+                  <HTMLFlipBook
+                    ref={flipBookRef}
+                    width={dimensions.pageWidth}
+                    height={dimensions.pageHeight}
+                    size="fixed"
+                    minWidth={180}
+                    minHeight={250}
+                    maxWidth={800}
+                    maxHeight={1130}
+                    showCover={dimensions.showCover}
+                    mobileScrollSupport={true}
+                    usePortrait={dimensions.isMobile}
+                    onFlip={onFlip}
+                    flippingTime={600}
+                    useMouseEvents={true}
+                    swipeDistance={30}
+                    showPageCorners={true}
+                    maxShadowOpacity={0.4}
+                    drawShadow={true}
+                    className="flipbook-stpageflip"
+                    startPage={0}
+                    autoSize={false}
+                  >
+                    {Array.from({ length: numPages }, (_, i) => (
+                      <FlipPage
+                        key={`page-${i + 1}`}
+                        pageNumber={i + 1}
+                        width={dimensions.pageWidth}
+                        height={dimensions.pageHeight}
+                        isVisible={isPageVisible(i)}
+                        onRenderSuccess={onPageRenderSuccess}
+                        onRenderError={onPageRenderError}
+                      />
+                    ))}
+                  </HTMLFlipBook>
+                </div>
+
+                <button
+                  className="flipbook-nav-arrow next"
+                  onClick={flipNext}
+                  disabled={numPages && currentPage >= numPages - 1}
+                  title="Next page"
+                  aria-label="Next page"
+                >
+                  <ChevronRight size={22} />
+                </button>
+              </>
+            ) : null}
+          </Document>
+        )}
 
         <AnimatePresence>
-          {showLoader && (
+          {showLoader && !flipMode && (
             <motion.div
               className="flipbook-loading-overlay"
               initial={{ opacity: 0 }}

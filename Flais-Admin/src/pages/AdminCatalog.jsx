@@ -468,6 +468,36 @@ const AdminCatalog = () => {
                   </span>
                 </div>
 
+                {/* Flipbook Conversion Status */}
+                {cat.conversionStatus && cat.conversionStatus !== 'none' && (
+                  <div className="flex items-center gap-2 text-xs">
+                    {cat.conversionStatus === 'pending' && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-100">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        Conversion Queued
+                      </span>
+                    )}
+                    {cat.conversionStatus === 'processing' && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 font-semibold border border-blue-100">
+                        <Loader2 size={12} className="animate-spin" />
+                        Converting...
+                      </span>
+                    )}
+                    {cat.conversionStatus === 'completed' && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-semibold border border-emerald-100">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        Flipbook Ready
+                      </span>
+                    )}
+                    {cat.conversionStatus === 'failed' && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-500 font-semibold border border-red-100">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                        Conversion Failed
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Actions */}
                 <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
                   <button
