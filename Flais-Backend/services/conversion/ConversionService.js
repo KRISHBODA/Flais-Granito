@@ -97,29 +97,43 @@ class ConversionService {
    */
   _getPageCount(absolutePdfPath) {
     return new Promise((resolve, reject) => {
-      // Use GraphicsMagick identify to count pages
+      // 1. Try pdfinfo first (faster, lighter, and doesn't require decoding page contents)
       exec(
-        `gm identify "${absolutePdfPath}" 2>/dev/null | wc -l`,
-        { timeout: 30000 },
-        (error, stdout) => {
-          if (error) {
-            // Fallback: try using pdfinfo if available
-            exec(
-              `pdfinfo "${absolutePdfPath}" 2>/dev/null | grep "Pages:" | awk '{print $2}'`,
-              { timeout: 15000 },
-              (err2, stdout2) => {
-                if (err2) {
-                  reject(new Error("Cannot determine PDF page count. Ensure graphicsmagick or poppler-utils is installed."));
-                  return;
-                }
-                const count = parseInt(stdout2.trim(), 10);
-                resolve(isNaN(count) ? 0 : count);
+        `pdfinfo "${absolutePdfPath}"`,
+        { timeout: 15000 },
+        (pdfinfoError, pdfinfoStdout) => {
+          if (!pdfinfoError && pdfinfoStdout) {
+            const match = pdfinfoStdout.match(/Pages:\s+(\d+)/i);
+            if (match) {
+              const count = parseInt(match[1], 10);
+              if (!isNaN(count) && count > 0) {
+                resolve(count);
+                return;
               }
-            );
-            return;
+            }
           }
-          const count = parseInt(stdout.trim(), 10);
-          resolve(isNaN(count) ? 0 : count);
+
+          // 2. Fallback to GraphicsMagick identify if pdfinfo failed or returned invalid results
+          exec(
+            `gm identify "${absolutePdfPath}"`,
+            { timeout: 30000 },
+            (gmError, gmStdout) => {
+              if (gmError) {
+                reject(
+                  new Error(
+                    "Cannot determine PDF page count. Ensure poppler-utils (pdfinfo) or graphicsmagick (gm) is installed, and that the PDF is valid."
+                  )
+                );
+                return;
+              }
+              const lines = gmStdout.trim().split("\n").filter(line => line.trim().length > 0);
+              if (lines.length > 0) {
+                resolve(lines.length);
+              } else {
+                reject(new Error("PDF has zero pages or could not be read"));
+              }
+            }
+          );
         }
       );
     });

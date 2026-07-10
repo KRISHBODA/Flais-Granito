@@ -1,0 +1,14 @@
+{
+  "totalPages": 5,
+  "pageWidth": 1200,
+  "format": "webp",
+  "quality": 85,
+  "pages": [
+    "page-1.webp",
+    "page-2.webp",
+    "page-3.webp",
+    "page-4.webp",
+    "page-5.webp"
+  ],
+  "generatedAt": "2026-07-10T12:46:37.146Z"
+}
