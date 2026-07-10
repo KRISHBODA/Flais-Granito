@@ -169,7 +169,7 @@ const ProductDetails = () => {
         schema={productSchema}
       />
       
-      <div className="container-custom py-12 max-w-7xl">
+      <div className="w-full mx-auto px-4 sm:px-6 md:px-10 lg:px-12 py-12 max-w-[1536px]">
         {/* Top Header Row with Breadcrumbs */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 pb-4 mb-8">
           <nav className="flex items-center space-x-2 text-xs uppercase tracking-widest text-zinc-500 font-medium">
@@ -181,16 +181,16 @@ const ProductDetails = () => {
           </nav>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-stretch">
+        <div className="grid lg:grid-cols-[1.3fr_0.7fr] gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-stretch">
           {/* Left: Image Carousel */}
           <div className="relative aspect-[4/3] md:aspect-[1.1] lg:aspect-auto lg:h-full w-full rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100 shadow-md group">
-            <div className="w-full h-full lg:absolute lg:inset-0">
+            <div className={`w-full h-full lg:absolute lg:inset-0 flex items-center justify-center ${currentImageIndex === 0 ? 'p-0' : 'p-6'}`}>
               {allImages.length > 0 ? (
                 <img 
                   src={allImages[currentImageIndex]} 
                   alt={product.title || product.name} 
                   loading="lazy" 
-                  className="w-full h-full object-cover transition-all duration-500 select-none cursor-grab active:cursor-grabbing" 
+                  className={`${currentImageIndex === 0 ? 'w-full h-full object-cover' : 'max-w-full max-h-full object-contain'} transition-all duration-500 select-none cursor-grab active:cursor-grabbing`} 
                   onTouchStart={onTouchStart}
                   onTouchMove={onTouchMove}
                   onTouchEnd={onTouchEnd}
