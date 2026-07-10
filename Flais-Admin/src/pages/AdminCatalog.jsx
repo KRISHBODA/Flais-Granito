@@ -118,7 +118,6 @@ const CatalogModal = ({ catalog, onSave, onClose }) => {
               >
                 <Upload size={28} className="mx-auto text-slate-400 mb-2" />
                 <p className="text-sm text-slate-500">Click to upload cover image</p>
-                <p className="text-xs text-slate-400 mt-1">PNG, JPG up to 10MB</p>
               </div>
             )}
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageFile} />
@@ -185,7 +184,6 @@ const CatalogModal = ({ catalog, onSave, onClose }) => {
                     <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-[#0145F2] hover:bg-blue-50/10 rounded-xl p-6 cursor-pointer transition-all">
                       <Upload className="text-[#0145F2] mb-1.5" size={20} />
                       <span className="text-xs font-bold text-slate-700">Choose PDF File</span>
-                      <span className="text-[10px] text-slate-400 mt-0.5">PDF up to 50MB</span>
                       <input
                         type="file"
                         accept="application/pdf"
