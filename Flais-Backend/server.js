@@ -114,7 +114,15 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000;
-
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Start PDF worker loop in-process
+  try {
+    const pdfWorker = require("./worker/pdfWorker");
+    pdfWorker.start();
+  } catch (error) {
+    console.error("Failed to start PDF worker:", error);
+  }
 });
+
