@@ -40,6 +40,7 @@ const ProductsList = () => {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
   
   // Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,8 +51,22 @@ const ProductsList = () => {
     totalPages: 1
   });
 
+  const fetchCategories = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await axios.get(`${API}/api/categories`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setCategories(res.data.categories || []);
+      }
+    } catch (error) {
+    }
+  };
+
   useEffect(() => {
     fetchCollectionSettings();
+    fetchCategories();
   }, []);
 
   const fetchProducts = async () => {
@@ -182,9 +197,9 @@ const ProductsList = () => {
                 className="bg-transparent focus:outline-none"
               >
                 <option value="All">All Categories</option>
-                <option value="GVT/PGVT">GVT/PGVT</option>
-                <option value="Color body">Color body</option>
-                <option value="Full body">Full body</option>
+                {categories.map(cat => (
+                  <option key={cat._id} value={cat.name}>{cat.name}</option>
+                ))}
               </select>
             </div>
           </div>
