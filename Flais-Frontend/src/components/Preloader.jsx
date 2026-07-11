@@ -69,7 +69,7 @@ const Preloader = () => {
         playsInline
         preload="auto"
         onEnded={handleVideoEnded}
-        className="w-[85%] max-w-[500px] md:max-w-[600px] h-auto object-contain pointer-events-none select-none"
+        className="w-[85%] max-w-[700px] md:max-w-[950px] lg:max-w-[1140px] h-auto object-contain pointer-events-none select-none"
       />
     </div>
   );
