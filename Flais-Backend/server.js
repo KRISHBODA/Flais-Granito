@@ -62,8 +62,7 @@ app.use(
       return cb(null, false);
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "X-Requested-With", "Range"],
-    exposedHeaders: ["Accept-Ranges", "Content-Range", "Content-Length"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "X-Requested-With"],
     credentials: true,
     optionsSuccessStatus: 200,
   })
