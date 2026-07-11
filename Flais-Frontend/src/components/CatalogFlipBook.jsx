@@ -700,14 +700,6 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
               >
                 <div className="simple-spinner" aria-hidden="true" />
                 <p className="simple-loading-text">Loading...</p>
-                <div style={{ marginTop: 8 }}>
-                  <button
-                    className="flipbook-open-raw"
-                    onClick={() => window.open(pdfUrl, '_blank')}
-                  >
-                    Open PDF
-                  </button>
-                </div>
               </motion.div>
             </motion.div>
           )}
