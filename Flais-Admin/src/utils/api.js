@@ -1,14 +1,21 @@
 import axios from 'axios';
 
 const getBackendBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_BACKEND_URL ? import.meta.env.VITE_BACKEND_URL.trim().replace(/\/$/, '') : '';
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-    return `http://${hostname}:8000`;
+  const runtimeUrl = hostname && hostname !== 'localhost' && hostname !== '127.0.0.1'
+    ? `http://${hostname}:8000`
+    : 'http://localhost:8000';
+
+  if (!envUrl) {
+    return runtimeUrl;
   }
-  if (import.meta.env.VITE_BACKEND_URL) {
-    return import.meta.env.VITE_BACKEND_URL.trim().replace(/\/$/, '');
+
+  if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
+    return runtimeUrl;
   }
-  return 'http://localhost:8000';
+
+  return envUrl;
 };
 
 const backendUrl = getBackendBaseUrl();
