@@ -37,34 +37,90 @@ const getStorageBaseUrl = () => {
 // ── ForwardRef Page Wrapper ──────────────────────────────────────
 // react-pageflip injects a ref into each child to manage DOM-level
 // flip animations. Every child of HTMLFlipBook MUST forward its ref.
-const FlipPage = forwardRef(
-  ({ pageNumber, width, height, isVisible, onRenderSuccess, onRenderError }, ref) => {
-    return (
-      <div className="flipbook-page" ref={ref} style={{ width, height }}>
-        {isVisible ? (
-          <Page
-            pageNumber={pageNumber}
-            width={width}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
-            onRenderSuccess={() => onRenderSuccess?.(pageNumber)}
-            onRenderError={(error) => onRenderError?.(pageNumber, error)}
-            loading={
-              <div className="flipbook-page-loading">
-                <div className="page-spinner" />
-                <span>Page {pageNumber}</span>
-              </div>
-            }
-          />
-        ) : (
-        <div className="flipbook-page-loading">
-          <div className="page-spinner" />
-          <span>Page {pageNumber}</span>
+const FlipPage = React.memo(
+  forwardRef(
+    (
+      {
+        pageNumber,
+        width,
+        height,
+        isVisible,
+        cachedUrl,
+        onPageCanvasRendered,
+        onPageCacheHit,
+        onRenderSuccess,
+        onRenderError,
+      },
+      ref
+    ) => {
+      const pageRef = useRef(null);
+
+      // Merge refs so react-pageflip can control the DOM element
+      const setRefs = useCallback(
+        (node) => {
+          pageRef.current = node;
+          if (typeof ref === 'function') {
+            ref(node);
+          } else if (ref) {
+            ref.current = node;
+          }
+        },
+        [ref]
+      );
+
+      // Handle cache hit effect to update LRU tracking
+      useEffect(() => {
+        if (cachedUrl) {
+          onPageCacheHit?.(pageNumber);
+        }
+      }, [cachedUrl, pageNumber, onPageCacheHit]);
+
+      const handleRenderSuccess = useCallback(() => {
+        if (pageRef.current) {
+          const canvas = pageRef.current.querySelector('canvas');
+          if (canvas) {
+            onPageCanvasRendered?.(pageNumber, canvas);
+          }
+        }
+        onRenderSuccess?.(pageNumber);
+      }, [pageNumber, onPageCanvasRendered, onRenderSuccess]);
+
+      return (
+        <div className="flipbook-page" ref={setRefs} style={{ width, height }}>
+          {cachedUrl ? (
+            <img
+              src={cachedUrl}
+              alt={`Page ${pageNumber}`}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              loading="lazy"
+              draggable={false}
+            />
+          ) : isVisible ? (
+            <Page
+              pageNumber={pageNumber}
+              width={width}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+              onRenderSuccess={handleRenderSuccess}
+              onRenderError={(error) => onRenderError?.(pageNumber, error)}
+              loading={
+                <div className="flipbook-page-loading">
+                  <div className="page-spinner" />
+                  <span>Page {pageNumber}</span>
+                </div>
+              }
+            />
+          ) : (
+            <div className="flipbook-page-loading">
+              <div className="page-spinner" />
+              <span>Page {pageNumber}</span>
+            </div>
+          )}
         </div>
-      )}
-    </div>
-  );
-});
+      );
+    }
+  )
+);
 
 FlipPage.displayName = 'FlipPage';
 
@@ -146,6 +202,12 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   const [zoom, setZoom] = useState(1);
   const [dimensions, setDimensions] = useState(() => calcDimensions(false));
 
+  // ── LRU Canvas Caching State & Refs ──────────────────────────────
+  const MAX_CACHE_SIZE = 40;
+  const renderedPagesCache = useRef(new Map()); // pageNumber -> Blob Object URL
+  const cacheLRUQueue = useRef([]); // array of pageNumbers ordered by recency
+  const [cachedPageNumbers, setCachedPageNumbers] = useState(() => new Set());
+
   // ── Pre-rendered flipbook state ──────────────────────────────────
   const [flipManifest, setFlipManifest] = useState(null);
   const [flipMode, setFlipMode] = useState(false); // true = use images, false = use react-pdf
@@ -154,6 +216,11 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   const flipBookRef = useRef(null);
   const options = useMemo(
     () => ({
+      cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+      cMapPacked: true,
+      standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+      disableAutoFetch: false,
+      disableStream: false,
       useWasm: true,
       useWorkerFetch: true,
       wasmUrl: ASSETS_BASE_URL,
@@ -390,6 +457,45 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
     console.error(`[CatalogFlipBook] Page ${pageNumber} render error`, error);
   }, []);
 
+  // ── LRU Caching Callbacks ────────────────────────────────────────
+  const onPageCanvasRendered = useCallback((pageNumber, canvas) => {
+    if (renderedPagesCache.current.has(pageNumber)) return;
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+
+      renderedPagesCache.current.set(pageNumber, url);
+      cacheLRUQueue.current = [pageNumber, ...cacheLRUQueue.current.filter((p) => p !== pageNumber)];
+
+      if (renderedPagesCache.current.size > MAX_CACHE_SIZE) {
+        const evictedPage = cacheLRUQueue.current.pop();
+        if (evictedPage !== undefined) {
+          const evictedUrl = renderedPagesCache.current.get(evictedPage);
+          if (evictedUrl) {
+            URL.revokeObjectURL(evictedUrl);
+          }
+          renderedPagesCache.current.delete(evictedPage);
+          setCachedPageNumbers((prev) => {
+            const next = new Set(prev);
+            next.delete(evictedPage);
+            return next;
+          });
+        }
+      }
+
+      setCachedPageNumbers((prev) => {
+        const next = new Set(prev);
+        next.add(pageNumber);
+        return next;
+      });
+    }, 'image/jpeg', 0.85);
+  }, []);
+
+  const onPageCacheHit = useCallback((pageNumber) => {
+    cacheLRUQueue.current = [pageNumber, ...cacheLRUQueue.current.filter((p) => p !== pageNumber)];
+  }, []);
+
   // Progress smoothing removed — loader shows a simple spinner only.
 
   useEffect(() => {
@@ -400,6 +506,12 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
       if (hideLoaderTimeoutRef.current) {
         window.clearTimeout(hideLoaderTimeoutRef.current);
       }
+      // Revoke all Blob URLs in cache on unmount to prevent leaks
+      renderedPagesCache.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+      renderedPagesCache.current.clear();
+      cacheLRUQueue.current = [];
     };
   }, []);
 
@@ -439,10 +551,34 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   }, []);
 
   // ── Lazy visibility: render only pages near the current spread ─
-  const isPageVisible = (pageIndex) => {
-    const BUFFER = 3; // render ±3 pages around current
-    return Math.abs(pageIndex - currentPage) <= BUFFER;
-  };
+  const isPageVisible = useCallback((pageIndex) => {
+    let visibleIndices = [];
+    if (dimensions.isMobile) {
+      visibleIndices = [currentPage];
+    } else {
+      if (currentPage === 0) {
+        visibleIndices = [0];
+      } else if (currentPage % 2 === 1) {
+        visibleIndices = [currentPage, currentPage + 1];
+      } else {
+        visibleIndices = [currentPage - 1, currentPage];
+      }
+    }
+
+    const minVisible = Math.min(...visibleIndices);
+    const maxVisible = Math.max(...visibleIndices);
+
+    // Render active visible spread, 1 spread before, 1 spread after, plus next 2-3 pages
+    return pageIndex >= minVisible - 1 && pageIndex <= maxVisible + 4;
+  }, [currentPage, dimensions.isMobile]);
+
+  const shouldRenderPage = useCallback((pageIndex) => {
+    const pageNumber = pageIndex + 1;
+    if (cachedPageNumbers.has(pageNumber)) {
+      return true;
+    }
+    return isPageVisible(pageIndex);
+  }, [isPageVisible, cachedPageNumbers]);
 
   // ── Displayed page number(s) ───────────────────────────────────
   const getDisplayedPages = () => {
@@ -653,17 +789,24 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                     startPage={0}
                     autoSize={false}
                   >
-                    {Array.from({ length: numPages }, (_, i) => (
-                      <FlipPage
-                        key={`page-${i + 1}`}
-                        pageNumber={i + 1}
-                        width={dimensions.pageWidth}
-                        height={dimensions.pageHeight}
-                        isVisible={isPageVisible(i)}
-                        onRenderSuccess={onPageRenderSuccess}
-                        onRenderError={onPageRenderError}
-                      />
-                    ))}
+                    {Array.from({ length: numPages }, (_, i) => {
+                      const pNum = i + 1;
+                      const cachedUrl = renderedPagesCache.current.get(pNum);
+                      return (
+                        <FlipPage
+                          key={`page-${pNum}`}
+                          pageNumber={pNum}
+                          width={dimensions.pageWidth}
+                          height={dimensions.pageHeight}
+                          isVisible={shouldRenderPage(i)}
+                          cachedUrl={cachedUrl}
+                          onPageCanvasRendered={onPageCanvasRendered}
+                          onPageCacheHit={onPageCacheHit}
+                          onRenderSuccess={onPageRenderSuccess}
+                          onRenderError={onPageRenderError}
+                        />
+                      );
+                    })}
                   </HTMLFlipBook>
                 </div>
 
