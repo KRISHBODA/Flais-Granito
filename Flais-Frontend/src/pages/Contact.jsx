@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, MessageCircle, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
 import contactHero from '../assets/contact_hero.jpg';
 import api from '../utils/api';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
-import { validatePhoneNumberLength, isValidPhoneNumber, parsePhoneNumberFromString, getExampleNumber } from 'libphonenumber-js';
-import examples from 'libphonenumber-js/mobile/examples';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 const countryCodes = [
   { code: '+91', name: 'India IN', iso: 'IN' },
@@ -233,7 +231,8 @@ const Contact = () => {
           setPageSettings({ ...defaultPageSettings, ...response.data.settings });
         }
       } catch (error) {
-              } finally {
+        console.warn('[Contact] Failed to load settings', error);
+      } finally {
         setSettingsLoading(false);
       }
     };
@@ -286,45 +285,19 @@ const Contact = () => {
 
   const currentCountry = countryCodes[selectedCountryIndex] || countryCodes[0];
 
-  // Dynamically derive max phone digits from libphonenumber-js metadata
-  const getMaxDigits = (iso) => {
-    try {
-      const example = getExampleNumber(iso, examples);
-      return example ? example.nationalNumber.length : 15;
-    } catch { return 15; }
-  };
-
-  const currentMaxDigits = getMaxDigits(currentCountry?.iso);
-
   const validatePhoneNumberInput = (phone, iso) => {
     if (!phone || !phone.trim()) {
       return "Phone number is required.";
     }
 
-    // Normalize: strip all spaces, dashes, parentheses
-    const normalized = phone.replace(/[\s\-()]/g, '');
-
-    // Allow formatting characters but check if other non-digits remain
-    if (/[^\d]/.test(normalized)) {
-      return "Please enter a valid phone number for the selected country.";
-    }
-
     if (!iso) {
-      return normalized.length >= 6 ? null : "Phone number is too short for the selected country.";
+      return "Please select a country code.";
     }
 
-    const lengthResult = validatePhoneNumberLength(normalized, iso);
-    if (lengthResult === 'TOO_SHORT') {
-      return "Phone number is too short for the selected country.";
-    }
-    if (lengthResult === 'TOO_LONG') {
-      return "Phone number is too long for the selected country.";
-    }
-    if (lengthResult === 'INVALID_COUNTRY' || lengthResult === 'NOT_A_NUMBER') {
-      return "Please enter a valid phone number for the selected country.";
-    }
+    const normalized = phone.replace(/\D/g, '');
+    const phoneNumber = parsePhoneNumberFromString(normalized, iso);
 
-    if (!isValidPhoneNumber(normalized, iso)) {
+    if (!phoneNumber || phoneNumber.country !== iso || !phoneNumber.isValid()) {
       return "Please enter a valid phone number for the selected country.";
     }
 
@@ -350,9 +323,16 @@ const Contact = () => {
       return;
     }
 
-    const normalized = formData.phone.replace(/[\s\-()]/g, '');
+    const normalized = formData.phone.replace(/\D/g, '');
     const phoneNumberObject = parsePhoneNumberFromString(normalized, currentCountry.iso);
-    const formattedPhone = phoneNumberObject ? phoneNumberObject.number : `${currentCountry.code}${normalized}`;
+    const formattedPhone = phoneNumberObject?.number;
+
+    if (!formattedPhone) {
+      const error = "Please enter a valid phone number for the selected country.";
+      setPhoneError(error);
+      toast.error(error);
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -590,19 +570,11 @@ const Contact = () => {
                         const idx = parseInt(e.target.value);
                         setSelectedCountryIndex(idx);
                         const newIso = countryCodes[idx]?.iso;
-                        const newMax = getMaxDigits(newIso);
                         if (formData.phone) {
-                          // Trim digits to new country's max
-                          const digits = formData.phone.replace(/\D/g, '');
-                          if (digits.length > newMax) {
-                            const trimmed = digits.substring(0, newMax);
-                            setFormData(prev => ({ ...prev, phone: trimmed }));
-                            const error = validatePhoneNumberInput(trimmed, newIso);
-                            setPhoneError(error || '');
-                          } else {
-                            const error = validatePhoneNumberInput(formData.phone, newIso);
-                            setPhoneError(error || '');
-                          }
+                          const error = validatePhoneNumberInput(formData.phone, newIso);
+                          setPhoneError(error || '');
+                        } else {
+                          setPhoneError('');
                         }
                       }}
                       className="bg-zinc-50 border-none rounded-xl p-3 sm:p-4 focus:ring-2 focus:ring-beige-500 text-zinc-700 font-medium text-xs sm:text-sm outline-none cursor-pointer select-none w-[110px] sm:w-[125px] shrink-0"
@@ -623,14 +595,13 @@ const Contact = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9 \-()]/g, '');
-                        // Count only digits (ignore formatting chars)
-                        const digitCount = val.replace(/\D/g, '').length;
-                        if (digitCount > currentMaxDigits) return; // Block extra digits
+                        const val = e.target.value.replace(/\D/g, '');
                         setFormData(prev => ({ ...prev, phone: val }));
                         const error = validatePhoneNumberInput(val, currentCountry?.iso);
                         setPhoneError(error || '');
                       }}
+                      inputMode="numeric"
+                      autoComplete="tel-national"
                       className="flex-1 min-w-0 bg-zinc-50 border-none rounded-xl p-3 sm:p-4 focus:ring-2 focus:ring-beige-500 text-sm sm:text-base" 
                       placeholder="98765 43210" 
                       required
