@@ -22,7 +22,15 @@ const Certifications = lazy(() => import('./pages/Certifications'));
 const InstallationGuide = lazy(() => import('./pages/InstallationGuide'));
 const TileCalculator = lazy(() => import('./pages/TileCalculator'));
 
+import ComingSoon from './pages/ComingSoon';
+
+const appStatus = import.meta.env.VITE_APP_STATUS || "LIVE";
+
 function App() {
+  if (appStatus === "COMING_SOON") {
+    return <ComingSoon />;
+  }
+
   // App rendering
   return (
     <ErrorBoundary>
