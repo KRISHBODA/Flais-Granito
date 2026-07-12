@@ -50,16 +50,64 @@ api.interceptors.response.use(
 
 export const getImageUrl = (url) => {
   if (!url) return '';
-  if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
+  if (url.startsWith('blob:') || url.startsWith('data:')) {
     return url;
+  }
+  
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    try {
+      const parsed = new URL(url);
+      
+      // Rewrite localhost / 127.0.0.1 URLs if we are on a remote domain/IP
+      if (
+        hostname &&
+        hostname !== 'localhost' &&
+        hostname !== '127.0.0.1' &&
+        (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')
+      ) {
+        parsed.hostname = hostname;
+        parsed.port = '8000';
+        return parsed.toString();
+      }
+      
+      // If the URL hostname is the staging IP address but doesn't have a port, 
+      // append the port 8000 because nginx doesn't proxy media requests.
+      if (parsed.hostname === '187.127.179.251' && !parsed.port) {
+        parsed.port = '8000';
+        return parsed.toString();
+      }
+      
+      return url;
+    } catch (e) {
+      return url;
+    }
   }
   
   const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
   
-  if (cleanUrl.startsWith('media/') || cleanUrl.startsWith('uploads/')) {
-    return `${backendUrl}/${cleanUrl}`;
+  // Resolve base URL for media (ensure it has port 8000 on staging/remote hosts)
+  let resolvedBaseUrl = backendUrl;
+  if (resolvedBaseUrl.includes('187.127.179.251') && !resolvedBaseUrl.includes(':8000') && !resolvedBaseUrl.includes(':80')) {
+    resolvedBaseUrl = resolvedBaseUrl.replace('187.127.179.251', '187.127.179.251:8000');
+  } else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !resolvedBaseUrl.includes(':8000') && !resolvedBaseUrl.includes(':80')) {
+    if (resolvedBaseUrl.startsWith('http://') || resolvedBaseUrl.startsWith('https://')) {
+      try {
+        const parsed = new URL(resolvedBaseUrl);
+        parsed.port = '8000';
+        resolvedBaseUrl = parsed.toString().replace(/\/$/, '');
+      } catch (e) {}
+    }
   }
-  return `${backendUrl}/media/${cleanUrl}`;
+  
+  if (cleanUrl.startsWith('media/') || cleanUrl.startsWith('uploads/')) {
+    return `${resolvedBaseUrl}/${cleanUrl}`;
+  }
+  
+  // Strip any trailing /media from resolvedBaseUrl if we are appending /media/
+  const baseNoMedia = resolvedBaseUrl.endsWith('/media') ? resolvedBaseUrl.slice(0, -6) : resolvedBaseUrl;
+  return `${baseNoMedia}/media/${cleanUrl}`;
 };
 
 export default api;
