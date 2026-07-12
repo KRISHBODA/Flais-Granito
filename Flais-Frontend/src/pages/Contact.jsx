@@ -5,7 +5,7 @@ import SEO from '../components/SEO';
 import contactHero from '../assets/contact_hero.jpg';
 import api from '../utils/api';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile';
 
 const countryCodes = [
   { code: '+91', name: 'India IN', iso: 'IN' },
