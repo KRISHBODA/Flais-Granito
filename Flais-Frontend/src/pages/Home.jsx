@@ -202,7 +202,6 @@ const Home = () => {
       <SEO
         title="Premium Tiles for Modern Living"
         description="Discover FLAIS GRANITO's exquisite collection of premium floor, wall, kitchen, and bathroom tiles. High-quality designs for modern homes and commercial spaces."
-        keywords="FLAIS GRANITO Porcelain Slabs, FLAIS GRANITO Large Format Porcelain Slabs, FLAIS GRANITO Slabs Manufacturer India, Premium Porcelain Slabs by FLAIS GRANITO, Export Quality Porcelain Slabs Manufacturer, Porcelain Slabs Manufacturer, Porcelain Slabs Exporter, Large Format Porcelain Slabs, Premium Porcelain Slabs, Porcelain Slabs Supplier, Porcelain Slabs India, Wholesale Porcelain Slabs, Indian Porcelain Slabs Manufacturer, Best Porcelain Slabs Manufacturer in India"
         schema={homeSchema}
       />
 
