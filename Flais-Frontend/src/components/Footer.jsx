@@ -98,32 +98,34 @@ const Footer = () => {
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-12 md:gap-16 mb-12 sm:mb-16 md:mb-20">
           {/* Column 1: Contact Info */}
-          <div className="space-y-8">
-            <Link to="/" className="inline-block">
-              <img loading="lazy" src={logo} alt="FLAIS GRANITO" className="h-12 w-[160px] object-contain origin-left" />
-            </Link>
-            <div className="space-y-6 text-[15px]">
-              <div className="flex items-start space-x-4">
-                <MapPin size={20} className="text-white shrink-0 mt-1" />
-                <p className="leading-relaxed text-zinc-400 hover:text-white transition-colors cursor-default">
-                  {footerSettings.address}
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Phone size={20} className="text-white shrink-0" />
-                <div className="flex flex-col">
-                  {footerSettings.phone1 && <a href={`tel:${footerSettings.phone1.replace(/\s+/g, '')}`} className="hover:text-white transition-colors">{footerSettings.phone1}</a>}
-                  {footerSettings.phone2 && <a href={`tel:${footerSettings.phone2.replace(/\s+/g, '')}`} className="hover:text-white transition-colors">{footerSettings.phone2}</a>}
+          <div className="space-y-8 flex flex-col justify-between h-full">
+            <div className="space-y-8">
+              <Link to="/" className="inline-block">
+                <img loading="lazy" src={logo} alt="FLAIS GRANITO" className="h-12 w-[160px] object-contain origin-left" />
+              </Link>
+              <div className="space-y-6 text-[15px]">
+                <div className="flex items-start space-x-4">
+                  <MapPin size={20} className="text-white shrink-0 mt-1" />
+                  <p className="leading-relaxed text-zinc-400 hover:text-white transition-colors cursor-default">
+                    {footerSettings.address}
+                  </p>
                 </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Mail size={20} className="text-white shrink-0" />
-                <a href={`mailto:${footerSettings.email}`} className="hover:text-white transition-colors">{footerSettings.email}</a>
+                <div className="flex items-center space-x-4">
+                  <Phone size={20} className="text-white shrink-0" />
+                  <div className="flex flex-col">
+                    {footerSettings.phone1 && <a href={`tel:${footerSettings.phone1.replace(/\s+/g, '')}`} className="hover:text-white transition-colors">{footerSettings.phone1}</a>}
+                    {footerSettings.phone2 && <a href={`tel:${footerSettings.phone2.replace(/\s+/g, '')}`} className="hover:text-white transition-colors">{footerSettings.phone2}</a>}
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <Mail size={20} className="text-white shrink-0" />
+                  <a href={`mailto:${footerSettings.email}`} className="hover:text-white transition-colors">{footerSettings.email}</a>
+                </div>
               </div>
             </div>
 
             {/* Social Icons */}
-            <div className="flex items-center space-x-4 pt-6">
+            <div className="flex items-center space-x-4 pt-6 mt-auto">
               {socialLinks.map((social, i) => (
                 <a
                   key={i}
@@ -155,17 +157,27 @@ const Footer = () => {
           </div>
 
           {/* Column 3: Collection */}
-          <div className="space-y-8">
-            <h4 className="text-white font-display font-bold text-lg uppercase tracking-widest relative inline-block">
-              Collection
-              <span className="absolute -bottom-2 left-0 w-8 h-0.5 bg-[#5D4037]"></span>
-            </h4>
-            <ul className="space-y-4 text-[15px] font-medium">
-              <li><Link to="/products?cat=full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Full Body Tiles</Link></li>
-              <li><Link to="/products?cat=digital-full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Color Body Tiles</Link></li>
-              <li><Link to="/catalog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Downloads</Link></li>
-              <li><Link to="/blog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Latest Blogs</Link></li>
-            </ul>
+          <div className="space-y-8 flex flex-col justify-between h-full">
+            <div className="space-y-8">
+              <h4 className="text-white font-display font-bold text-lg uppercase tracking-widest relative inline-block">
+                Collection
+                <span className="absolute -bottom-2 left-0 w-8 h-0.5 bg-[#5D4037]"></span>
+              </h4>
+              <ul className="space-y-4 text-[15px] font-medium">
+                <li><Link to="/products?cat=full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Full Body Tiles</Link></li>
+                <li><Link to="/products?cat=digital-full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Color Body Tiles</Link></li>
+                <li><Link to="/catalog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Downloads</Link></li>
+                <li><Link to="/blog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Latest Blogs</Link></li>
+              </ul>
+            </div>
+            <div className="pt-6 mt-auto flex flex-col items-start justify-start gap-2 select-none">
+              <span className="text-[15px] font-semibold tracking-wider text-zinc-500">
+                Design by Krish Boda
+              </span>
+              <a href="tel:9313735697" className="text-[15px] font-medium tracking-wider text-zinc-500 hover:text-white transition-colors select-text">
+                +91 93137 35697
+              </a>
+            </div>
           </div>
         </div>
 
