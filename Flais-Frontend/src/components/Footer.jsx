@@ -172,7 +172,7 @@ const Footer = () => {
         {/* Footer Bottom */}
         <div className="pt-10 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-4 text-[11px] sm:text-[13px] font-medium tracking-wider text-center">
-            <span>&copy; {new Date().getFullYear()}</span>
+            <span>&copy; 2020</span>
             <span className="font-bold text-white uppercase tracking-widest">Keval Granito LLP</span>
             <span>ALL RIGHTS RESERVED.</span>
           </div>
