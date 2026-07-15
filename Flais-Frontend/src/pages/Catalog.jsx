@@ -24,7 +24,10 @@ const Catalog = () => {
         if (res.data.success && res.data.catalog) {
           const page = res.data.catalog;
           if (page.pageSettings) setPageSettings(page.pageSettings);
-          if (Array.isArray(page.catalogs)) setCatalogsList(page.catalogs);
+          if (Array.isArray(page.catalogs)) {
+            const sorted = [...page.catalogs].sort((a, b) => (a.sequenceNumber ?? 0) - (b.sequenceNumber ?? 0));
+            setCatalogsList(sorted);
+          }
         }
       } catch (err) {
         // Silent catch

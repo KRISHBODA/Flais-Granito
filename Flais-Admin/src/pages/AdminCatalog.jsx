@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { getImageUrl } from '../utils/api';
 
-const emptyCatalog = { title: '', image: '', link: '' };
+const emptyCatalog = { title: '', image: '', link: '', sequenceNumber: '' };
 
 const uploadToCloudinary = async (BackendUrl, file, label, { raw = false } = {}) => {
   if (!file) {
@@ -42,7 +42,7 @@ const uploadToCloudinary = async (BackendUrl, file, label, { raw = false } = {})
 };
 
 // ─── Catalog Form Modal ───────────────────────────────────────────────────────
-const CatalogModal = ({ catalog, onSave, onClose }) => {
+const CatalogModal = ({ catalog, catalogs, onSave, onClose }) => {
   const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
   const [form, setForm] = useState(catalog || emptyCatalog);
   const [preview, setPreview] = useState(catalog?.image || '');
@@ -73,6 +73,26 @@ const CatalogModal = ({ catalog, onSave, onClose }) => {
 
   const handleSave = () => {
     if (!form.title) { toast.error('Title is required.'); return; }
+    if (form.sequenceNumber === undefined || form.sequenceNumber === null || form.sequenceNumber === '') {
+      toast.error('Sequence number is required.');
+      return;
+    }
+    const seqNum = parseInt(form.sequenceNumber, 10);
+    if (isNaN(seqNum)) {
+      toast.error('Sequence number must be a valid number.');
+      return;
+    }
+    // Check for duplicate sequence numbers
+    const isDuplicate = catalogs.some(c => {
+      const catalogId = catalog?._id || catalog?.id;
+      const currentId = c._id || c.id;
+      if (catalogId && currentId === catalogId) return false;
+      return c.sequenceNumber === seqNum;
+    });
+    if (isDuplicate) {
+      toast.error(`Sequence number ${seqNum} is already in use by another catalog.`);
+      return;
+    }
     if (!form.image) { toast.error('Cover image is required.'); return; }
     if (pdfSource === 'file' && (!form.link || form.link === '#')) {
       toast.error('Please upload a PDF file.');
@@ -133,6 +153,20 @@ const CatalogModal = ({ catalog, onSave, onClose }) => {
               placeholder="e.g. Premium Floor Collection 2026"
               value={form.title}
               onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-[#0145F2] focus:outline-none"
+            />
+          </div>
+
+          {/* Sequence Number */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              Sequence Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              placeholder="e.g. 1"
+              value={form.sequenceNumber ?? ''}
+              onChange={(e) => setForm(f => ({ ...f, sequenceNumber: e.target.value === '' ? '' : parseInt(e.target.value, 10) }))}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-[#0145F2] focus:outline-none"
             />
           </div>
@@ -414,7 +448,7 @@ const AdminCatalog = () => {
         <>
           {activeTab === 'brochures' && (
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {catalogs.map((cat, idx) => (
+          {[...catalogs].sort((a, b) => (a.sequenceNumber ?? 0) - (b.sequenceNumber ?? 0)).map((cat, idx) => (
             <div
               key={cat.id}
               className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden group hover:shadow-md transition-all duration-300"
@@ -434,7 +468,7 @@ const AdminCatalog = () => {
                 )}
                 {/* Index badge */}
                 <span className="absolute top-3 left-3 bg-[#0145F2] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
-                  #{idx + 1}
+                  Seq #{cat.sequenceNumber}
                 </span>
                 {/* Action overlay */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
@@ -611,6 +645,7 @@ const AdminCatalog = () => {
       {showModal && (
         <CatalogModal
           catalog={modalCatalog}
+          catalogs={catalogs}
           onSave={handleSave}
           onClose={() => setShowModal(false)}
         />

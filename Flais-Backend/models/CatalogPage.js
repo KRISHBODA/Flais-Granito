@@ -17,7 +17,8 @@ const catalogPageSchema = new mongoose.Schema(
           type: String,
           enum: ["none", "pending", "processing", "completed", "failed"],
           default: "none"
-        }
+        },
+        sequenceNumber: { type: Number, default: 0 }
       }
     ]
   },

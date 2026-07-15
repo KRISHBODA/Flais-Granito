@@ -55,6 +55,37 @@ exports.getCatalogPage = async (req, res) => {
     let catalog = await CatalogPage.findOne();
     if (!catalog) {
       catalog = await CatalogPage.create(DEFAULT_CATALOG);
+    } else {
+      // Migrate / assign unique sequence numbers to existing catalogs if missing or duplicate
+      let updated = false;
+      if (catalog.catalogs && Array.isArray(catalog.catalogs)) {
+        const seenSeqNums = new Set();
+        let maxSeq = 0;
+        catalog.catalogs.forEach(cat => {
+          if (cat.sequenceNumber !== undefined && cat.sequenceNumber !== null && cat.sequenceNumber > maxSeq) {
+            maxSeq = cat.sequenceNumber;
+          }
+        });
+
+        catalog.catalogs = catalog.catalogs.map((cat, idx) => {
+          if (
+            cat.sequenceNumber === undefined ||
+            cat.sequenceNumber === null ||
+            seenSeqNums.has(cat.sequenceNumber)
+          ) {
+            maxSeq += 1;
+            cat.sequenceNumber = maxSeq;
+            updated = true;
+          }
+          seenSeqNums.add(cat.sequenceNumber);
+          return cat;
+        });
+      }
+
+      if (updated) {
+        catalog.markModified('catalogs');
+        await catalog.save();
+      }
     }
     res.status(200).json({ success: true, catalog });
   } catch (error) {
@@ -65,6 +96,15 @@ exports.getCatalogPage = async (req, res) => {
 exports.upsertCatalogPage = async (req, res) => {
   try {
     const payload = req.body?.catalog ? req.body.catalog : req.body;
+
+    // Validate that sequence numbers are unique
+    if (payload.catalogs && Array.isArray(payload.catalogs)) {
+      const seqNums = payload.catalogs.map(cat => cat.sequenceNumber).filter(num => num !== undefined && num !== null);
+      const uniqueSeqNums = new Set(seqNums);
+      if (seqNums.length !== uniqueSeqNums.size) {
+        return res.status(400).json({ success: false, message: "Catalog sequence numbers must be unique and cannot be repeated." });
+      }
+    }
 
     // Fetch the current document BEFORE updating so we can compare PDF links
     const oldDoc = await CatalogPage.findOne();
