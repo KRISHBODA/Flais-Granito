@@ -666,7 +666,9 @@ const Certifications = () => {
                 Official Certification
               </span>
               <h3 className="text-2xl font-bold text-zinc-900 leading-tight">{selectedDoc.title}</h3>
-              <p className="text-sm text-zinc-600 leading-relaxed font-light">{selectedDoc.desc}</p>
+              {selectedDoc.desc && (
+                <p className="text-sm text-zinc-600 leading-relaxed font-light">{selectedDoc.desc}</p>
+              )}
               <div className="pt-4 border-t border-zinc-100">
                 <p className="text-xs text-zinc-400">Registered Entity:</p>
                 <p className="text-sm font-semibold text-zinc-700">KEVAL GRANITO LLP</p>

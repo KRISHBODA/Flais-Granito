@@ -444,8 +444,8 @@ const AdminAchievement = () => {
 
   const handleAddOrEditVerDoc = (e) => {
     e.preventDefault();
-    if (!currentVerDoc.title || !currentVerDoc.desc || !currentVerDoc.image) {
-      return toast.error('Required fields missing (Title, Description, and Image are required)');
+    if (!currentVerDoc.title || !currentVerDoc.image) {
+      return toast.error('Required fields missing (Title and Image are required)');
     }
 
     if (editId) {
@@ -779,7 +779,7 @@ const AdminAchievement = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Description / Scope Details</label>
-                  <textarea rows="3" required value={currentVerDoc.desc} onChange={(e) => setCurrentVerDoc({ ...currentVerDoc, desc: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs focus:outline-none focus:border-[#0145F2] resize-none" placeholder="Explain what standard this certifies..." />
+                  <textarea rows="3" value={currentVerDoc.desc} onChange={(e) => setCurrentVerDoc({ ...currentVerDoc, desc: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs focus:outline-none focus:border-[#0145F2] resize-none" placeholder="Explain what standard this certifies..." />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Certificate Photo</label>
