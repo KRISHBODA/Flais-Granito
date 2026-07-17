@@ -209,9 +209,11 @@ const Navbar = () => {
   const isHome = location.pathname === '/';
   const shouldShowBg = scrolled || !isHome || isOpen;
 
-  const navClass = shouldShowBg
-    ? 'top-3 sm:top-4 lg:top-6 w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] lg:w-[90%] max-w-7xl bg-white/95 backdrop-blur-md shadow-xl rounded-full'
-    : 'top-0 w-full bg-transparent border-transparent shadow-none rounded-none';
+  const navClass = isOpen
+    ? 'top-0 w-full bg-white shadow-md rounded-none'
+    : shouldShowBg
+      ? 'top-3 sm:top-4 lg:top-6 w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] lg:w-[90%] max-w-7xl bg-white/95 backdrop-blur-md shadow-xl rounded-full'
+      : 'top-0 w-full bg-transparent border-transparent shadow-none rounded-none';
 
   const rowPadding = isOpen
     ? 'py-4 px-6 md:px-12'
