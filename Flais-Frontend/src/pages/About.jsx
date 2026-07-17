@@ -571,8 +571,8 @@ const About = () => {
                   className="w-full h-[350px] sm:h-[400px] md:h-[500px] object-cover hover:scale-105 transition-transform duration-1000"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                <div className="absolute bottom-8 left-8 right-8">
-                  <span className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-xs font-bold uppercase tracking-[0.3em]">
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8">
+                  <span className="inline-flex max-w-full items-center justify-center px-3 py-1.5 sm:px-4 sm:py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] sm:tracking-[0.3em] leading-tight text-center whitespace-nowrap">
                     Eco-Conscious Production
                   </span>
                 </div>
