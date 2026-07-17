@@ -24,8 +24,33 @@ const getStorageUrl = () => {
   return `${backendUrl}/media`;
 };
 
+export const isLocalMediaUrl = (url) => {
+  if (!url) return false;
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    // Relative path is always local media
+    return true;
+  }
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.hostname === 'localhost' ||
+      parsed.hostname === '127.0.0.1' ||
+      parsed.pathname.startsWith('/media/') ||
+      parsed.pathname.startsWith('/uploads/')
+    ) {
+      return true;
+    }
+  } catch (e) {
+    // Ignore
+  }
+  return false;
+};
+
 export const getOptimizedImageUrl = (url) => {
   if (!url) return '';
+  if (!isLocalMediaUrl(url)) {
+    return url;
+  }
   
   let cleanPath = url;
   if (url.startsWith('http://') || url.startsWith('https://')) {

@@ -8,6 +8,65 @@ import api from '../utils/api';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 import { blogPosts } from '../data/mockData';
 
+const renderBlogContent = (content) => {
+  if (!content) return null;
+
+  // If content already contains HTML tags, we assume it's pre-formatted
+  const hasHtml = /<[a-z][\s\S]*>/i.test(content);
+  if (hasHtml) {
+    return (
+      <div 
+        className="blog-rich-content text-zinc-700 space-y-6"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  }
+
+  // Parse plain text with newlines
+  const blocks = content
+    .replace(/\r\n/g, '\n')
+    .split(/\n{2,}/)
+    .map(block => block.trim())
+    .filter(Boolean);
+
+  return (
+    <div className="blog-rich-content text-zinc-700 space-y-6">
+      {blocks.map((block, index) => {
+        // Check for Markdown-style headings
+        if (block.startsWith('### ')) {
+          return <h3 key={index} className="text-xl sm:text-2xl font-bold mt-8 mb-4 text-zinc-950">{block.replace(/^###\s+/, '')}</h3>;
+        }
+        if (block.startsWith('## ')) {
+          return <h2 key={index} className="text-2xl sm:text-3xl font-bold mt-10 mb-4 text-zinc-950">{block.replace(/^##\s+/, '')}</h2>;
+        }
+        if (block.startsWith('# ')) {
+          return <h1 key={index} className="text-3xl sm:text-4xl font-bold mt-12 mb-6 text-zinc-950">{block.replace(/^#\s+/, '')}</h1>;
+        }
+
+        // Check if the block is a short line without trailing punctuation (likely a heading)
+        const lines = block.split('\n');
+        if (lines.length === 1 && block.length < 80 && !/[.!?:]$/.test(block)) {
+          return <h2 key={index} className="text-2xl sm:text-3xl font-bold mt-10 mb-4 text-zinc-950">{block}</h2>;
+        }
+
+        // Otherwise, render as paragraph. Preserve single newlines within the paragraph.
+        const paragraphContent = block.split('\n').map((line, lineIdx) => (
+          <React.Fragment key={lineIdx}>
+            {lineIdx > 0 && <br />}
+            {line}
+          </React.Fragment>
+        ));
+
+        return (
+          <p key={index} className="text-lg leading-relaxed text-zinc-600 my-6">
+            {paragraphContent}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
 const BlogDetails = () => {
   const { id } = useParams();
   const { data: post, isLoading: loading } = useQuery({
@@ -117,10 +176,7 @@ const BlogDetails = () => {
       <section className="py-24">
         <div className="container-custom max-w-4xl">
 
-          <div 
-            className="prose prose-lg prose-zinc max-w-none text-zinc-600 leading-relaxed space-y-8"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
+          {renderBlogContent(post.content)}
 
           <div className="mt-20 pt-12 border-t border-zinc-100 flex justify-between items-center">
             <Link to="/blog" className="inline-flex items-center font-bold text-zinc-900 hover:text-beige-600 transition-colors">

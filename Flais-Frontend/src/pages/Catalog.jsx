@@ -40,9 +40,6 @@ const Catalog = () => {
 
   const resolveCatalogUrl = (catalog) => {
     const link = catalog.link && catalog.link !== '#' ? catalog.link : catalog.image;
-    if (link && (link.startsWith('http://') || link.startsWith('https://'))) {
-      return link;
-    }
     return getOptimizedImageUrl(link);
   };
 
