@@ -4,7 +4,11 @@ import { Download, Eye, Loader2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import catalogHeader from '../assets/catalog_header.jpg';
 import api from '../utils/api';
-import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
+import {
+  getOptimizedImageUrl,
+  getOptimizedVideoUrl,
+  getRelativeMediaPath,
+} from '../utils/imageOptimizer';
 
 const Catalog = () => {
   const [pageSettings, setPageSettings] = useState({
@@ -49,11 +53,16 @@ const Catalog = () => {
     if (!link) return;
 
     if (action === 'view') {
-      let viewerUrl = `/catalog/view?pdf=${encodeURIComponent(link)}&title=${encodeURIComponent(catalog.title || 'Catalog')}`;
+      const pdfSource = catalog.link && catalog.link !== '#' ? catalog.link : catalog.image;
+      const viewerPdf = getRelativeMediaPath(pdfSource) || pdfSource;
+      const viewerParams = new URLSearchParams({
+        pdf: viewerPdf,
+        title: catalog.title || 'Catalog',
+      });
       if (catalog.flipPath) {
-        viewerUrl += `&flip=${encodeURIComponent(catalog.flipPath)}`;
+        viewerParams.set('flip', catalog.flipPath);
       }
-      window.open(viewerUrl, '_blank');
+      window.open(`/catalog/view?${viewerParams.toString()}`, '_blank', 'noopener,noreferrer');
       return;
     }
 

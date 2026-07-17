@@ -24,6 +24,17 @@ const getStorageUrl = () => {
   return `${backendUrl}/media`;
 };
 
+const stripMediaPrefix = (pathname) => {
+  if (!pathname) return '';
+  if (pathname.startsWith('/media/')) {
+    return pathname.substring(7);
+  }
+  if (pathname.startsWith('/uploads/')) {
+    return pathname.substring(9);
+  }
+  return pathname.replace(/^\/+/, '');
+};
+
 export const isLocalMediaUrl = (url) => {
   if (!url) return false;
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -46,30 +57,37 @@ export const isLocalMediaUrl = (url) => {
   return false;
 };
 
+export const getRelativeMediaPath = (url) => {
+  if (!url) return '';
+
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    try {
+      const parsed = new URL(url);
+      return stripMediaPrefix(parsed.pathname);
+    } catch (e) {
+      return url.replace(/^\/+/, '');
+    }
+  }
+
+  return stripMediaPrefix(url);
+};
+
+export const resolveMediaUrl = (url) => {
+  if (!url) return '';
+  if (!isLocalMediaUrl(url)) {
+    return url;
+  }
+
+  return `${getStorageUrl()}/${getRelativeMediaPath(url)}`;
+};
+
 export const getOptimizedImageUrl = (url) => {
   if (!url) return '';
   if (!isLocalMediaUrl(url)) {
     return url;
   }
-  
-  let cleanPath = url;
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    try {
-      const parsed = new URL(url);
-      let pathname = parsed.pathname;
-      if (pathname.startsWith('/media/')) {
-        cleanPath = pathname.substring(7);
-      } else if (pathname.startsWith('/uploads/')) {
-        cleanPath = pathname.substring(9);
-      } else if (pathname.startsWith('/')) {
-        cleanPath = pathname.substring(1);
-      }
-    } catch (e) {
-      cleanPath = url;
-    }
-  }
-  
-  return `${getStorageUrl()}/${cleanPath.replace(/^\//, '')}`;
+
+  return resolveMediaUrl(url);
 };
 
 /**

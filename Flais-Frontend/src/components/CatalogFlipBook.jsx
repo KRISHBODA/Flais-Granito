@@ -17,6 +17,7 @@ import {
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './CatalogFlipBook.css';
+import { resolveMediaUrl } from '../utils/imageOptimizer';
 
 const ASSETS_BASE_URL = import.meta.env.BASE_URL || '/';
 
@@ -151,6 +152,7 @@ function calcDimensions(isFullscreen) {
 
 // ── Main Component ───────────────────────────────────────────────
 const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
+  const resolvedPdfUrl = useMemo(() => resolveMediaUrl(pdfUrl), [pdfUrl]);
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [loadError, setLoadError] = useState(null);
@@ -242,7 +244,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   }, [isFullscreen]);
 
   useEffect(() => {
-    if (!pdfUrl) return;
+    if (!resolvedPdfUrl) return;
 
     loadMetricsRef.current = {
       start: performance.now(),
@@ -267,9 +269,9 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
       stageTimeoutRef.current = null;
     }
 
-    console.log('[CatalogFlipBook] PDF load started:', pdfUrl);
+    console.log('[CatalogFlipBook] PDF load started:', resolvedPdfUrl);
     return () => window.clearTimeout(resetTimer);
-  }, [pdfUrl]);
+  }, [resolvedPdfUrl]);
 
   // ── Lock body scroll while modal is open ───────────────────────
   useEffect(() => {
@@ -574,7 +576,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
         ) : (
           /* ── Mode B: Original PDF.js Flipbook (fallback) ──────── */
           <Document
-            file={pdfUrl}
+            file={resolvedPdfUrl}
             options={options}
             onLoadProgress={onDocumentLoadProgress}
             onLoadSuccess={onDocumentLoadSuccess}
@@ -609,7 +611,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                     Try Again
                   </button>
                   <a
-                    href={pdfUrl}
+                    href={resolvedPdfUrl}
                     download
                     className="flipbook-download-btn"
                   >
@@ -639,7 +641,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                     Try Again
                   </button>
                   <a
-                    href={pdfUrl}
+                    href={resolvedPdfUrl}
                     download
                     className="flipbook-download-btn"
                   >

@@ -1,11 +1,12 @@
 import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import CatalogFlipBook from '../components/CatalogFlipBook';
+import { resolveMediaUrl } from '../utils/imageOptimizer';
 
 const CatalogViewer = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const pdfUrl = searchParams.get('pdf');
+  const pdfUrl = resolveMediaUrl(searchParams.get('pdf'));
   const title = searchParams.get('title') || 'Catalog';
   const flipPath = searchParams.get('flip') || '';
 
