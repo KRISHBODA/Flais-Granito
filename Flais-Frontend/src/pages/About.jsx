@@ -16,12 +16,12 @@ const About = () => {
     heroTitle: "GUIDED BY EXCELLENCE",
     heroSubtitle: "FLAIS GRANITO is dedicated to transforming spaces with superior craftsmanship and cutting-edge technology.",
     heroImage: "",
-    
+
     narrativeTitle: "Crafting a New Benchmark",
     narrativeDesc1: "At FLAIS GRANITO, we specialize in crafting premium full body vitrified tiles, blending cutting-edge technology with artisanal craftsmanship. Our state-of-the-art facilities and innovative processes ensure tiles of the highest quality, redefining aesthetics and functionality in any space.",
     narrativeDesc2: "With a wide range of colors, textures, and sizes, we offer limitless design possibilities to architects, designers, and homeowners, transforming ordinary spaces into extraordinary environments.",
     narrativeImage: "",
-    
+
     statYears: "20+",
     statDealers: "500+",
     statCountries: "45+",
@@ -99,22 +99,22 @@ const About = () => {
               });
             }
           } catch (e) {
-                      }
-          
+          }
+
           try {
             if (about.videos && isMounted) {
               setVideos(prev => {
                 const merged = { ...prev, ...about.videos };
                 // Only use fallback if video URL is empty or invalid
                 if (!merged.flaisFilm || merged.flaisFilm.trim() === '') {
-                                    merged.flaisFilm = prev.flaisFilm;
+                  merged.flaisFilm = prev.flaisFilm;
                 } else {
                 }
                 return merged;
               });
             }
           } catch (e) {
-                      }
+          }
 
           try {
             if (Array.isArray(about.pillars) && about.pillars.length > 0 && isMounted) {
@@ -125,19 +125,19 @@ const About = () => {
               setPillars(mapped);
             }
           } catch (e) {
-                      }
+          }
 
           try {
             if (Array.isArray(about.exportCountries) && about.exportCountries.length > 0 && isMounted) {
               setCountriesList(about.exportCountries);
             }
           } catch (e) {
-                      }
+          }
         }
       } catch (err) {
-                if (isMounted) {
+        if (isMounted) {
           // Don't show error - use defaults
-                  }
+        }
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -192,14 +192,14 @@ const About = () => {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
   };
 
   return (
     <div className="bg-white text-zinc-900 selection:bg-[#5D4037] selection:text-white">
-      <SEO 
+      <SEO
         title="About Us"
         description="Learn about FLAIS GRANITO's journey, our commitment to quality, eco-friendly manufacturing, and how we deliver luxury ceramic and vitrified tiles globally."
         keywords="about flais granito, tile manufacturer, vitrified tiles company, tile design, premium tiles history"
@@ -371,14 +371,14 @@ const About = () => {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
- 
+
 
             {/* Control Overlays */}
-            <div 
-              onClick={(e) => e.stopPropagation()} 
+            <div
+              onClick={(e) => e.stopPropagation()}
               className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 flex items-center gap-2 sm:gap-4 z-10"
             >
-              <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Flais Film</span>
+              <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">Flais TVC</span>
               <button
                 onClick={togglePlay}
                 className="w-8 h-8 sm:w-10 sm:h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95"
@@ -497,12 +497,11 @@ const About = () => {
                 >
                   <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 bg-gradient-to-br ${gradient}`} />
                   <div className="relative z-10 space-y-8">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${
-                      color.includes('bg-[#5D4037]')
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : color.includes('bg-[#D2C9B1]')
-                          ? 'bg-white/40 text-zinc-900'
-                          : 'bg-[#f8f5f0] text-[#5D4037] border border-[#D2C9B1]/20'
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${color.includes('bg-[#5D4037]')
+                      ? 'bg-white/10 text-white border border-white/20'
+                      : color.includes('bg-[#D2C9B1]')
+                        ? 'bg-white/40 text-zinc-900'
+                        : 'bg-[#f8f5f0] text-[#5D4037] border border-[#D2C9B1]/20'
                       } backdrop-blur-xl shadow-inner`}>
                       {React.cloneElement(pillar.icon, {
                         size: 32,
