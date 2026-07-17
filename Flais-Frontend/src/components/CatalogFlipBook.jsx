@@ -12,6 +12,7 @@ import {
   Minimize,
   RotateCcw,
   AlertTriangle,
+  Download,
 } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -371,10 +372,13 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   const onDocumentLoadError = useCallback((error) => {
     console.error('[CatalogFlipBook] Load error', error);
     setLoadError(error?.message || 'Failed to load the PDF document.');
+    setShowLoader(false);
   }, []);
 
   const onDocumentSourceError = useCallback((error) => {
     console.error('[CatalogFlipBook] Source error', error);
+    setLoadError(error?.message || 'Failed to load the PDF source file.');
+    setShowLoader(false);
   }, []);
 
   const onPageRenderSuccess = useCallback((pageNumber) => {
@@ -593,16 +597,26 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                 </div>
                 <p className="flipbook-error-title">Unable to Load PDF</p>
                 <p className="flipbook-error-message">Something went wrong. Please try again.</p>
-                <button
-                  className="flipbook-retry-btn"
-                  onClick={() => {
-                    setLoadError(null);
-                    setNumPages(null);
-                  }}
-                >
-                  <RotateCcw size={16} />
-                  Try Again
-                </button>
+                <div className="flex flex-wrap gap-4 justify-center mt-2">
+                  <button
+                    className="flipbook-retry-btn"
+                    onClick={() => {
+                      setLoadError(null);
+                      setNumPages(null);
+                    }}
+                  >
+                    <RotateCcw size={16} />
+                    Try Again
+                  </button>
+                  <a
+                    href={pdfUrl}
+                    download
+                    className="flipbook-download-btn"
+                  >
+                    <Download size={16} />
+                    Download PDF
+                  </a>
+                </div>
               </div>
             }
           >
@@ -613,16 +627,26 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                 </div>
                 <p className="flipbook-error-title">Unable to Load PDF</p>
                 <p className="flipbook-error-message">{loadError}</p>
-                <button
-                  className="flipbook-retry-btn"
-                  onClick={() => {
-                    setLoadError(null);
-                    setNumPages(null);
-                  }}
-                >
-                  <RotateCcw size={16} />
-                  Try Again
-                </button>
+                <div className="flex flex-wrap gap-4 justify-center mt-2">
+                  <button
+                    className="flipbook-retry-btn"
+                    onClick={() => {
+                      setLoadError(null);
+                      setNumPages(null);
+                    }}
+                  >
+                    <RotateCcw size={16} />
+                    Try Again
+                  </button>
+                  <a
+                    href={pdfUrl}
+                    download
+                    className="flipbook-download-btn"
+                  >
+                    <Download size={16} />
+                    Download PDF
+                  </a>
+                </div>
               </div>
             ) : numPages ? (
               <>

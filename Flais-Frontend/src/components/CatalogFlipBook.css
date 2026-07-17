@@ -780,3 +780,28 @@
     right: 4px;
   }
 }
+
+.flipbook-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #c5a880, #a38772);
+  color: #ffffff;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  letter-spacing: 0.03em;
+  box-shadow: 0 4px 12px rgba(163, 135, 114, 0.25);
+}
+
+.flipbook-download-btn:hover {
+  background: linear-gradient(135deg, #d4b892, #b09680);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(163, 135, 114, 0.35);
+}
