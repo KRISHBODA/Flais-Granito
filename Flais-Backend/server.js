@@ -26,6 +26,7 @@ const defaultOrigins = [
   process.env.VITE_FRONTEND_URL,
   process.env.VITE_ADMIN_URL,
   "https://flaisgranito.com",
+  "https://www.flaisgranito.com",
   "http://localhost:5175",
   "http://localhost:5174",
   "http://localhost:5173",
@@ -125,4 +126,3 @@ const server = app.listen(PORT, () => {
     console.error("Failed to start PDF worker:", error);
   }
 });
-
