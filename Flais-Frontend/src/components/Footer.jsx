@@ -41,7 +41,7 @@ const Footer = () => {
   const socialLinks = [
     {
       name: 'Facebook',
-      href: 'https://www.facebook.com/FlaisTile/',
+      href: 'https://www.facebook.com/share/1Eqo7HDYNb/',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
@@ -50,7 +50,7 @@ const Footer = () => {
     },
     {
       name: 'Linkedin',
-      href: 'https://www.linkedin.com/company/flais-granito/',
+      href: 'https://www.linkedin.com/in/flais-tiles-and-adhesive-54b353201?utm_source=share_via&utm_content=profile&utm_medium=member_android',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
@@ -61,7 +61,7 @@ const Footer = () => {
     },
     {
       name: 'Instagram',
-      href: 'https://www.instagram.com/flaisgranito/',
+      href: 'https://www.instagram.com/flais_tiles.and.adhesives?igsh=Y29neGJjeTlpMHo0',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -72,7 +72,7 @@ const Footer = () => {
     },
     {
       name: 'Youtube',
-      href: 'https://www.youtube.com/@FlaisGranito',
+      href: 'https://youtube.com/@flais_tiles.and.adhesives?si=5PMCOWaJ4LTMG6BI',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.11 1 12 1 12s0 3.89.46 5.58a2.78 2.78 0 0 0 1.94 2c1.72.42 8.6.42 8.6.42s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.89 23 12 23 12s0-3.89-.46-5.58z" />
@@ -82,7 +82,7 @@ const Footer = () => {
     },
     {
       name: 'Pinterest',
-      href: 'https://pin.it/7ro6vHaq4',
+      href: 'https://pin.it/3NKlK8ujW',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="8" y1="22" x2="14" y2="10" />

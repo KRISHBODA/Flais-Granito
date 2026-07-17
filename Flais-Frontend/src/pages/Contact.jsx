@@ -213,10 +213,10 @@ const defaultPageSettings = {
   address: "Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.",
   phone: "+91 95867 33300",
   email: "info@flaisgranito.com",
-  facebook: "https://www.facebook.com/FlaisTile/",
-  instagram: "https://www.instagram.com/flaisgranito/",
-  linkedin: "https://www.linkedin.com/company/flais-granito/",
-  youtube: "https://www.youtube.com/@FlaisGranito"
+  facebook: "https://www.facebook.com/share/1Eqo7HDYNb/",
+  instagram: "https://www.instagram.com/flais_tiles.and.adhesives?igsh=Y29neGJjeTlpMHo0",
+  linkedin: "https://www.linkedin.com/in/flais-tiles-and-adhesive-54b353201?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+  youtube: "https://youtube.com/@flais_tiles.and.adhesives?si=5PMCOWaJ4LTMG6BI"
 };
 
 const Contact = () => {
@@ -469,7 +469,7 @@ const Contact = () => {
                   {[
                     {
                       label: 'Facebook',
-                      href: pageSettings.facebook || 'https://www.facebook.com/FlaisTile/',
+                      href: pageSettings.facebook || 'https://www.facebook.com/share/1Eqo7HDYNb/',
                       color: '#1877F2',
                       icon: (
                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -479,7 +479,7 @@ const Contact = () => {
                     },
                     {
                       label: 'Instagram',
-                      href: pageSettings.instagram || 'https://www.instagram.com/flaisgranito/',
+                      href: pageSettings.instagram || 'https://www.instagram.com/flais_tiles.and.adhesives?igsh=Y29neGJjeTlpMHo0',
                       color: '#E1306C',
                       icon: (
                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -489,7 +489,7 @@ const Contact = () => {
                     },
                     {
                       label: 'LinkedIn',
-                      href: pageSettings.linkedin || 'https://www.linkedin.com/company/flais-granito/',
+                      href: pageSettings.linkedin || 'https://www.linkedin.com/in/flais-tiles-and-adhesive-54b353201?utm_source=share_via&utm_content=profile&utm_medium=member_android',
                       color: '#0A66C2',
                       icon: (
                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -499,7 +499,7 @@ const Contact = () => {
                     },
                     {
                       label: 'YouTube',
-                      href: pageSettings.youtube || 'https://www.youtube.com/@FlaisGranito',
+                      href: pageSettings.youtube || 'https://youtube.com/@flais_tiles.and.adhesives?si=5PMCOWaJ4LTMG6BI',
                       color: '#FF0000',
                       icon: (
                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
