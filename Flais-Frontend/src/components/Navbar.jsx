@@ -215,6 +215,10 @@ const Navbar = () => {
       ? 'top-3 sm:top-4 lg:top-6 w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] lg:w-[90%] max-w-7xl bg-white/95 backdrop-blur-md shadow-xl rounded-full'
       : 'top-0 w-full bg-transparent border-transparent shadow-none rounded-none';
 
+  const navTransitionClass = isOpen
+    ? 'transition-[background-color,box-shadow] duration-0 ease-out'
+    : 'transition-[background-color,border-color,box-shadow,transform,top,border-radius,width] duration-500 ease-in-out';
+
   const rowPadding = isOpen
     ? 'py-4 px-6 md:px-12'
     : shouldShowBg
@@ -222,7 +226,7 @@ const Navbar = () => {
       : 'py-5 px-6 md:px-12 lg:py-7 lg:px-20';
 
   return (
-    <nav className={`fixed left-1/2 -translate-x-1/2 z-50 transition-[background-color,border-color,box-shadow,transform,top,border-radius,width] duration-500 ease-in-out ${navClass}`}>
+    <nav className={`fixed left-1/2 -translate-x-1/2 z-50 ${navTransitionClass} ${navClass}`}>
       <div className={`flex items-center justify-between w-full ${rowPadding}`}>
 
         {/* LEFT: Logo */}
