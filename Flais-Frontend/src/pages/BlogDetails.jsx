@@ -8,16 +8,99 @@ import api from '../utils/api';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 import { blogPosts } from '../data/mockData';
 
+const ALLOWED_HTML_TAGS = new Set([
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'P',
+  'BR',
+  'STRONG',
+  'B',
+  'EM',
+  'I',
+  'U',
+  'UL',
+  'OL',
+  'LI',
+  'BLOCKQUOTE',
+  'A',
+  'SPAN',
+]);
+
+const sanitizeBlogHtml = (content) => {
+  if (!content) return '';
+  if (typeof window === 'undefined' || typeof DOMParser === 'undefined') {
+    return content;
+  }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<div>${content}</div>`, 'text/html');
+  const root = doc.body.firstElementChild;
+  if (!root) return content;
+
+  const isSafeHref = (href) => {
+    if (!href) return false;
+    try {
+      const url = new URL(href, window.location.origin);
+      return ['http:', 'https:', 'mailto:', 'tel:'].includes(url.protocol);
+    } catch {
+      return href.startsWith('/');
+    }
+  };
+
+  const serializeNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node.textContent || '';
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return '';
+    }
+
+    const tagName = node.tagName.toUpperCase();
+    const children = Array.from(node.childNodes).map(serializeNode).join('');
+
+    if (!ALLOWED_HTML_TAGS.has(tagName)) {
+      return children;
+    }
+
+    if (tagName === 'BR') {
+      return '<br />';
+    }
+
+    const attrs = [];
+    if (tagName === 'A') {
+      const href = node.getAttribute('href') || '';
+      if (isSafeHref(href)) {
+        attrs.push(`href="${href.replace(/"/g, '&quot;')}"`);
+        attrs.push('rel="noreferrer noopener"');
+        if ((node.getAttribute('target') || '').toLowerCase() === '_blank') {
+          attrs.push('target="_blank"');
+        }
+      }
+    }
+
+    const attrString = attrs.length ? ` ${attrs.join(' ')}` : '';
+    return `<${tagName.toLowerCase()}${attrString}>${children}</${tagName.toLowerCase()}>`;
+  };
+
+  return Array.from(root.childNodes).map(serializeNode).join('');
+};
+
 const renderBlogContent = (content) => {
   if (!content) return null;
 
   // If content already contains HTML tags, we assume it's pre-formatted
   const hasHtml = /<[a-z][\s\S]*>/i.test(content);
   if (hasHtml) {
+    const safeHtml = sanitizeBlogHtml(content);
     return (
       <div 
         className="blog-rich-content text-zinc-700 space-y-6"
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: safeHtml }}
       />
     );
   }
