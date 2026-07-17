@@ -164,6 +164,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   const [flipManifest, setFlipManifest] = useState(null);
   const [flipMode, setFlipMode] = useState(false); // true = use images, false = use react-pdf
   const [flipLoading, setFlipLoading] = useState(!!flipPath);
+  const [documentSource, setDocumentSource] = useState(resolvedPdfUrl);
 
   const flipBookRef = useRef(null);
   const options = useMemo(
@@ -197,6 +198,47 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
     'Rendering First Page',
   ];
   // Detailed stage UI removed — loader simplified to a spinner and 'Loading...'.
+
+  // ── Prefetch PDF as a blob to avoid browser-native download handling ──
+  useEffect(() => {
+    if (!resolvedPdfUrl) {
+      setDocumentSource('');
+      return;
+    }
+
+    let cancelled = false;
+    let objectUrl = '';
+
+    setDocumentSource('');
+
+    fetch(resolvedPdfUrl, {
+      mode: 'cors',
+      credentials: 'omit',
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`PDF fetch failed: ${response.status}`);
+        }
+        return response.blob();
+      })
+      .then((blob) => {
+        if (cancelled) return;
+        objectUrl = window.URL.createObjectURL(blob);
+        setDocumentSource(objectUrl);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.warn('[CatalogFlipBook] Blob prefetch failed, using direct PDF URL:', err.message);
+        setDocumentSource(resolvedPdfUrl);
+      });
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) {
+        window.URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [resolvedPdfUrl]);
 
   // ── Load flipbook manifest if flipPath is provided ─────────────
   useEffect(() => {
@@ -244,7 +286,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   }, [isFullscreen]);
 
   useEffect(() => {
-    if (!resolvedPdfUrl) return;
+    if (!documentSource) return;
 
     loadMetricsRef.current = {
       start: performance.now(),
@@ -269,9 +311,9 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
       stageTimeoutRef.current = null;
     }
 
-    console.log('[CatalogFlipBook] PDF load started:', resolvedPdfUrl);
+    console.log('[CatalogFlipBook] PDF load started:', documentSource);
     return () => window.clearTimeout(resetTimer);
-  }, [resolvedPdfUrl]);
+  }, [documentSource]);
 
   // ── Lock body scroll while modal is open ───────────────────────
   useEffect(() => {
@@ -576,7 +618,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
         ) : (
           /* ── Mode B: Original PDF.js Flipbook (fallback) ──────── */
           <Document
-            file={resolvedPdfUrl}
+            file={documentSource}
             options={options}
             onLoadProgress={onDocumentLoadProgress}
             onLoadSuccess={onDocumentLoadSuccess}
