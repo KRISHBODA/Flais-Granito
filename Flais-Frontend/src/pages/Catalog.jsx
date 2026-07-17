@@ -62,13 +62,6 @@ const Catalog = () => {
       if (catalog.flipPath) {
         viewerParams.set('flip', catalog.flipPath);
       }
-      const isMobileViewport = window.matchMedia('(max-width: 767px)').matches;
-      if (isMobileViewport) {
-        // Mobile browsers are much more reliable with direct PDF navigation
-        // than the full PDF.js flipbook shell.
-        window.open(link, '_blank', 'noopener,noreferrer');
-        return;
-      }
       window.open(`/catalog/view?${viewerParams.toString()}`, '_blank', 'noopener,noreferrer');
       return;
     }

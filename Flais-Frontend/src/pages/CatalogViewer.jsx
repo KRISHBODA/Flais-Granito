@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import CatalogFlipBook from '../components/CatalogFlipBook';
 import { resolveMediaUrl } from '../utils/imageOptimizer';
@@ -9,17 +9,6 @@ const CatalogViewer = () => {
   const pdfUrl = resolveMediaUrl(searchParams.get('pdf'));
   const title = searchParams.get('title') || 'Catalog';
   const flipPath = searchParams.get('flip') || '';
-  const isMobileViewport = typeof window !== 'undefined'
-    ? window.matchMedia('(max-width: 767px)').matches
-    : false;
-
-  useEffect(() => {
-    if (isMobileViewport && pdfUrl) {
-      // Let mobile browsers open the PDF natively instead of forcing the
-      // heavier PDF.js viewer, which is less reliable on phones.
-      window.location.replace(pdfUrl);
-    }
-  }, [isMobileViewport, pdfUrl]);
 
   const handleClose = () => {
     // If we can close the window/tab, close it. Otherwise, go back to catalog.
@@ -41,19 +30,6 @@ const CatalogViewer = () => {
           >
             Go to Catalogs
           </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (isMobileViewport) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white px-6">
-        <div className="text-center max-w-sm">
-          <p className="text-lg font-semibold mb-3">Opening catalog...</p>
-          <p className="text-white/70 text-sm">
-            Your device is being redirected to the PDF viewer for a smoother mobile experience.
-          </p>
         </div>
       </div>
     );
