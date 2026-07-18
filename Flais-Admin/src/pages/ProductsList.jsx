@@ -224,7 +224,14 @@ const ProductsList = () => {
                       <tr key={product._id} className="transition-colors hover:bg-slate-50/50">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
-                            <img loading="lazy" src={getImageUrl(product.images?.[0]) || 'https://via.placeholder.com/150'} alt="" className="h-12 w-12 rounded-lg object-cover border" />
+                            <div className="h-12 w-12 rounded-lg object-cover border bg-slate-100 flex items-center justify-center">
+                              {product.images?.[0] ? (
+                                <img loading="lazy" src={getImageUrl(product.images[0])} alt={product.title} className="h-full w-full rounded-lg object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                              ) : null}
+                              <div className={`h-full w-full rounded-lg flex items-center justify-center text-slate-300 ${product.images?.[0] ? 'hidden' : 'flex'}`}>
+                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/></svg>
+                              </div>
+                            </div>
                             <div>
                               <h4 className="font-bold text-slate-900">{product.title || product.name}</h4>
                               <p className="text-xs text-slate-400 font-mono">ID: {product._id.slice(-6).toUpperCase()}</p>
