@@ -3,8 +3,9 @@ import axios from 'axios';
 const getBackendBaseUrl = () => {
   const envUrl = import.meta.env.VITE_BACKEND_URL ? import.meta.env.VITE_BACKEND_URL.trim().replace(/\/$/, '') : '';
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http';
   const runtimeUrl = hostname && hostname !== 'localhost' && hostname !== '127.0.0.1'
-    ? `http://${hostname}:8000`
+    ? `${protocol}://${hostname}:8000`
     : 'http://localhost:8000';
 
   if (!envUrl) {
@@ -55,10 +56,14 @@ export const getImageUrl = (url) => {
   }
   
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http';
   
   if (url.startsWith('http://') || url.startsWith('https://')) {
     try {
       const parsed = new URL(url);
+      
+      // Ensure protocol matches current page protocol
+      parsed.protocol = protocol + ':';
       
       // Rewrite localhost / 127.0.0.1 URLs if we are on a remote domain/IP
       if (
@@ -79,7 +84,7 @@ export const getImageUrl = (url) => {
         return parsed.toString();
       }
       
-      return url;
+      return parsed.toString();
     } catch (e) {
       return url;
     }
@@ -89,6 +94,14 @@ export const getImageUrl = (url) => {
   
   // Resolve base URL for media (ensure it has port 8000 on staging/remote hosts)
   let resolvedBaseUrl = backendUrl;
+  
+  // Ensure the protocol matches current page
+  if (resolvedBaseUrl.startsWith('http://') && protocol === 'https') {
+    resolvedBaseUrl = resolvedBaseUrl.replace('http://', 'https://');
+  } else if (resolvedBaseUrl.startsWith('https://') && protocol === 'http') {
+    resolvedBaseUrl = resolvedBaseUrl.replace('https://', 'http://');
+  }
+  
   if (resolvedBaseUrl.includes('187.127.179.251') && !resolvedBaseUrl.includes(':8000') && !resolvedBaseUrl.includes(':80')) {
     resolvedBaseUrl = resolvedBaseUrl.replace('187.127.179.251', '187.127.179.251:8000');
   } else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !resolvedBaseUrl.includes(':8000') && !resolvedBaseUrl.includes(':80')) {
