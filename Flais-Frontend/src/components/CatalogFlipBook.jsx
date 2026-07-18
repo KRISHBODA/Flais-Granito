@@ -27,11 +27,17 @@ pdfjs.GlobalWorkerOptions.workerSrc = `${ASSETS_BASE_URL}pdf.worker.min.js`;
 
 // ── Storage URL for resolving flipbook image paths ───────────────
 const getStorageBaseUrl = () => {
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+  if (origin && hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    return `${origin}/media`;
+  }
+
   if (import.meta.env.VITE_STORAGE_URL) {
     return import.meta.env.VITE_STORAGE_URL.trim().replace(/\/$/, '');
   }
   const envUrl = import.meta.env.VITE_BACKEND_URL ? import.meta.env.VITE_BACKEND_URL.trim().replace(/\/$/, '') : '';
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   const runtimeUrl = hostname && hostname !== 'localhost' && hostname !== '127.0.0.1'
     ? `http://${hostname}:8000`
     : 'http://localhost:8000';
