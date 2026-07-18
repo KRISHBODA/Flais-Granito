@@ -685,39 +685,76 @@ const Home = () => {
             baseList.push(...logos);
           }
 
-          const top = [...baseList, ...baseList];
+          const top = baseList;
           const bottom = [...baseList].reverse();
-          const bottomLoop = [...bottom, ...bottom];
 
           return (
             <div className="space-y-8">
               {/* TOP ROW: Moves Left */}
               <div className="marquee">
                 <div className="marquee-track">
-                  {top.map((logo, index) => (
-                    <img
-                      key={index}
-                      src={logo.image}
-                      alt={logo.name}
-                      loading="lazy"
-                      className="marquee-logo"
-                    />
-                  ))}
+                  <div className="marquee-group">
+                    {top.map((logo, index) => (
+                      <div key={`top-a-${index}`} className="marquee-item">
+                        <img
+                          src={logo.image}
+                          alt={logo.name}
+                          loading="eager"
+                          decoding="async"
+                          draggable={false}
+                          className="marquee-logo"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="marquee-group" aria-hidden="true">
+                    {top.map((logo, index) => (
+                      <div key={`top-b-${index}`} className="marquee-item">
+                        <img
+                          src={logo.image}
+                          alt=""
+                          loading="eager"
+                          decoding="async"
+                          draggable={false}
+                          className="marquee-logo"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* BOTTOM ROW: Moves Right */}
               <div className="marquee">
                 <div className="marquee-track marquee-track-reverse">
-                  {bottomLoop.map((logo, index) => (
-                    <img
-                      key={index}
-                      src={logo.image}
-                      alt={logo.name}
-                      loading="lazy"
-                      className="marquee-logo"
-                    />
-                  ))}
+                  <div className="marquee-group">
+                    {bottom.map((logo, index) => (
+                      <div key={`bottom-a-${index}`} className="marquee-item">
+                        <img
+                          src={logo.image}
+                          alt={logo.name}
+                          loading="eager"
+                          decoding="async"
+                          draggable={false}
+                          className="marquee-logo"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="marquee-group" aria-hidden="true">
+                    {bottom.map((logo, index) => (
+                      <div key={`bottom-b-${index}`} className="marquee-item">
+                        <img
+                          src={logo.image}
+                          alt=""
+                          loading="eager"
+                          decoding="async"
+                          draggable={false}
+                          className="marquee-logo"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

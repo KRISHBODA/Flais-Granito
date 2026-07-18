@@ -200,19 +200,36 @@ video {
     display: flex;
     width: max-content;
     align-items: center;
-    gap: 8rem;
     animation: marquee-left 55s linear infinite !important;
     will-change: transform;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
 
   .marquee-track-reverse {
     animation: marquee-right 55s linear infinite !important;
   }
 
+  .marquee-group {
+    display: flex;
+    align-items: center;
+    gap: 8rem;
+    padding-right: 8rem;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .marquee-item {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .marquee-logo {
-    flex-shrink: 0;
     height: 9rem;
-    width: auto;
+    width: clamp(160px, 14vw, 240px);
     object-fit: contain;
     mix-blend-mode: multiply;
     transition: transform 0.35s ease;
@@ -368,12 +385,14 @@ html.lenis body {
     animation-duration: 45s !important;
   }
 
-  .marquee-track {
+  .marquee-group {
     gap: 4rem;
+    padding-right: 4rem;
   }
 
   .marquee-logo {
     height: 5rem;
+    width: clamp(120px, 22vw, 180px);
   }
 
   /* Disable floating elements — they cause layout jank on scroll */
