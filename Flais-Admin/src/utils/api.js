@@ -57,6 +57,7 @@ export const getImageUrl = (url) => {
   
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http';
+  const isProduction = hostname && hostname !== 'localhost' && hostname !== '127.0.0.1';
   
   if (url.startsWith('http://') || url.startsWith('https://')) {
     try {
@@ -67,13 +68,16 @@ export const getImageUrl = (url) => {
       
       // Rewrite localhost / 127.0.0.1 URLs if we are on a remote domain/IP
       if (
-        hostname &&
-        hostname !== 'localhost' &&
-        hostname !== '127.0.0.1' &&
+        isProduction &&
         (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')
       ) {
         parsed.hostname = hostname;
-        parsed.port = '8000';
+        // Only add port 8000 for staging IP, not for production domains with HTTPS
+        if (hostname === '187.127.179.251') {
+          parsed.port = '8000';
+        } else {
+          parsed.port = '';
+        }
         return parsed.toString();
       }
       
@@ -102,9 +106,21 @@ export const getImageUrl = (url) => {
     resolvedBaseUrl = resolvedBaseUrl.replace('https://', 'http://');
   }
   
-  if (resolvedBaseUrl.includes('187.127.179.251') && !resolvedBaseUrl.includes(':8000') && !resolvedBaseUrl.includes(':80')) {
+  // For production HTTPS, don't add port 8000 - let nginx reverse proxy handle it
+  if (isProduction && protocol === 'https') {
+    // Just use the hostname without port for production HTTPS
+    try {
+      const parsed = new URL(resolvedBaseUrl);
+      parsed.hostname = hostname;
+      parsed.port = '';
+      resolvedBaseUrl = parsed.toString().replace(/\/$/, '');
+    } catch (e) {
+      // Fallback: strip port from URL manually
+      resolvedBaseUrl = resolvedBaseUrl.replace(/:8000/, '').replace(/\/$/, '');
+    }
+  } else if (resolvedBaseUrl.includes('187.127.179.251') && !resolvedBaseUrl.includes(':8000') && !resolvedBaseUrl.includes(':80')) {
     resolvedBaseUrl = resolvedBaseUrl.replace('187.127.179.251', '187.127.179.251:8000');
-  } else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !resolvedBaseUrl.includes(':8000') && !resolvedBaseUrl.includes(':80')) {
+  } else if (hostname === '187.127.179.251' && !resolvedBaseUrl.includes(':8000') && !resolvedBaseUrl.includes(':80')) {
     if (resolvedBaseUrl.startsWith('http://') || resolvedBaseUrl.startsWith('https://')) {
       try {
         const parsed = new URL(resolvedBaseUrl);
