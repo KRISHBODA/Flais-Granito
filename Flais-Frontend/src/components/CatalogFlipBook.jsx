@@ -165,6 +165,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   const [flipMode, setFlipMode] = useState(false); // true = use images, false = use react-pdf
   const [flipLoading, setFlipLoading] = useState(!!flipPath);
   const [documentSource, setDocumentSource] = useState(resolvedPdfUrl);
+  const [isPdfReady, setIsPdfReady] = useState(false);
 
   const flipBookRef = useRef(null);
   const options = useMemo(
@@ -203,13 +204,15 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   useEffect(() => {
     if (!resolvedPdfUrl) {
       setDocumentSource('');
+      setIsPdfReady(false);
       return;
     }
 
     let cancelled = false;
     let objectUrl = '';
 
-    setDocumentSource('');
+    setIsPdfReady(false);
+    setDocumentSource(resolvedPdfUrl);
 
     fetch(resolvedPdfUrl, {
       mode: 'cors',
@@ -225,11 +228,13 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
         if (cancelled) return;
         objectUrl = window.URL.createObjectURL(blob);
         setDocumentSource(objectUrl);
+        setIsPdfReady(true);
       })
       .catch((err) => {
         if (cancelled) return;
         console.warn('[CatalogFlipBook] Blob prefetch failed, using direct PDF URL:', err.message);
         setDocumentSource(resolvedPdfUrl);
+        setIsPdfReady(true);
       });
 
     return () => {
@@ -286,7 +291,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   }, [isFullscreen]);
 
   useEffect(() => {
-    if (!documentSource) return;
+    if (!isPdfReady || !documentSource) return;
 
     loadMetricsRef.current = {
       start: performance.now(),
@@ -313,7 +318,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
 
     console.log('[CatalogFlipBook] PDF load started:', documentSource);
     return () => window.clearTimeout(resetTimer);
-  }, [documentSource]);
+  }, [documentSource, isPdfReady]);
 
   // ── Lock body scroll while modal is open ───────────────────────
   useEffect(() => {
@@ -615,6 +620,15 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
               </>
             ) : null}
           </>
+        ) : !isPdfReady ? (
+          <div className="flipbook-loading">
+            <div className="flipbook-loading-spinner">
+              <div className="ring-outer" />
+              <div className="ring-inner" />
+            </div>
+            <span className="flipbook-loading-text">Loading Catalog</span>
+            <span className="flipbook-loading-subtext">Preparing your flipbook experience…</span>
+          </div>
         ) : (
           /* ── Mode B: Original PDF.js Flipbook (fallback) ──────── */
           <Document
