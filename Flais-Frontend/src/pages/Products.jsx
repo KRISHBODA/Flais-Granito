@@ -36,7 +36,8 @@ const ProductImage = ({ src, alt }) => {
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filter, setFilter] = useState(searchParams.get('cat') || 'all');
+  const [filter, setFilter] = useState('all');
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const videoRef = useIntersectionVideoRef();
@@ -92,10 +93,35 @@ const Products = () => {
     };
   }, [collectionSettingsData]);
 
-  const selectedCategoryName = useMemo(() => {
-    if (filter === 'all') return null;
-    return categories.find(cat => cat.slug === filter)?.name || filter;
-  }, [categories, filter]);
+  const normalizeFilterString = useCallback((value) => {
+    return (value || '')
+      .toString()
+      .toLowerCase()
+      .replace(/×/g, 'x')
+      .replace(/&/g, ' and ')
+      .replace(/\b(mm|cm|inches|inch|in)\b/g, '')
+      .replace(/[^a-z0-9x ]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }, []);
+
+  const resolveCategoryFromParam = useCallback((catParam) => {
+    if (!catParam) return { name: 'all', slug: 'all' };
+    const match = categories.find(
+      (cat) => cat.slug === catParam || cat.name.toLowerCase() === catParam.toLowerCase()
+    );
+    if (match) return { name: match.name, slug: match.slug };
+    return { name: catParam, slug: catParam };
+  }, [categories]);
+
+  useEffect(() => {
+    const catParam = searchParams.get('cat');
+    const { name, slug } = resolveCategoryFromParam(catParam);
+    setFilter(name);
+    setSelectedCategorySlug(slug);
+  }, [searchParams, resolveCategoryFromParam]);
+
+  const selectedCategoryName = filter === 'all' ? null : filter;
 
   const dbThicknessOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'thickness'), [filterOptionsData]);
   const dbSizeOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'size'), [filterOptionsData]);
@@ -118,11 +144,6 @@ const Products = () => {
   }, [searchQuery]);
 
   useEffect(() => {
-    const cat = searchParams.get('cat');
-    if (cat) setFilter(cat);
-  }, [searchParams]);
-
-  useEffect(() => {
     setVisibleCount(20);
   }, [filter, debouncedSearchQuery, thicknessFilter, sizeFilter, appFilter, lookFilter]);
 
@@ -131,17 +152,38 @@ const Products = () => {
     return products.filter(product => {
       // product.title handles search and category handles category already via API,
       // but we apply local filters if they happen to have these properties (or mock them)
-      const matchesThickness = thicknessFilter === 'all' || product.thickness?.toLowerCase() === thicknessFilter.toLowerCase();
-      const matchesSize = sizeFilter === 'all' || product.size?.toLowerCase().includes(sizeFilter.toLowerCase());
-      const matchesApp = appFilter === 'all' || 
-        product.application?.toLowerCase() === appFilter.toLowerCase() ||
-        (appFilter.toLowerCase() === 'floor' && product.application?.toLowerCase().includes('floor')) ||
-        (appFilter.toLowerCase() === 'wall' && product.application?.toLowerCase().includes('wall'));
-      const matchesLook = lookFilter === 'all' || product.look?.toLowerCase() === lookFilter.toLowerCase();
+      const normalizedProductThickness = normalizeFilterString(product.thickness);
+      const normalizedProductSize = normalizeFilterString(product.size);
+      const normalizedProductApp = normalizeFilterString(product.application);
+      const normalizedProductLook = normalizeFilterString(product.look);
+
+      const normalizedThicknessFilter = normalizeFilterString(thicknessFilter);
+      const normalizedSizeFilter = normalizeFilterString(sizeFilter);
+      const normalizedAppFilter = normalizeFilterString(appFilter);
+      const normalizedLookFilter = normalizeFilterString(lookFilter);
+
+      const matchesThickness = thicknessFilter === 'all' ||
+        normalizedProductThickness === normalizedThicknessFilter ||
+        normalizedProductThickness.includes(normalizedThicknessFilter) ||
+        normalizedThicknessFilter.includes(normalizedProductThickness);
+
+      const matchesSize = sizeFilter === 'all' ||
+        normalizedProductSize.includes(normalizedSizeFilter) ||
+        normalizedSizeFilter.includes(normalizedProductSize);
+
+      const matchesApp = appFilter === 'all' ||
+        normalizedProductApp === normalizedAppFilter ||
+        normalizedProductApp.includes(normalizedAppFilter) ||
+        normalizedAppFilter.includes(normalizedProductApp);
+
+      const matchesLook = lookFilter === 'all' ||
+        normalizedProductLook === normalizedLookFilter ||
+        normalizedProductLook.includes(normalizedLookFilter) ||
+        normalizedLookFilter.includes(normalizedProductLook);
 
       return matchesThickness && matchesSize && matchesApp && matchesLook;
     });
-  }, [products, thicknessFilter, sizeFilter, appFilter, lookFilter]);
+  }, [products, thicknessFilter, sizeFilter, appFilter, lookFilter, normalizeFilterString]);
 
   const visibleProducts = useMemo(() => {
     return filteredProducts.slice(0, visibleCount);
@@ -159,13 +201,16 @@ const Products = () => {
     if (node) observer.current.observe(node);
   }, [loading]);
 
-  const handleFilterChange = (newFilter) => {
-    setFilter(newFilter);
-    setSearchParams(newFilter === 'all' ? {} : { cat: newFilter });
+  const handleFilterChange = (categoryName, categorySlug) => {
+    const slugToUse = categorySlug ?? categoryName;
+    setFilter(categoryName);
+    setSelectedCategorySlug(slugToUse);
+    setSearchParams(slugToUse === 'all' ? {} : { cat: slugToUse });
   };
 
   const clearAllFilters = () => {
     setFilter('all');
+    setSelectedCategorySlug('all');
     setThicknessFilter('all');
     setSizeFilter('all');
     setAppFilter('all');
@@ -287,7 +332,7 @@ const Products = () => {
                 <ul className="space-y-1">
                   <li>
                     <button
-                      onClick={() => handleFilterChange('all')}
+                      onClick={() => handleFilterChange('all','all')}
                       className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${filter === 'all' ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                     >
                       <span className={`mr-3 transition-colors ${filter === 'all' ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> All Collections
@@ -296,10 +341,10 @@ const Products = () => {
                   {categories.map((cat) => (
                     <li key={cat._id || cat.slug}>
                       <button
-                        onClick={() => handleFilterChange(cat.slug)}
-                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${filter === cat.slug ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                        onClick={() => handleFilterChange(cat.name, cat.slug)}
+                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${filter === cat.name ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                       >
-                        <span className={`mr-3 transition-colors ${filter === cat.slug ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {cat.name}
+                        <span className={`mr-3 transition-colors ${filter === cat.name ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {cat.name}
                       </button>
                     </li>
                   ))}
@@ -311,10 +356,10 @@ const Products = () => {
                   ].map((catInfo) => (
                     <li key={catInfo.slug}>
                       <button
-                        onClick={() => handleFilterChange(catInfo.slug)}
-                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${filter === catInfo.slug ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                        onClick={() => handleFilterChange(catInfo.name, catInfo.slug)}
+                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${filter === catInfo.name ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                       >
-                        <span className={`mr-3 transition-colors ${filter === catInfo.slug ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {catInfo.name}
+                        <span className={`mr-3 transition-colors ${filter === catInfo.name ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {catInfo.name}
                       </button>
                     </li>
                   ))}

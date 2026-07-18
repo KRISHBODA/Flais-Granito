@@ -345,7 +345,7 @@ const AddProduct = () => {
                 >
                   <option value="">Select Application</option>
                   {appOptions.map(opt => (
-                    <option key={opt._id} value={opt.label}>{opt.label}</option>
+                    <option key={opt._id} value={opt.value}>{opt.label}</option>
                   ))}
                   {appOptions.length === 0 && (
                     <>
