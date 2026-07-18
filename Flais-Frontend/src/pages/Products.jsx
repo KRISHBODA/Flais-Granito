@@ -92,6 +92,11 @@ const Products = () => {
     };
   }, [collectionSettingsData]);
 
+  const selectedCategoryName = useMemo(() => {
+    if (filter === 'all') return null;
+    return categories.find(cat => cat.slug === filter)?.name || filter;
+  }, [categories, filter]);
+
   const dbThicknessOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'thickness'), [filterOptionsData]);
   const dbSizeOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'size'), [filterOptionsData]);
   const dbApplicationOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'application'), [filterOptionsData]);
@@ -196,9 +201,9 @@ const Products = () => {
   return (
     <div className="pt-24 min-h-screen bg-white">
       <SEO 
-        title={filter === 'all' ? collectionSettings.title : `${filter} Collection`}
-        description={filter === 'all' ? collectionSettings.desc : `Explore FLAIS GRANITO's premium ${filter} tile catalog. Discover high-quality vitrified, glazed, and ceramic tiles with multiple sizing, looks, and finishes.`}
-        keywords={`flais granito, tiles catalog, vitrified tiles catalog, ${filter} tiles, floor tiles, wall tiles, Porcelain Slabs, Large Format Slabs, 1600x3200 Porcelain Slabs, 1200x2400 Porcelain Slabs, Sintered Stone Slabs, Book Match Porcelain Slabs, Marble Look Porcelain Slabs, High Gloss Porcelain Slabs, Matte Finish Porcelain Slabs, Calacatta Porcelain Slabs, Statuario Porcelain Slabs, Onyx Porcelain Slabs`}
+        title={filter === 'all' ? collectionSettings.title : `${selectedCategoryName || filter} Collection`}
+        description={filter === 'all' ? collectionSettings.desc : `Explore FLAIS GRANITO's premium ${selectedCategoryName || filter} tile catalog. Discover high-quality vitrified, glazed, and ceramic tiles with multiple sizing, looks, and finishes.`}
+        keywords={`flais granito, tiles catalog, vitrified tiles catalog, ${selectedCategoryName || filter} tiles, floor tiles, wall tiles, Porcelain Slabs, Large Format Slabs, 1600x3200 Porcelain Slabs, 1200x2400 Porcelain Slabs, Sintered Stone Slabs, Book Match Porcelain Slabs, Marble Look Porcelain Slabs, High Gloss Porcelain Slabs, Matte Finish Porcelain Slabs, Calacatta Porcelain Slabs, Statuario Porcelain Slabs, Onyx Porcelain Slabs`}
       />
       {/* Hero Section */}
       <section className="bg-white py-2 flex items-center justify-center overflow-hidden">
@@ -291,21 +296,25 @@ const Products = () => {
                   {categories.map((cat) => (
                     <li key={cat._id || cat.slug}>
                       <button
-                        onClick={() => handleFilterChange(cat.name)}
-                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${filter === cat.name ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                        onClick={() => handleFilterChange(cat.slug)}
+                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${filter === cat.slug ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                       >
-                        <span className={`mr-3 transition-colors ${filter === cat.name ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {cat.name}
+                        <span className={`mr-3 transition-colors ${filter === cat.slug ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {cat.name}
                       </button>
                     </li>
                   ))}
                   {/* Fallback local categories just in case DB is empty */}
-                  {categories.length === 0 && ['GVT/PGVT', 'Color body', 'Full body'].map((catName) => (
-                    <li key={catName}>
+                  {categories.length === 0 && [
+                    { slug: 'gvt-pgvt', name: 'GVT/PGVT' },
+                    { slug: 'color-body', name: 'Color body' },
+                    { slug: 'full-body', name: 'Full body' }
+                  ].map((catInfo) => (
+                    <li key={catInfo.slug}>
                       <button
-                        onClick={() => handleFilterChange(catName)}
-                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${filter === catName ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                        onClick={() => handleFilterChange(catInfo.slug)}
+                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${filter === catInfo.slug ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                       >
-                        <span className={`mr-3 transition-colors ${filter === catName ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {catName}
+                        <span className={`mr-3 transition-colors ${filter === catInfo.slug ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {catInfo.name}
                       </button>
                     </li>
                   ))}
