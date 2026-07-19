@@ -51,9 +51,19 @@ exports.createProduct = async (req, res) => {
 // @access  Public
 exports.getProducts = async (req, res) => {
   try {
-    const { page = 1, search = "", category = "All" } = req.query;
-    const limit = 12; 
-    const skip = (page - 1) * limit;
+    const { page = 1, search = "", category = "All", limit: queryLimit } = req.query;
+    
+    let limit = 12;
+    let skip = (page - 1) * limit;
+    
+    if (queryLimit) {
+      if (queryLimit === "all") {
+        limit = 0;
+      } else {
+        limit = Number(queryLimit);
+        skip = (page - 1) * limit;
+      }
+    }
 
     let query = {};
     
@@ -66,20 +76,22 @@ exports.getProducts = async (req, res) => {
     }
 
     const totalProducts = await Product.countDocuments(query);
-    const products = await Product.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .skip(skip);
+    
+    let dbQuery = Product.find(query).sort({ createdAt: -1 });
+    if (limit > 0) {
+      dbQuery = dbQuery.limit(limit).skip(skip);
+    }
+    const products = await dbQuery;
 
     res.status(200).json({
       success: true,
       products,
       totalProducts,
-      totalPages: Math.ceil(totalProducts / limit),
+      totalPages: limit > 0 ? Math.ceil(totalProducts / limit) : 1,
       currentPage: Number(page),
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({ success: false, message: "Server Error", error: error.message });
   }
 };
 

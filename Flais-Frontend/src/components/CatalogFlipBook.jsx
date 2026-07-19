@@ -115,10 +115,8 @@ FlipPageImage.displayName = 'FlipPageImage';
 
 // ── Dimension Calculator ─────────────────────────────────────────
 // Returns page dimensions that fit within the available viewport
-// while maintaining a standard page aspect ratio (~0.707 for A4).
-const PAGE_ASPECT_RATIO = 1.414; // height / width (A4 standard)
-
-function calcDimensions(isFullscreen) {
+// while maintaining the page aspect ratio.
+function calcDimensions(isFullscreen, aspectRatio = 1.414) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const isMobile = vw < 640;
@@ -135,13 +133,13 @@ function calcDimensions(isFullscreen) {
   const maxPageHeight = availHeight;
 
   // Calculate from height constraint
-  let pageWidth = Math.floor(maxPageHeight / PAGE_ASPECT_RATIO);
+  let pageWidth = Math.floor(maxPageHeight / aspectRatio);
   let pageHeight = maxPageHeight;
 
   // If width-constrained, recalculate
   if (pageWidth > maxPageWidth) {
     pageWidth = maxPageWidth;
-    pageHeight = Math.floor(pageWidth * PAGE_ASPECT_RATIO);
+    pageHeight = Math.floor(pageWidth * aspectRatio);
   }
 
   // Enforce minimums
@@ -164,7 +162,8 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   const [loadError, setLoadError] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
-  const [dimensions, setDimensions] = useState(() => calcDimensions(false));
+  const [aspectRatio, setAspectRatio] = useState(1.414);
+  const [dimensions, setDimensions] = useState(() => calcDimensions(false, 1.414));
 
   // ── Pre-rendered flipbook state ──────────────────────────────────
   const [flipManifest, setFlipManifest] = useState(null);
@@ -277,6 +276,22 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
         setFlipLoading(false);
         setShowLoader(false);
         console.log(`[CatalogFlipBook] Flipbook manifest loaded: ${manifest.totalPages} pages`);
+
+        // Load first image to determine aspect ratio
+        if (manifest.pages && manifest.pages.length > 0) {
+          const img = new Image();
+          img.src = `${storageBase}/${flipPath}/${manifest.pages[0]}`;
+          img.onload = () => {
+            if (!cancelled && img.naturalWidth && img.naturalHeight) {
+              const aspect = img.naturalHeight / img.naturalWidth;
+              console.log('[CatalogFlipBook] Image Page 1 aspect ratio:', aspect);
+              setAspectRatio(aspect);
+            }
+          };
+          img.onerror = (err) => {
+            console.warn('[CatalogFlipBook] Failed to load image to determine aspect ratio:', err);
+          };
+        }
       })
       .catch((err) => {
         if (cancelled) return;
@@ -287,14 +302,15 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
       });
 
     return () => { cancelled = true; };
-  }, [flipPath]);
+  }, [flipPath, setAspectRatio]);
 
   // ── Recalculate on resize ──────────────────────────────────────
   useEffect(() => {
-    const handleResize = () => setDimensions(calcDimensions(isFullscreen));
+    const handleResize = () => setDimensions(calcDimensions(isFullscreen, aspectRatio));
     window.addEventListener('resize', handleResize);
+    handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  }, [isFullscreen]);
+  }, [isFullscreen, aspectRatio]);
 
   useEffect(() => {
     if (!isPdfReady || !documentSource) return;
@@ -397,10 +413,23 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
     }
   }, []);
 
-  const onDocumentLoadSuccess = useCallback(({ numPages: total }) => {
+  const onDocumentLoadSuccess = useCallback((pdf) => {
+    const total = pdf.numPages;
     setNumPages(total);
     setLoadError(null);
     setLoadingStage((prev) => (prev === 'Loaded' ? 'Loaded' : 'Preparing Pages'));
+
+    // Get aspect ratio from first page dynamically
+    pdf.getPage(1).then((page) => {
+      const viewport = page.getViewport({ scale: 1 });
+      if (viewport.width && viewport.height) {
+        const aspect = viewport.height / viewport.width;
+        console.log('[CatalogFlipBook] PDF Page 1 aspect ratio:', aspect);
+        setAspectRatio(aspect);
+      }
+    }).catch((err) => {
+      console.warn('[CatalogFlipBook] Failed to get PDF page 1 aspect ratio:', err);
+    });
 
     if (stageTimeoutRef.current) {
       window.clearTimeout(stageTimeoutRef.current);
@@ -422,7 +451,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
       `[CatalogFlipBook] Document loaded (${total} pages)` +
         (elapsed !== null ? ` in ${elapsed}ms` : '')
     );
-  }, []);
+  }, [setAspectRatio]);
 
   const onDocumentLoadError = useCallback((error) => {
     console.error('[CatalogFlipBook] Load error', error);
@@ -534,6 +563,19 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
     }
   };
 
+  // Calculate transform style to dynamically center single cover pages (page 0 or back cover) on desktop
+  const transformStyle = useMemo(() => {
+    let translateX = 0;
+    if (!dimensions.isMobile && numPages) {
+      if (currentPage === 0) {
+        translateX = -dimensions.pageWidth / 2;
+      } else if (currentPage === numPages - 1 && numPages % 2 === 0) {
+        translateX = dimensions.pageWidth / 2;
+      }
+    }
+    return `scale(${zoom}) translateX(${translateX}px)`;
+  }, [zoom, dimensions.isMobile, dimensions.pageWidth, currentPage, numPages]);
+
   // ── Render ─────────────────────────────────────────────────────
   return (
     <div
@@ -576,10 +618,11 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
 
                 <div
                   className="flipbook-book-wrapper"
-                  style={{ transform: `scale(${zoom})` }}
+                  style={{ transform: transformStyle }}
                 >
                   <HTMLFlipBook
                     ref={flipBookRef}
+                    key={`flipbook-${dimensions.pageWidth}-${dimensions.pageHeight}`}
                     width={dimensions.pageWidth}
                     height={dimensions.pageHeight}
                     size="fixed"
@@ -598,7 +641,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                     maxShadowOpacity={0.4}
                     drawShadow={true}
                     className="flipbook-stpageflip"
-                    startPage={0}
+                    startPage={currentPage}
                     autoSize={false}
                   >
                     {flipManifest.pages.map((filename, i) => (
@@ -727,10 +770,11 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
 
                 <div
                   className="flipbook-book-wrapper"
-                  style={{ transform: `scale(${zoom})` }}
+                  style={{ transform: transformStyle }}
                 >
                   <HTMLFlipBook
                     ref={flipBookRef}
+                    key={`flipbook-${dimensions.pageWidth}-${dimensions.pageHeight}`}
                     width={dimensions.pageWidth}
                     height={dimensions.pageHeight}
                     size="fixed"
@@ -749,7 +793,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                     maxShadowOpacity={0.4}
                     drawShadow={true}
                     className="flipbook-stpageflip"
-                    startPage={0}
+                    startPage={currentPage}
                     autoSize={false}
                   >
                     {Array.from({ length: numPages }, (_, i) => (

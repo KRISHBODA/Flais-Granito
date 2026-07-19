@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom';
 import { Search, ArrowRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import collectionsVideo from '../assets/Its_different_motion_logo.mp4';
 import SEO from '../components/SEO';
 import api from '../utils/api';
@@ -48,7 +49,7 @@ const Products = () => {
   const { data: productsData = [], isLoading: productsLoading } = useQuery({
     queryKey: ['products', categoryParam, debouncedSearchQuery],
     queryFn: async () => {
-      const res = await api.get(`/products?category=${categoryParam}&search=${debouncedSearchQuery}`);
+      const res = await api.get(`/products?category=${categoryParam}&search=${debouncedSearchQuery}&limit=all`);
       return res.data.products || [];
     }
   });
@@ -93,13 +94,19 @@ const Products = () => {
     };
   }, [collectionSettingsData]);
 
-  const normalizeFilterString = useCallback((value) => {
-    return (value || '')
+  const normalizeFilterString = useCallback((value, removeSpaces = false) => {
+    let str = (value || '')
       .toString()
       .toLowerCase()
       .replace(/×/g, 'x')
       .replace(/&/g, ' and ')
-      .replace(/\b(mm|cm|inches|inch|in)\b/g, '')
+      .replace(/\b(mm|cm|inches|inch|in)\b/g, '');
+    
+    if (removeSpaces) {
+      return str.replace(/[^a-z0-9x]+/g, '');
+    }
+    
+    return str
       .replace(/[^a-z0-9x ]+/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -152,34 +159,43 @@ const Products = () => {
     return products.filter(product => {
       // product.title handles search and category handles category already via API,
       // but we apply local filters if they happen to have these properties (or mock them)
-      const normalizedProductThickness = normalizeFilterString(product.thickness);
-      const normalizedProductSize = normalizeFilterString(product.size);
-      const normalizedProductApp = normalizeFilterString(product.application);
-      const normalizedProductLook = normalizeFilterString(product.look);
+      const normalizedProductThickness = normalizeFilterString(product.thickness, true);
+      const normalizedProductSize = normalizeFilterString(product.size, true);
+      const normalizedProductApp = normalizeFilterString(product.application, false);
+      const normalizedProductLook = normalizeFilterString(product.look, false);
 
-      const normalizedThicknessFilter = normalizeFilterString(thicknessFilter);
-      const normalizedSizeFilter = normalizeFilterString(sizeFilter);
-      const normalizedAppFilter = normalizeFilterString(appFilter);
-      const normalizedLookFilter = normalizeFilterString(lookFilter);
+      const normalizedThicknessFilter = normalizeFilterString(thicknessFilter, true);
+      const normalizedSizeFilter = normalizeFilterString(sizeFilter, true);
+      const normalizedAppFilter = normalizeFilterString(appFilter, false);
+      const normalizedLookFilter = normalizeFilterString(lookFilter, false);
 
-      const matchesThickness = thicknessFilter === 'all' ||
-        normalizedProductThickness === normalizedThicknessFilter ||
-        normalizedProductThickness.includes(normalizedThicknessFilter) ||
-        normalizedThicknessFilter.includes(normalizedProductThickness);
+      const matchesThickness = thicknessFilter === 'all' || (
+        normalizedProductThickness !== '' && (
+          normalizedProductThickness.includes(normalizedThicknessFilter) ||
+          normalizedThicknessFilter.includes(normalizedProductThickness)
+        )
+      );
 
-      const matchesSize = sizeFilter === 'all' ||
-        normalizedProductSize.includes(normalizedSizeFilter) ||
-        normalizedSizeFilter.includes(normalizedProductSize);
+      const matchesSize = sizeFilter === 'all' || (
+        normalizedProductSize !== '' && (
+          normalizedProductSize.includes(normalizedSizeFilter) ||
+          normalizedSizeFilter.includes(normalizedProductSize)
+        )
+      );
 
-      const matchesApp = appFilter === 'all' ||
-        normalizedProductApp === normalizedAppFilter ||
-        normalizedProductApp.includes(normalizedAppFilter) ||
-        normalizedAppFilter.includes(normalizedProductApp);
+      const matchesApp = appFilter === 'all' || (
+        normalizedProductApp !== '' && (
+          normalizedProductApp.includes(normalizedAppFilter) ||
+          normalizedAppFilter.includes(normalizedProductApp)
+        )
+      );
 
-      const matchesLook = lookFilter === 'all' ||
-        normalizedProductLook === normalizedLookFilter ||
-        normalizedProductLook.includes(normalizedLookFilter) ||
-        normalizedLookFilter.includes(normalizedProductLook);
+      const matchesLook = lookFilter === 'all' || (
+        normalizedProductLook !== '' && (
+          normalizedProductLook.includes(normalizedLookFilter) ||
+          normalizedLookFilter.includes(normalizedProductLook)
+        )
+      );
 
       return matchesThickness && matchesSize && matchesApp && matchesLook;
     });
@@ -446,45 +462,56 @@ const Products = () => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {visibleProducts.map((product, index) => (
-                    <div
-                      key={product._id}
-                      className="p-4 pb-8 rounded-tl-[3.5rem] rounded-br-[3.5rem] rounded-tr-[1.25rem] rounded-bl-[1.25rem] bg-[#FAF8F5] border border-[#D2C9B1]/30 group flex flex-col h-full transform-gpu animate-slide-up transition-all duration-500 hover:shadow-xl hover:border-[#5D4037]/30"
-                      style={{
-                        animationFillMode: 'both',
-                        animationDelay: `${(index % 6) * 100}ms`
-                      }}
-                    >
-                      <Link to={`/products/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 transform-gpu">
-                        <ProductImage
-                          src={getOptimizedImageUrl(product.images && product.images.length > 0 ? product.images[0] : (product.image || 'https://via.placeholder.com/400x400?text=No+Image'), 600)}
-                          alt={product.title || product.name}
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                      </Link>
-                      <div className="pt-6 px-2 flex flex-col flex-1">
-                        <div className="mb-2 flex items-center gap-2">
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-[#5D4037] bg-[#5D4037]/5 px-2.5 py-0.5 rounded border border-[#5D4037]/10">{product.category || 'Standard'}</span>
-                        </div>
-                        <h3 className="font-sans font-bold text-2xl text-zinc-900 mb-6">
-                          {product.title || product.name}
-                        </h3>
+                <motion.div 
+                  layout
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                >
+                  <AnimatePresence mode="popLayout">
+                    {visibleProducts.map((product, index) => (
+                      <motion.div
+                        layout
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 300, 
+                          damping: 30,
+                          opacity: { duration: 0.25 }
+                        }}
+                        key={product._id}
+                        className="p-4 pb-8 rounded-tl-[3.5rem] rounded-br-[3.5rem] rounded-tr-[1.25rem] rounded-bl-[1.25rem] bg-[#FAF8F5] border border-[#D2C9B1]/30 group flex flex-col h-full hover:shadow-xl hover:border-[#5D4037]/30"
+                      >
+                        <Link to={`/products/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 transform-gpu">
+                          <ProductImage
+                            src={getOptimizedImageUrl(product.images && product.images.length > 0 ? product.images[0] : (product.image || 'https://via.placeholder.com/400x400?text=No+Image'), 600)}
+                            alt={product.title || product.name}
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                        </Link>
+                        <div className="pt-6 px-2 flex flex-col flex-1">
+                          <div className="mb-2 flex items-center gap-2">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#5D4037] bg-[#5D4037]/5 px-2.5 py-0.5 rounded border border-[#5D4037]/10">{product.category || 'Standard'}</span>
+                          </div>
+                          <h3 className="font-sans font-bold text-2xl text-zinc-900 mb-6">
+                            {product.title || product.name}
+                          </h3>
 
 
-                        {/* View More Button */}
-                        <div className="mt-auto">
-                          <Link to={`/products/${product.slug || product._id}`} className="inline-flex items-center group/btn relative py-2">
-                            <div className="absolute left-[-12px] w-10 h-10 bg-[#D2C9B1] rounded-full transition-all duration-500 ease-out group-hover/btn:w-[calc(100%+24px)] group-hover/btn:bg-[#5D4037]"></div>
-                            <span className="relative z-10 flex items-center text-sm font-medium text-zinc-900 group-hover/btn:text-white transition-colors duration-300 pl-4">
-                              View More <ArrowRight size={16} className="ml-3 transition-transform duration-300 group-hover/btn:translate-x-1" />
-                            </span>
-                          </Link>
+                          {/* View More Button */}
+                          <div className="mt-auto">
+                            <Link to={`/products/${product.slug || product._id}`} className="inline-flex items-center group/btn relative py-2">
+                              <div className="absolute left-[-12px] w-10 h-10 bg-[#D2C9B1] rounded-full transition-all duration-500 ease-out group-hover/btn:w-[calc(100%+24px)] group-hover/btn:bg-[#5D4037]"></div>
+                              <span className="relative z-10 flex items-center text-sm font-medium text-zinc-900 group-hover/btn:text-white transition-colors duration-300 pl-4">
+                                View More <ArrowRight size={16} className="ml-3 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                              </span>
+                            </Link>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
 
                 {visibleCount < filteredProducts.length && (
                   <div ref={sentinelRef} className="w-full h-20 flex items-center justify-center mt-8">
