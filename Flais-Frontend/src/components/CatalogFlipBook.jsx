@@ -13,6 +13,8 @@ import {
   RotateCcw,
   AlertTriangle,
   Download,
+  BookOpen,
+  FileText,
 } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -116,7 +118,7 @@ FlipPageImage.displayName = 'FlipPageImage';
 // ── Dimension Calculator ─────────────────────────────────────────
 // Returns page dimensions that fit within the available viewport
 // while maintaining the page aspect ratio.
-function calcDimensions(isFullscreen, aspectRatio = 1.414) {
+function calcDimensions(isFullscreen, aspectRatio = 1.414, singlePageMode = true) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const isMobile = vw < 640;
@@ -126,8 +128,8 @@ function calcDimensions(isFullscreen, aspectRatio = 1.414) {
   const availHeight = vh - (isFullscreen ? 140 : 160);
   const availWidth = vw - (isMobile ? 24 : isTablet ? 60 : 120);
 
-  // On mobile, show single page; on desktop/tablet show two-page spread
-  const pageCountVisible = isMobile ? 1 : 2;
+  // On mobile or in single page mode, show single page; on desktop/tablet show two-page spread
+  const pageCountVisible = (isMobile || singlePageMode) ? 1 : 2;
   const maxTotalWidth = availWidth;
   const maxPageWidth = Math.floor(maxTotalWidth / pageCountVisible);
   const maxPageHeight = availHeight;
@@ -150,7 +152,7 @@ function calcDimensions(isFullscreen, aspectRatio = 1.414) {
     pageWidth,
     pageHeight,
     isMobile,
-    showCover: true,
+    showCover: !singlePageMode,
   };
 }
 
@@ -163,7 +165,8 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [aspectRatio, setAspectRatio] = useState(1.414);
-  const [dimensions, setDimensions] = useState(() => calcDimensions(false, 1.414));
+  const [singlePageMode, setSinglePageMode] = useState(true);
+  const [dimensions, setDimensions] = useState(() => calcDimensions(false, 1.414, true));
 
   // ── Pre-rendered flipbook state ──────────────────────────────────
   const [flipManifest, setFlipManifest] = useState(null);
@@ -304,13 +307,13 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
     return () => { cancelled = true; };
   }, [flipPath, setAspectRatio]);
 
-  // ── Recalculate on resize ──────────────────────────────────────
+  // ── Recalculate on resize or view mode change ──────────────────
   useEffect(() => {
-    const handleResize = () => setDimensions(calcDimensions(isFullscreen, aspectRatio));
+    const handleResize = () => setDimensions(calcDimensions(isFullscreen, aspectRatio, singlePageMode));
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  }, [isFullscreen, aspectRatio]);
+  }, [isFullscreen, aspectRatio, singlePageMode]);
 
   useEffect(() => {
     if (!isPdfReady || !documentSource) return;
@@ -546,7 +549,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   // ── Displayed page number(s) ───────────────────────────────────
   const getDisplayedPages = () => {
     if (!numPages) return '';
-    if (dimensions.isMobile) {
+    if (dimensions.isMobile || singlePageMode) {
       return `Page ${currentPage + 1} of ${numPages}`;
     }
     // In double-page mode, show the current spread
@@ -566,7 +569,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   // Calculate transform style to dynamically center single cover pages (page 0 or back cover) on desktop
   const transformStyle = useMemo(() => {
     let translateX = 0;
-    if (!dimensions.isMobile && numPages) {
+    if (!dimensions.isMobile && !singlePageMode && numPages) {
       if (currentPage === 0) {
         translateX = -dimensions.pageWidth / 2;
       } else if (currentPage === numPages - 1 && numPages % 2 === 0) {
@@ -574,7 +577,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
       }
     }
     return `scale(${zoom}) translateX(${translateX}px)`;
-  }, [zoom, dimensions.isMobile, dimensions.pageWidth, currentPage, numPages]);
+  }, [zoom, dimensions.isMobile, dimensions.pageWidth, currentPage, numPages, singlePageMode]);
 
   // ── Render ─────────────────────────────────────────────────────
   return (
@@ -622,7 +625,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                 >
                   <HTMLFlipBook
                     ref={flipBookRef}
-                    key={`flipbook-${dimensions.pageWidth}-${dimensions.pageHeight}`}
+                    key={`flipbook-${dimensions.pageWidth}-${dimensions.pageHeight}-${singlePageMode}`}
                     width={dimensions.pageWidth}
                     height={dimensions.pageHeight}
                     size="fixed"
@@ -632,7 +635,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                     maxHeight={1130}
                     showCover={dimensions.showCover}
                     mobileScrollSupport={true}
-                    usePortrait={dimensions.isMobile}
+                    usePortrait={dimensions.isMobile || singlePageMode}
                     onFlip={onFlip}
                     flippingTime={600}
                     useMouseEvents={true}
@@ -774,7 +777,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                 >
                   <HTMLFlipBook
                     ref={flipBookRef}
-                    key={`flipbook-${dimensions.pageWidth}-${dimensions.pageHeight}`}
+                    key={`flipbook-${dimensions.pageWidth}-${dimensions.pageHeight}-${singlePageMode}`}
                     width={dimensions.pageWidth}
                     height={dimensions.pageHeight}
                     size="fixed"
@@ -784,7 +787,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                     maxHeight={1130}
                     showCover={dimensions.showCover}
                     mobileScrollSupport={true}
-                    usePortrait={dimensions.isMobile}
+                    usePortrait={dimensions.isMobile || singlePageMode}
                     onFlip={onFlip}
                     flippingTime={600}
                     useMouseEvents={true}
@@ -876,6 +879,21 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
           </button>
 
           <div className="flipbook-toolbar-divider" />
+
+          {/* View Mode Toggle (only for desktop/tablet) */}
+          {!dimensions.isMobile && (
+            <>
+              <button
+                className={`flipbook-toolbar-btn ${singlePageMode ? 'active' : ''}`}
+                onClick={() => setSinglePageMode((prev) => !prev)}
+                title={singlePageMode ? 'Switch to double page spread' : 'Switch to single page view'}
+                aria-label={singlePageMode ? 'Switch to double page spread' : 'Switch to single page view'}
+              >
+                {singlePageMode ? <BookOpen size={18} /> : <FileText size={18} />}
+              </button>
+              <div className="flipbook-toolbar-divider" />
+            </>
+          )}
 
           {/* Zoom */}
           <button
