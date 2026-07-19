@@ -59,9 +59,9 @@ const getStorageBaseUrl = () => {
 // react-pageflip injects a ref into each child to manage DOM-level
 // flip animations. Every child of HTMLFlipBook MUST forward its ref.
 const FlipPage = forwardRef(
-  ({ pageNumber, width, height, isVisible, onRenderSuccess, onRenderError }, ref) => {
+  ({ pageNumber, width, height, isVisible, onRenderSuccess, onRenderError, ...rest }, ref) => {
     return (
-      <div className="flipbook-page" ref={ref} style={{ width, height }}>
+      <div className="flipbook-page" ref={ref} style={{ width, height }} {...rest}>
         {isVisible ? (
           <Page
             pageNumber={pageNumber}
@@ -92,9 +92,9 @@ FlipPage.displayName = 'FlipPage';
 // ── ForwardRef Image Page Wrapper (for pre-rendered flipbooks) ───
 // Used when flipPath is available — renders a lightweight <img> instead
 // of the heavy react-pdf <Page> canvas.
-const FlipPageImage = forwardRef(({ src, pageNumber, width, height, isVisible }, ref) => {
+const FlipPageImage = forwardRef(({ src, pageNumber, width, height, isVisible, ...rest }, ref) => {
   return (
-    <div className="flipbook-page" ref={ref} style={{ width, height }}>
+    <div className="flipbook-page" ref={ref} style={{ width, height }} {...rest}>
       {isVisible ? (
         <img
           src={src}
@@ -165,8 +165,19 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [aspectRatio, setAspectRatio] = useState(1.414);
-  const [singlePageMode, setSinglePageMode] = useState(true);
-  const [dimensions, setDimensions] = useState(() => calcDimensions(false, 1.414, true));
+  const [singlePageMode, setSinglePageMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 640;
+    }
+    return true;
+  });
+  const [dimensions, setDimensions] = useState(() =>
+    calcDimensions(
+      false,
+      1.414,
+      typeof window !== 'undefined' ? window.innerWidth < 640 : true
+    )
+  );
 
   // ── Pre-rendered flipbook state ──────────────────────────────────
   const [flipManifest, setFlipManifest] = useState(null);
@@ -655,6 +666,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                         width={dimensions.pageWidth}
                         height={dimensions.pageHeight}
                         isVisible={isPageVisible(i)}
+                        data-density={i === 0 || i === numPages - 1 ? 'hard' : 'soft'}
                       />
                     ))}
                   </HTMLFlipBook>
@@ -808,6 +820,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                         isVisible={isPageVisible(i)}
                         onRenderSuccess={onPageRenderSuccess}
                         onRenderError={onPageRenderError}
+                        data-density={i === 0 || i === numPages - 1 ? 'hard' : 'soft'}
                       />
                     ))}
                   </HTMLFlipBook>
