@@ -187,9 +187,45 @@ const Navbar = () => {
   const selectLanguage = (code) => {
     // Set cookies for both main domain and subdomains to persist translation across routing
     const cookieValue = code === 'en' ? '/en/en' : `/en/${code}`;
+
+    // Clear existing googtrans cookies across all possible domain levels to avoid duplicates
+    const hostname = window.location.hostname;
+    const parts = hostname.split('.');
+    
+    const clearCookie = (domain) => {
+      const base = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;';
+      document.cookie = base;
+      if (domain) {
+        document.cookie = `${base} domain=${domain};`;
+        document.cookie = `${base} domain=.${domain};`;
+      }
+    };
+
+    // Clear without domain (defaults to current host)
+    clearCookie();
+    // Clear on current hostname
+    clearCookie(hostname);
+
+    // Clear on all parent domain levels
+    for (let i = 0; i < parts.length - 1; i++) {
+      const parentDomain = parts.slice(i).join('.');
+      if (parentDomain) {
+        clearCookie(parentDomain);
+      }
+    }
+
+    // Set new cookie value across all possible domain levels
     document.cookie = `googtrans=${cookieValue}; path=/;`;
-    document.cookie = `googtrans=${cookieValue}; domain=${window.location.hostname}; path=/;`;
-    document.cookie = `googtrans=${cookieValue}; domain=.${window.location.hostname}; path=/;`;
+    document.cookie = `googtrans=${cookieValue}; domain=${hostname}; path=/;`;
+    document.cookie = `googtrans=${cookieValue}; domain=.${hostname}; path=/;`;
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      const parentDomain = parts.slice(i).join('.');
+      if (parentDomain && parentDomain !== hostname) {
+        document.cookie = `googtrans=${cookieValue}; domain=${parentDomain}; path=/;`;
+        document.cookie = `googtrans=${cookieValue}; domain=.${parentDomain}; path=/;`;
+      }
+    }
 
     // Dispatch native Google combo box translation change if loaded
     const select = document.querySelector('.goog-te-combo');
