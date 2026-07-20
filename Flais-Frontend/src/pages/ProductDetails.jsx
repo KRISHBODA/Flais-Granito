@@ -281,7 +281,7 @@ const ProductDetails = () => {
                   <span className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
                     Application
                   </span>
-                  <span className="text-zinc-800 font-bold text-sm">
+                  <span className="text-zinc-800 font-bold text-sm uppercase">
                     {application || 'N/A'}
                   </span>
                 </div>
