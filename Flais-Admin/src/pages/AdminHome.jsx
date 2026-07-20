@@ -801,12 +801,12 @@ const AdminHome = () => {
   };
 
   const tabs = [
-    { id: 'slider',  label: 'Hero Slider',      icon: Images },
     { id: 'video',   label: 'Brand Film Video',  icon: Film },
-    { id: 'choice',  label: 'Make Your Choice',  icon: CheckSquare },
-    { id: 'sizes',   label: 'Tile Sizes',        icon: Maximize },
+    { id: 'slider',  label: 'Hero Slider',       icon: Images },
     { id: 'cats',    label: 'Categories',        icon: Grid },
+    { id: 'choice',  label: 'Make Your Choice',  icon: CheckSquare },
     { id: 'logos',   label: 'Series Logos',      icon: Star },
+    { id: 'sizes',   label: 'Tile Sizes',        icon: Maximize },
     { id: 'blog',    label: 'Our Blog',          icon: FileText },
     { id: 'texts',   label: 'Page Texts',        icon: FileText },
   ];
