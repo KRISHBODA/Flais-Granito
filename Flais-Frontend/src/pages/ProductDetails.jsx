@@ -282,7 +282,7 @@ const ProductDetails = () => {
                     Application
                   </span>
                   <span className="text-zinc-800 font-bold text-sm uppercase">
-                    {application || 'N/A'}
+                    {(application || 'N/A').toUpperCase()}
                   </span>
                 </div>
                 <div className="border-t border-zinc-200 pt-4 pl-6">
