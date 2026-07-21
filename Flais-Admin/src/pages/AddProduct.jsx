@@ -60,12 +60,12 @@ const AddProduct = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    if (images.length + files.length > 8) {
-      toast.error("You can upload a maximum of 8 images.");
+    if (images.length + files.length > 100) {
+      toast.error("You can upload a maximum of 100 images.");
       return;
     }
 
-    const newFiles = [...images, ...files].slice(0, 8);
+    const newFiles = [...images, ...files].slice(0, 100);
     setImages(newFiles);
 
     const newPreviews = [];
@@ -135,7 +135,7 @@ const AddProduct = () => {
       navigate("/admin/products");
     } catch (error) {
 
-      toast.error("Failed to add product");
+      toast.error(error.response?.data?.message || "Failed to add product");
     } finally {
       setIsSubmitting(false);
     }
@@ -298,10 +298,10 @@ const AddProduct = () => {
                     ))}
                   </div>
                 )}
-                {previews.length < 8 && (
+                {previews.length < 100 && (
                   <label className="flex aspect-[2/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-[#0145F2] hover:bg-blue-50/30">
                     <Upload className="mb-2 text-slate-400" size={24} />
-                    <span className="text-xs font-semibold text-slate-600">Upload Images ({previews.length}/8)</span>
+                    <span className="text-xs font-semibold text-slate-600">Upload Images ({previews.length}/100)</span>
                     <span className="mt-0.5 text-[10px] text-slate-400">PNG, JPG, WebP up to 10MB</span>
                     <input type="file" multiple className="hidden" accept="image/*" onChange={handleImageChange} />
                   </label>
@@ -318,6 +318,7 @@ const AddProduct = () => {
                 <label className="mb-2 block text-sm font-semibold text-slate-700">Category</label>
                 <select
                   name="category"
+                  required
                   value={formData.category}
                   onChange={handleInputChange}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm transition-all focus:border-[#0145F2] focus:outline-none focus:ring-1 focus:ring-[#0145F2]"
