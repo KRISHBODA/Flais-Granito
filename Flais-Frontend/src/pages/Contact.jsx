@@ -216,7 +216,8 @@ const defaultPageSettings = {
   facebook: "https://www.facebook.com/share/1Eqo7HDYNb/",
   instagram: "https://www.instagram.com/flais_tiles.and.adhesives?igsh=Y29neGJjeTlpMHo0",
   linkedin: "https://www.linkedin.com/in/flais-tiles-and-adhesive-54b353201?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-  youtube: "https://youtube.com/@flais_tiles.and.adhesives?si=5PMCOWaJ4LTMG6BI"
+  youtube: "https://youtube.com/@flais_tiles.and.adhesives?si=5PMCOWaJ4LTMG6BI",
+  pinterest: "https://pin.it/3NKlK8ujW"
 };
 
 const Contact = () => {
@@ -504,6 +505,16 @@ const Contact = () => {
                       icon: (
                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
                           <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                      )
+                    },
+                    {
+                      label: 'Pinterest',
+                      href: pageSettings.pinterest || 'https://pin.it/3NKlK8ujW',
+                      color: '#E60023',
+                      icon: (
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.08 3.12 9.43 7.6 11.23-.1-.95-.19-2.4.04-3.43.2-.87 1.33-5.63 1.33-5.63s-.34-.68-.34-1.68c0-1.57.91-2.75 2.05-2.75 1 0 1.48.75 1.48 1.65 0 1-.64 2.5-1 3.88-.28 1.18.6 2.14 1.76 2.14 2.1 0 3.73-2.22 3.73-5.43 0-2.84-2.04-4.83-4.96-4.83-3.38 0-5.37 2.54-5.37 5.16 0 1.02.39 2.12.88 2.72.1.12.11.22.08.33-.09.37-.28 1.15-.32 1.31-.05.21-.18.25-.42.14-1.57-.73-2.55-3.03-2.55-4.88 0-3.97 2.89-7.62 8.32-7.62 4.37 0 7.77 3.11 7.77 7.28 0 4.35-2.74 7.84-6.54 7.84-1.28 0-2.48-.66-2.89-1.45 0 0-.63 2.4-.78 2.98-.28 1.08-1.04 2.43-1.55 3.26C8.84 23.83 10.37 24 12 24c6.63 0 12-5.37 12-12S18.63 0 12 0z"/>
                         </svg>
                       )
                     }
