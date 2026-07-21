@@ -170,7 +170,7 @@ const Footer = () => {
             </div>
             <div className="pt-6 mt-auto flex flex-col items-start justify-start gap-2 select-none">
               <span className="text-[15px] font-semibold tracking-wider text-zinc-500">
-                Design by Krish Boda
+                Developed by Krish Boda
               </span>
               <a href="tel:9313735697" className="text-[15px] font-medium tracking-wider text-zinc-500 hover:text-white transition-colors select-text">
                 +91 93137 35697
