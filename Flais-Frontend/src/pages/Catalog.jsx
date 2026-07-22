@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Eye, Loader2 } from 'lucide-react';
+import { Download, Eye, Loader2, Filter, X } from 'lucide-react';
 import SEO from '../components/SEO';
 import catalogHeader from '../assets/catalog_header.jpg';
 import api from '../utils/api';
@@ -17,8 +17,20 @@ const Catalog = () => {
     heroMedia: ""
   });
   const [catalogsList, setCatalogsList] = useState([]);
+  const [selectedSize, setSelectedSize] = useState('all');
+  const [selectedThickness, setSelectedThickness] = useState('all');
   const [loading, setLoading] = useState(true);
   const [downloadingKey, setDownloadingKey] = useState(null);
+
+  const splitFilterValues = (value) => {
+    if (!value || typeof value !== 'string') return [];
+    return value
+      .split(/[,|/\n;]/g)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  };
+
+  const normalizeFilterKey = (value) => value.toLowerCase().replace(/\s+/g, ' ').trim();
 
   useEffect(() => {
     const fetchCatalogData = async () => {
@@ -41,6 +53,51 @@ const Catalog = () => {
     };
     fetchCatalogData();
   }, []);
+
+  const catalogFilters = useMemo(() => {
+    const sizes = new Map();
+    const thicknesses = new Map();
+
+    catalogsList.forEach((catalog) => {
+      splitFilterValues(catalog.availableSizes).forEach((size) => {
+        const key = normalizeFilterKey(size);
+        if (!sizes.has(key)) sizes.set(key, size);
+      });
+
+      splitFilterValues(catalog.thickness).forEach((thickness) => {
+        const key = normalizeFilterKey(thickness);
+        if (!thicknesses.has(key)) thicknesses.set(key, thickness);
+      });
+    });
+
+    return {
+      sizes: [...sizes.values()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })),
+      thicknesses: [...thicknesses.values()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })),
+    };
+  }, [catalogsList]);
+
+  const filteredCatalogs = useMemo(() => {
+    return catalogsList.filter((catalog) => {
+      const catalogSizes = splitFilterValues(catalog.availableSizes).map(normalizeFilterKey);
+      const catalogThicknesses = splitFilterValues(catalog.thickness).map(normalizeFilterKey);
+
+      const matchesSize =
+        selectedSize === 'all' ||
+        catalogSizes.includes(normalizeFilterKey(selectedSize));
+
+      const matchesThickness =
+        selectedThickness === 'all' ||
+        catalogThicknesses.includes(normalizeFilterKey(selectedThickness));
+
+      return matchesSize && matchesThickness;
+    });
+  }, [catalogsList, selectedSize, selectedThickness]);
+
+  const hasActiveFilters = selectedSize !== 'all' || selectedThickness !== 'all';
+  const clearFilters = () => {
+    setSelectedSize('all');
+    setSelectedThickness('all');
+  };
 
   const resolveCatalogUrl = (catalog) => {
     const link = catalog.link && catalog.link !== '#' ? catalog.link : catalog.image;
@@ -168,6 +225,96 @@ const Catalog = () => {
       {/* Catalog Grid */}
       <section className="py-24">
         <div className="container-custom">
+          <div className="mb-10 rounded-3xl border border-zinc-200 bg-white/90 p-5 sm:p-6 shadow-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-zinc-900">
+                  <Filter size={18} className="text-beige-700" />
+                  <h2 className="text-xl sm:text-2xl font-display font-bold">Catalog Filters</h2>
+                </div>
+                <p className="mt-2 text-sm text-zinc-500">
+                  Filter catalogs by the sizes and thickness values saved in the admin panel.
+                </p>
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="inline-flex w-fit items-center gap-2 rounded-full border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+                >
+                  <X size={14} />
+                  Clear filters
+                </button>
+              )}
+            </div>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <div>
+                <h3 className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-zinc-500">Available Sizes</h3>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedSize('all')}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                      selectedSize === 'all'
+                        ? 'bg-[#5D4037] text-white'
+                        : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                    }`}
+                  >
+                    All Sizes
+                  </button>
+                  {catalogFilters.sizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                        selectedSize === size
+                          ? 'bg-[#5D4037] text-white'
+                          : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                  {catalogFilters.sizes.length === 0 && (
+                    <span className="text-sm text-zinc-400">No size values found yet.</span>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-zinc-500">Thickness</h3>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedThickness('all')}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                      selectedThickness === 'all'
+                        ? 'bg-[#5D4037] text-white'
+                        : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                    }`}
+                  >
+                    All Thickness
+                  </button>
+                  {catalogFilters.thicknesses.map((thickness) => (
+                    <button
+                      key={thickness}
+                      onClick={() => setSelectedThickness(thickness)}
+                      className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                        selectedThickness === thickness
+                          ? 'bg-[#5D4037] text-white'
+                          : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {thickness}
+                    </button>
+                  ))}
+                  {catalogFilters.thicknesses.length === 0 && (
+                    <span className="text-sm text-zinc-400">No thickness values found yet.</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {catalogsList.length === 0 ? (
             <div className="py-16 text-center text-zinc-400 max-w-md mx-auto bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm flex flex-col items-center">
               <svg className="w-16 h-16 text-zinc-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,9 +323,27 @@ const Catalog = () => {
               <p className="font-semibold text-zinc-600 text-lg">No catalogs available</p>
               <p className="text-zinc-400 text-sm mt-1">Our team is currently preparing the digital catalogs. Please check back soon!</p>
             </div>
+          ) : filteredCatalogs.length === 0 ? (
+            <div className="py-16 text-center text-zinc-400 max-w-md mx-auto bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm flex flex-col items-center">
+              <svg className="w-16 h-16 text-zinc-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              <p className="font-semibold text-zinc-600 text-lg">No matching catalogs</p>
+              <p className="text-zinc-400 text-sm mt-1">
+                Try clearing the selected size or thickness filter.
+              </p>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="mt-4 rounded-full bg-[#5D4037] px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Reset filters
+                </button>
+              )}
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-6 md:gap-10">
-              {catalogsList.map((catalog, index) => {
+              {filteredCatalogs.map((catalog, index) => {
                 return (
                   <motion.div
                     key={catalog._id || catalog.id || index}

@@ -11,6 +11,14 @@ const DEFAULT_CATALOG = {
   catalogs: []
 };
 
+function normalizeCatalogItem(cat = {}) {
+  return {
+    ...cat,
+    availableSizes: cat.availableSizes ?? "",
+    thickness: cat.thickness ?? "",
+  };
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
@@ -68,17 +76,24 @@ exports.getCatalogPage = async (req, res) => {
         });
 
         catalog.catalogs = catalog.catalogs.map((cat, idx) => {
+          const normalizedCat = normalizeCatalogItem(cat.toObject ? cat.toObject() : cat);
           if (
-            cat.sequenceNumber === undefined ||
-            cat.sequenceNumber === null ||
-            seenSeqNums.has(cat.sequenceNumber)
+            normalizedCat.sequenceNumber === undefined ||
+            normalizedCat.sequenceNumber === null ||
+            seenSeqNums.has(normalizedCat.sequenceNumber)
           ) {
             maxSeq += 1;
-            cat.sequenceNumber = maxSeq;
+            normalizedCat.sequenceNumber = maxSeq;
             updated = true;
           }
-          seenSeqNums.add(cat.sequenceNumber);
-          return cat;
+          if (normalizedCat.availableSizes !== (cat.availableSizes ?? "")) {
+            updated = true;
+          }
+          if (normalizedCat.thickness !== (cat.thickness ?? "")) {
+            updated = true;
+          }
+          seenSeqNums.add(normalizedCat.sequenceNumber);
+          return normalizedCat;
         });
       }
 
@@ -96,6 +111,10 @@ exports.getCatalogPage = async (req, res) => {
 exports.upsertCatalogPage = async (req, res) => {
   try {
     const payload = req.body?.catalog ? req.body.catalog : req.body;
+
+    if (payload.catalogs && Array.isArray(payload.catalogs)) {
+      payload.catalogs = payload.catalogs.map(normalizeCatalogItem);
+    }
 
     // Validate that sequence numbers are unique
     if (payload.catalogs && Array.isArray(payload.catalogs)) {

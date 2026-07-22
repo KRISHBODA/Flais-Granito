@@ -12,6 +12,8 @@ const catalogPageSchema = new mongoose.Schema(
         title: { type: String, required: true },
         image: { type: String, default: "" },
         link: { type: String, default: "" },
+        availableSizes: { type: String, default: "" },
+        thickness: { type: String, default: "" },
         flipPath: { type: String, default: "" },
         conversionStatus: {
           type: String,
