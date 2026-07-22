@@ -142,6 +142,11 @@ const Products = () => {
   const [appFilter, setAppFilter] = useState('all');
   const [lookFilter, setLookFilter] = useState('all');
 
+  const saveScrollPosition = () => {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem('flais:products-scroll-y', String(window.scrollY || 0));
+  };
+
   // Debounce search query
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -500,7 +505,11 @@ const Products = () => {
 
                           {/* View More Button */}
                           <div className="mt-auto">
-                            <Link to={`/products/${product.slug || product._id}`} className="inline-flex items-center group/btn relative py-2">
+                            <Link
+                              to={`/products/${product.slug || product._id}`}
+                              onClick={saveScrollPosition}
+                              className="inline-flex items-center group/btn relative py-2"
+                            >
                               <div className="absolute left-[-12px] w-10 h-10 bg-[#D2C9B1] rounded-full transition-all duration-500 ease-out group-hover/btn:w-[calc(100%+24px)] group-hover/btn:bg-[#5D4037]"></div>
                               <span className="relative z-10 flex items-center text-sm font-medium text-zinc-900 group-hover/btn:text-white transition-colors duration-300 pl-4">
                                 View More <ArrowRight size={16} className="ml-3 transition-transform duration-300 group-hover/btn:translate-x-1" />

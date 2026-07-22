@@ -8,6 +8,11 @@ const SmoothScroll = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
+    const savedProductsScroll = typeof window !== 'undefined'
+      ? sessionStorage.getItem('flais:products-scroll-y')
+      : null;
+    const shouldRestoreProductsScroll = location.pathname === '/products' && savedProductsScroll !== null;
+
     // Disable Lenis smooth scroll on the calculator route to avoid height computation
     // and scrolling issues, restoring native scroll behavior on this page.
     if (location.pathname === '/calculator') {
@@ -22,6 +27,23 @@ const SmoothScroll = ({ children }) => {
       // Always scroll to top on route change (native fallback)
       window.scrollTo(0, 0);
       return;
+    }
+
+    if (shouldRestoreProductsScroll) {
+      const targetY = Number(savedProductsScroll);
+      const scrollToTarget = () => {
+        const safeY = Number.isFinite(targetY) ? targetY : 0;
+        if (lenisRef.current) {
+          lenisRef.current.scrollTo(safeY, { immediate: true });
+        }
+        window.scrollTo(0, safeY);
+        sessionStorage.removeItem('flais:products-scroll-y');
+      };
+
+      scrollToTarget();
+      const restoreTimer = setTimeout(scrollToTarget, 120);
+
+      return () => clearTimeout(restoreTimer);
     }
 
     // Detect touch-capable devices. Lenis attaches non-passive wheel listeners
@@ -66,7 +88,8 @@ const SmoothScroll = ({ children }) => {
       lenis.resize();
     }
 
-    // Always scroll to top on every route change (pathname or search)
+    // Always scroll to top on every route change (pathname or search),
+    // except when we are restoring the products page position.
     if (lenisRef.current) {
       lenisRef.current.scrollTo(0, { immediate: true });
     }
