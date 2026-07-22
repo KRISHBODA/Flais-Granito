@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import CatalogFlipBook from '../components/CatalogFlipBook';
 import { resolveMediaUrl } from '../utils/imageOptimizer';
+import { trackAnalyticsEvent } from '../utils/analytics';
 
 const CatalogViewer = () => {
   const [searchParams] = useSearchParams();
@@ -9,6 +10,25 @@ const CatalogViewer = () => {
   const pdfUrl = resolveMediaUrl(searchParams.get('pdf'));
   const title = searchParams.get('title') || 'Catalog';
   const flipPath = searchParams.get('flip') || '';
+  const trackedRef = useRef(false);
+
+  useEffect(() => {
+    if (!pdfUrl || trackedRef.current) return;
+    trackedRef.current = true;
+    trackAnalyticsEvent('pdf_view', {
+      pageKey: 'catalog-viewer',
+      pageLabel: 'Catalog PDF Viewer',
+      path: `/catalog/view?pdf=${encodeURIComponent(searchParams.get('pdf') || '')}`,
+      title,
+      targetType: 'catalog_pdf',
+      targetId: flipPath || searchParams.get('pdf') || title,
+      targetLabel: title,
+      metadata: {
+        pdfUrl: searchParams.get('pdf') || '',
+        flipPath,
+      },
+    });
+  }, [pdfUrl, flipPath, searchParams, title]);
 
   const handleClose = () => {
     // If we can close the window/tab, close it. Otherwise, go back to catalog.

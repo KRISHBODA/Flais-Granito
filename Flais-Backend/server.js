@@ -101,6 +101,7 @@ app.use("/api/catalog", require("./routes/catalogRoutes"));
 app.use("/api/flais-park", require("./routes/flaisParkRoutes"));
 app.use("/api/flais-guide", require("./routes/flaisGuideRoutes"));
 app.use("/api/settings", require("./routes/settingsRoutes"));
+app.use("/api/analytics", require("./routes/analyticsRoutes"));
 
 // Default route
 app.get("/", (req, res) => {

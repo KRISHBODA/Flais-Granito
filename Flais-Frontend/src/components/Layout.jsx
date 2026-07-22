@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import WhatsAppButton from './WhatsAppButton';
+import AnalyticsTracker from './AnalyticsTracker';
 
 const Layout = ({ children }) => {
   const { pathname } = useLocation();
@@ -14,6 +15,7 @@ const Layout = ({ children }) => {
     return (
       <div className="flex flex-col min-h-screen bg-zinc-950">
         <Toaster position="top-right" />
+        <AnalyticsTracker />
         <main className="flex-grow">
           {children}
         </main>
@@ -24,6 +26,7 @@ const Layout = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
       <Toaster position="top-right" />
+      <AnalyticsTracker />
       <Navbar />
       <main className="flex-grow">
         {children}

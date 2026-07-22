@@ -5,14 +5,15 @@ import {
   Layers, 
   MessageSquare, 
   FileText, 
-  Settings, 
+  Settings,
   LogOut,
   X,
   Home,
   BookOpen,
   Info,
   MapPin,
-  Trophy
+  Trophy,
+  BarChart3
 } from 'lucide-react';
 import toast from 'react-hot-toast'; // Optional: for a nice notification
 
@@ -22,6 +23,7 @@ const navItems = [
   { name: 'Collection', path: '/admin/products', icon: Package },
   { name: 'Flais Park', path: '/admin/flais-park', icon: MapPin },
   { name: 'Catalog', path: '/admin/catalog', icon: BookOpen },
+  { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
   { name: 'Achievement', path: '/admin/achievement', icon: Trophy },
   { name: 'Contact', path: '/admin/messages', icon: MessageSquare },
   { name: 'Blog', path: '/admin/blogs', icon: FileText },

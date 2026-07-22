@@ -19,6 +19,7 @@ const AdminCatalog = lazy(() => import('../pages/AdminCatalog.jsx'));
 const AdminWhyFlais = lazy(() => import('../pages/AdminWhyFlais.jsx'));
 const AdminFlaisPark = lazy(() => import('../pages/AdminFlaisPark.jsx'));
 const AdminAchievement = lazy(() => import('../pages/AdminAchievement.jsx'));
+const Analytics = lazy(() => import('../pages/Analytics.jsx'));
 
 // Loading Spinner Component
 const Loading = () => (
@@ -77,6 +78,7 @@ const AdminRoutes = () => {
             <Route path="home" element={<AdminHome />} />
             <Route path="why-flais" element={<AdminWhyFlais />} />
             <Route path="catalog" element={<AdminCatalog />} />
+            <Route path="analytics" element={<Analytics />} />
             <Route path="flais-park" element={<AdminFlaisPark />} />
             <Route path="achievement" element={<AdminAchievement />} />
           </Route>

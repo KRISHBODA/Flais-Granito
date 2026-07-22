@@ -9,6 +9,7 @@ import {
   getOptimizedVideoUrl,
   getRelativeMediaPath,
 } from '../utils/imageOptimizer';
+import { trackAnalyticsEvent } from '../utils/analytics';
 
 const Catalog = () => {
   const [pageSettings, setPageSettings] = useState({
@@ -143,6 +144,19 @@ const Catalog = () => {
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(blobUrl);
+        trackAnalyticsEvent('pdf_download', {
+          pageKey: 'catalog',
+          pageLabel: 'Catalog Library',
+          path: '/catalog',
+          title: catalog.title || 'Catalog',
+          targetType: 'catalog_pdf',
+          targetId: catalog._id || catalog.id || catalog.title,
+          targetLabel: catalog.title || 'Catalog',
+          metadata: {
+            pdfUrl: link,
+            flipPath: catalog.flipPath || '',
+          },
+        });
       })
       .catch((err) => {
         console.error('Download failed:', err);
