@@ -265,7 +265,6 @@ const Catalog = () => {
               <div className="p-5 sm:p-7 lg:border-r lg:border-zinc-100">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-zinc-500">Available Sizes</h3>
-                  <span className="text-xs font-medium text-zinc-400">From admin data</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -302,7 +301,6 @@ const Catalog = () => {
               <div className="p-5 sm:p-7">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-zinc-500">Thickness</h3>
-                  <span className="text-xs font-medium text-zinc-400">From admin data</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
