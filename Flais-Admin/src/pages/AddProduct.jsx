@@ -60,12 +60,7 @@ const AddProduct = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    if (images.length + files.length > 100) {
-      toast.error("You can upload a maximum of 100 images.");
-      return;
-    }
-
-    const newFiles = [...images, ...files].slice(0, 100);
+    const newFiles = [...images, ...files];
     setImages(newFiles);
 
     const newPreviews = [];
@@ -298,14 +293,12 @@ const AddProduct = () => {
                     ))}
                   </div>
                 )}
-                {previews.length < 100 && (
-                  <label className="flex aspect-[2/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-[#0145F2] hover:bg-blue-50/30">
-                    <Upload className="mb-2 text-slate-400" size={24} />
-                    <span className="text-xs font-semibold text-slate-600">Upload Images ({previews.length}/100)</span>
-                    <span className="mt-0.5 text-[10px] text-slate-400">PNG, JPG, WebP up to 10MB</span>
-                    <input type="file" multiple className="hidden" accept="image/*" onChange={handleImageChange} />
-                  </label>
-                )}
+                <label className="flex aspect-[2/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-[#0145F2] hover:bg-blue-50/30">
+                  <Upload className="mb-2 text-slate-400" size={24} />
+                  <span className="text-xs font-semibold text-slate-600">Upload Images</span>
+                  <span className="mt-0.5 text-[10px] text-slate-400">PNG, JPG, WebP up to 10MB</span>
+                  <input type="file" multiple className="hidden" accept="image/*" onChange={handleImageChange} />
+                </label>
               </div>
             </div>
           </div>

@@ -15,9 +15,9 @@ router.get("/", getProducts);
 router.get("/:id", getProductById);
 
 // Protected Routes (Admin)
-// We allow up to 100 images to be uploaded at once
-router.post("/", protect, upload.array("images", 100), createProduct);
-router.put("/:id", protect, upload.array("images", 100), updateProduct);
+// No explicit file-count cap for product images
+router.post("/", protect, upload.array("images"), createProduct);
+router.put("/:id", protect, upload.array("images"), updateProduct);
 router.delete("/:id", protect, deleteProduct);
 
 module.exports = router;
