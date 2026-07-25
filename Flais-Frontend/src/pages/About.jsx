@@ -226,7 +226,7 @@ const About = () => {
       {/* Narrative Section */}
       <section className="py-14 sm:py-20 md:py-24 relative overflow-hidden bg-[#fcfaf7]">
         <div className="container-custom">
-          <div className="grid lg:grid-cols-12 gap-8 sm:gap-12 md:gap-16 items-center">
+          <div className="grid lg:grid-cols-12 gap-8 sm:gap-12 md:gap-16 items-stretch">
             <div className="lg:col-span-5 space-y-12">
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
@@ -284,18 +284,18 @@ const About = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-7 relative">
+            <div className="lg:col-span-7 relative flex flex-col h-full">
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, rotate: 2 }}
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 1 }}
-                className="relative z-10 rounded-3xl sm:rounded-[3rem] overflow-hidden shadow-2xl"
+                className="relative z-10 rounded-3xl sm:rounded-[3rem] overflow-hidden shadow-2xl h-full flex flex-col"
               >
                 <img loading="lazy"
                   src={getOptimizedImageUrl(aboutSettings.narrativeImage, 800)}
                   alt="FLAIS Design Innovation"
-                  className="w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-[650px] object-cover hover:scale-110 transition-transform duration-1000"
+                  className="w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-full min-h-[500px] object-cover hover:scale-110 transition-transform duration-1000 flex-1"
                 />
               </motion.div>
               <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#D2C9B1]/30 rounded-full blur-[100px] -z-0" />

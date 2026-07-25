@@ -392,7 +392,7 @@ const Home = () => {
       <section className="py-12 md:py-20 bg-white">
         <div className="container-custom">
           <div className="text-center mb-10 md:mb-16 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-display font-bold">{homeTexts.categoriesTitle}</h2>
+            <h2 className="text-3xl md:text-4xl font-display font-medium">{homeTexts.categoriesTitle}</h2>
             <div className="h-1 w-20 bg-beige-600 mx-auto"></div>
             <p className="text-zinc-500 text-sm md:text-base max-w-xl mx-auto">{homeTexts.categoriesDesc}</p>
           </div>
@@ -555,10 +555,11 @@ const Home = () => {
       {collectionSlides.length > 0 && (
         <section className="py-12 sm:py-16 md:py-24 bg-white overflow-hidden">
           <div className="w-full px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
+            <div className="text-center mb-12 space-y-3">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-medium text-zinc-900 tracking-tight">
                 {homeTexts.collectionsTitle || "Make Your Choice"}
               </h2>
+              <div className="h-1 w-20 bg-beige-600 mx-auto"></div>
             </div>
 
             <div className="relative group/nav w-full overflow-hidden">
