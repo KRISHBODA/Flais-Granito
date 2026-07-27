@@ -466,7 +466,7 @@ const Contact = () => {
                   <h4 className="font-bold text-zinc-900 text-lg mb-1">Connect With Us</h4>
                   <p className="text-zinc-500 text-sm">Follow our journey and stay updated with the latest collections.</p>
                 </div>
-                <div className="flex flex-wrap gap-2 sm:gap-3">
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
                   {[
                     {
                       label: 'Facebook',
@@ -526,7 +526,9 @@ const Contact = () => {
                       rel="noopener noreferrer"
                       aria-label={social.label}
                       style={{ '--brand': social.color }}
-                      className="group flex flex-1 min-w-[125px] sm:flex-none items-center justify-center sm:justify-start gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-500 hover:text-white hover:border-transparent transition-all duration-300 shadow-sm"
+                      className={`group flex min-w-0 sm:min-w-[125px] sm:flex-none items-center justify-center sm:justify-start gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-500 hover:text-white hover:border-transparent transition-all duration-300 shadow-sm ${
+                        social.label === 'Pinterest' ? 'col-span-2' : ''
+                      }`}
                       onMouseEnter={e => e.currentTarget.style.backgroundColor = social.color}
                       onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; }}
                     >
