@@ -386,7 +386,6 @@ const Certifications = () => {
 
                     <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-500 group-hover:text-[#c5a880] transition-colors">
                       <span>Premium Pavilion</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#c5a880] animate-pulse"></span>
                     </div>
                   </motion.div>
                 ))}
