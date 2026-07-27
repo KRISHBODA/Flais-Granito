@@ -250,6 +250,49 @@ const Certifications = () => {
         description="FLAIS GRANITO is ISO certified and complies with international quality standards. Read about our ISO 9001, ISO 14001, CE markings, GBC awards, and global quality standards."
         keywords="ISO certified tile manufacturer, tile quality standards, green tiles certification, CE marking, Flais Granito awards"
       />
+      {/* Hero Section */}
+      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] min-h-[300px] sm:min-h-[400px] md:min-h-[500px] flex items-center justify-center overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[3rem] mx-2 sm:mx-4 mb-10 sm:mb-16 md:mb-20 bg-[#f8f5f0]">
+        <div className="absolute inset-0 z-0">
+          {isHeroVideo ? (
+            <video
+              autoPlay
+              muted
+              playsInline
+              loop
+              className="w-full h-full object-cover"
+              key={pageSettings.heroMedia}
+            >
+              <source src={getOptimizedVideoUrl(pageSettings.heroMedia)} type="video/mp4" />
+            </video>
+          ) : (
+            <img
+              src={getOptimizedImageUrl(pageSettings.heroMedia) || getOptimizedImageUrl('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop')}
+              alt={pageSettings.heroTitle}
+              className="w-full h-full object-cover"
+            />
+          )}
+        </div>
+
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-[#5D4037]/20 text-[#5D4037] text-sm font-semibold mb-6">
+              <ShieldCheck size={16} />
+              <span>Global Standards of Excellence</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-display font-bold text-zinc-900 mb-4 sm:mb-6 uppercase tracking-wider">
+              {pageSettings.heroTitle}
+            </h1>
+            <p className="text-xl text-zinc-600 font-light leading-relaxed">
+              {pageSettings.heroSubtitle}
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Global Exhibition Showcase */}
       <section className="py-12 sm:py-16 md:py-24 bg-zinc-950 text-white overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[3rem] mx-2 sm:mx-4 mb-10 sm:mb-16 md:mb-20 shadow-xl border border-white/5">
         <div className="container-custom">
@@ -443,50 +486,7 @@ const Certifications = () => {
         </div>
       </section>
 
-      {/* Hero Section */}
-      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] min-h-[300px] sm:min-h-[400px] md:min-h-[500px] flex items-center justify-center overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[3rem] mx-2 sm:mx-4 mb-10 sm:mb-16 md:mb-20 bg-[#f8f5f0]">
-        <div className="absolute inset-0 z-0">
-          {isHeroVideo ? (
-            <video
-              autoPlay
-              muted
-              playsInline
-              loop
-              className="w-full h-full object-cover"
-              key={pageSettings.heroMedia}
-            >
-              <source src={getOptimizedVideoUrl(pageSettings.heroMedia)} type="video/mp4" />
-            </video>
-          ) : (
-            <img
-              src={getOptimizedImageUrl(pageSettings.heroMedia) || ''}
-              alt={pageSettings.heroTitle}
-              className="w-full h-full object-cover"
-            />
-          )}
-        </div>
-
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-[#5D4037]/20 text-[#5D4037] text-sm font-semibold mb-6">
-              <ShieldCheck size={16} />
-              <span>Global Standards of Excellence</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-display font-bold text-zinc-900 mb-4 sm:mb-6 uppercase tracking-wider">
-              {pageSettings.heroTitle}
-            </h1>
-            <p className="text-xl text-zinc-600 font-light leading-relaxed">
-              {pageSettings.heroSubtitle}
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Intro Text Section */}
+      {/* Intro Text Section / Global Certifications Heading */}
       <section className="container-custom mb-12 sm:mb-16 md:mb-24">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <motion.h2
@@ -513,16 +513,6 @@ const Certifications = () => {
 
       {/* Certification Documents Section */}
       <section className="container-custom pb-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex items-center justify-between mb-12"
-        >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-zinc-900">Global <span className="text-[#5D4037]">Certifications</span></h2>
-          <div className="hidden md:block h-px flex-1 bg-zinc-200 ml-8"></div>
-        </motion.div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {verificationDocs.map((doc, index) => (
             <motion.div
