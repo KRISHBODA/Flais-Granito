@@ -37,59 +37,320 @@ const Counter = ({ value, duration = 1500, isFloat = false }) => {
 };
 
 const TilePreview = ({ room }) => {
-  const pts = PREVIEW_PTS;
+  const { w_m, l_m, label } = useMemo(() => {
+    let wVal_m = 3;
+    let lVal_m = 3;
+    let labelText = 'Pattern preview (3m × 3m reference)';
+    const unit = room.unit || 'm';
+
+    if (room.inputMode === 'direct') {
+      const area = parseFloat(room.area) || 9;
+      const factor = unit === 'ft' ? 0.09290304 : 1;
+      const areaSqm = area * factor;
+      // Assume 4:3 aspect ratio: w * l = areaSqm where l = w * 0.75 => w^2 * 0.75 = areaSqm
+      const calculatedW = Math.sqrt(areaSqm / 0.75) || 3;
+      const calculatedL = calculatedW * 0.75;
+      wVal_m = calculatedW;
+      lVal_m = calculatedL;
+      
+      const wVal_unit = unit === 'ft' ? calculatedW / 0.3048 : calculatedW;
+      const lVal_unit = unit === 'ft' ? calculatedL / 0.3048 : calculatedL;
+      labelText = `Pattern preview (~${wVal_unit.toFixed(1)}${unit} × ${lVal_unit.toFixed(1)}${unit})`;
+    } else {
+      const wVal = parseFloat(room.roomWidth) || 3;
+      const lVal = parseFloat(room.roomLength) || 3;
+      wVal_m = unit === 'ft' ? wVal * 0.3048 : wVal;
+      lVal_m = unit === 'ft' ? lVal * 0.3048 : lVal;
+      labelText = `Pattern preview (${wVal}${unit} × ${lVal}${unit})`;
+    }
+
+    return { w_m: wVal_m, l_m: lVal_m, label: labelText };
+  }, [room.unit, room.inputMode, room.area, room.roomWidth, room.roomLength]);
+
+  const pts = useMemo(() => {
+    return [[0, 0], [w_m, 0], [w_m, l_m], [0, l_m]];
+  }, [w_m, l_m]);
+
   const tileW = room.tileId === 'custom' ? (parseFloat(room.customTileW)/1000 || 0.6) : (parseFloat(room.tileId.split('x')[0])/1000 || 0.6);
   const tileH = room.tileId === 'custom' ? (parseFloat(room.customTileH)/1000 || 0.6) : (parseFloat(room.tileId.split('x')[1])/1000 || 0.6);
   const grout = parseFloat(room.groutJoint)/1000 || 0.003;
-  const totalW = tileW + grout;
-  const totalH = tileH + grout;
 
-  const getPattern = () => {
+  const renderTilesDirect = () => {
     const p = room.pattern;
-    const patId = `pat-${room.id}`;
-    if (p === 'straight') return (
-      <pattern id={patId} width={totalW} height={totalH} patternUnits="userSpaceOnUse">
-        <rect width={tileW} height={tileH} fill="#d4c9b8" stroke="#8a7f72" strokeWidth={grout/2} />
-      </pattern>
-    );
-    if (p === 'brick') return (
-      <pattern id={patId} width={totalW} height={totalH*2} patternUnits="userSpaceOnUse">
-        <rect x={0} y={0} width={tileW} height={tileH} fill="#d4c9b8" stroke="#8a7f72" strokeWidth={grout/2} />
-        <rect x={totalW/2} y={totalH} width={tileW} height={tileH} fill="#cdc2b0" stroke="#8a7f72" strokeWidth={grout/2} />
-        <rect x={-totalW/2} y={totalH} width={tileW} height={tileH} fill="#cdc2b0" stroke="#8a7f72" strokeWidth={grout/2} />
-      </pattern>
-    );
-    if (p === 'diagonal') return (
-      <pattern id={patId} width={totalW} height={totalH} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-        <rect width={tileW} height={tileH} fill="#d4c9b8" stroke="#8a7f72" strokeWidth={grout/2} />
-      </pattern>
-    );
-    if (p === 'herringbone' || p === 'double-herringbone') return (
-      <pattern id={patId} width={totalH + totalW} height={totalW + totalH} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-        <rect x={0} y={0} width={tileW} height={tileH} fill="#d4c9b8" stroke="#8a7f72" strokeWidth={grout/2}/>
-        <rect x={totalW} y={0} width={tileH} height={tileW} fill="#cdc2b0" stroke="#8a7f72" strokeWidth={grout/2}/>
-      </pattern>
-    );
-    return null;
+    const rects = [];
+    const D = Math.max(w_m, l_m);
+    const margin = D * 1.5;
+
+    const minX = -margin;
+    const maxX = w_m + margin;
+    const minY = -margin;
+    const maxY = l_m + margin;
+
+    let keyCounter = 0;
+
+    if (p === 'straight' || p === 'diagonal') {
+      const stepX = tileW + grout;
+      const stepY = tileH + grout;
+      for (let x = minX; x < maxX; x += stepX) {
+        for (let y = minY; y < maxY; y += stepY) {
+          rects.push(
+            <rect
+              key={keyCounter++}
+              x={x}
+              y={y}
+              width={tileW}
+              height={tileH}
+              fill="#d4c9b8"
+              stroke="#8a7f72"
+              strokeWidth={grout}
+            />
+          );
+        }
+      }
+    } else if (p === 'brick') {
+      const stepX = tileW + grout;
+      const stepY = tileH + grout;
+      let rowIndex = 0;
+      for (let y = minY; y < maxY; y += stepY) {
+        const shiftX = (rowIndex % 2) * (stepX / 2);
+        for (let x = minX - stepX; x < maxX; x += stepX) {
+          rects.push(
+            <rect
+              key={keyCounter++}
+              x={x + shiftX}
+              y={y}
+              width={tileW}
+              height={tileH}
+              fill={rowIndex % 2 === 0 ? "#d4c9b8" : "#cdc2b0"}
+              stroke="#8a7f72"
+              strokeWidth={grout}
+            />
+          );
+        }
+        rowIndex++;
+      }
+    } else if (p === 'herringbone') {
+      const colW_V = tileW + grout;
+      const colW_H = tileH + grout;
+      
+      // Right/center columns
+      let x = minX;
+      let colIndex = 0;
+      while (x < maxX) {
+        const isVCol = colIndex % 2 === 0;
+        const currentColWidth = isVCol ? colW_V : colW_H;
+        const stepY = isVCol ? (tileH + grout) : (tileW + grout);
+        const colShift = Math.floor(colIndex / 2) * (tileW + grout);
+        const startY = minY - (colShift % stepY) - stepY;
+        
+        for (let y = startY; y < maxY + stepY; y += stepY) {
+          rects.push(
+            <rect
+              key={keyCounter++}
+              x={x}
+              y={y}
+              width={isVCol ? tileW : tileH}
+              height={isVCol ? tileH : tileW}
+              fill={isVCol ? "#d4c9b8" : "#cdc2b0"}
+              stroke="#8a7f72"
+              strokeWidth={grout}
+            />
+          );
+        }
+        x += currentColWidth;
+        colIndex++;
+      }
+      
+      // Left columns
+      x = minX;
+      colIndex = -1;
+      while (x > minX - margin) {
+        const isVCol = Math.abs(colIndex) % 2 === 0;
+        const currentColWidth = isVCol ? colW_V : colW_H;
+        x -= currentColWidth;
+        const stepY = isVCol ? (tileH + grout) : (tileW + grout);
+        const colShift = Math.floor(colIndex / 2) * (tileW + grout);
+        const startY = minY - (colShift % stepY) - stepY;
+        
+        for (let y = startY; y < maxY + stepY; y += stepY) {
+          rects.push(
+            <rect
+              key={keyCounter++}
+              x={x}
+              y={y}
+              width={isVCol ? tileW : tileH}
+              height={isVCol ? tileH : tileW}
+              fill={isVCol ? "#d4c9b8" : "#cdc2b0"}
+              stroke="#8a7f72"
+              strokeWidth={grout}
+            />
+          );
+        }
+        colIndex--;
+      }
+    } else if (p === 'double-herringbone') {
+      const colW_V = 2 * tileW + 2 * grout;
+      const colW_H = tileH + grout;
+      
+      // Right/center columns
+      let x = minX;
+      let colIndex = 0;
+      while (x < maxX) {
+        const isVCol = colIndex % 2 === 0;
+        const currentColWidth = isVCol ? colW_V : colW_H;
+        const stepY = isVCol ? (tileH + grout) : 2 * (tileW + grout);
+        const colShift = Math.floor(colIndex / 2) * 2 * (tileW + grout);
+        const startY = minY - (colShift % stepY) - stepY;
+        
+        for (let y = startY; y < maxY + stepY; y += stepY) {
+          if (isVCol) {
+            rects.push(
+              <rect
+                key={keyCounter++}
+                x={x}
+                y={y}
+                width={tileW}
+                height={tileH}
+                fill="#d4c9b8"
+                stroke="#8a7f72"
+                strokeWidth={grout}
+              />
+            );
+            rects.push(
+              <rect
+                key={keyCounter++}
+                x={x + tileW + grout}
+                y={y}
+                width={tileW}
+                height={tileH}
+                fill="#d4c9b8"
+                stroke="#8a7f72"
+                strokeWidth={grout}
+              />
+            );
+          } else {
+            rects.push(
+              <rect
+                key={keyCounter++}
+                x={x}
+                y={y}
+                width={tileH}
+                height={tileW}
+                fill="#cdc2b0"
+                stroke="#8a7f72"
+                strokeWidth={grout}
+              />
+            );
+            rects.push(
+              <rect
+                key={keyCounter++}
+                x={x}
+                y={y + tileW + grout}
+                width={tileH}
+                height={tileW}
+                fill="#cdc2b0"
+                stroke="#8a7f72"
+                strokeWidth={grout}
+              />
+            );
+          }
+        }
+        x += currentColWidth;
+        colIndex++;
+      }
+      
+      // Left columns
+      x = minX;
+      colIndex = -1;
+      while (x > minX - margin) {
+        const isVCol = Math.abs(colIndex) % 2 === 0;
+        const currentColWidth = isVCol ? colW_V : colW_H;
+        x -= currentColWidth;
+        const stepY = isVCol ? (tileH + grout) : 2 * (tileW + grout);
+        const colShift = Math.floor(colIndex / 2) * 2 * (tileW + grout);
+        const startY = minY - (colShift % stepY) - stepY;
+        
+        for (let y = startY; y < maxY + stepY; y += stepY) {
+          if (isVCol) {
+            rects.push(
+              <rect
+                key={keyCounter++}
+                x={x}
+                y={y}
+                width={tileW}
+                height={tileH}
+                fill="#d4c9b8"
+                stroke="#8a7f72"
+                strokeWidth={grout}
+              />
+            );
+            rects.push(
+              <rect
+                key={keyCounter++}
+                x={x + tileW + grout}
+                y={y}
+                width={tileW}
+                height={tileH}
+                fill="#d4c9b8"
+                stroke="#8a7f72"
+                strokeWidth={grout}
+              />
+            );
+          } else {
+            rects.push(
+              <rect
+                key={keyCounter++}
+                x={x}
+                y={y}
+                width={tileH}
+                height={tileW}
+                fill="#cdc2b0"
+                stroke="#8a7f72"
+                strokeWidth={grout}
+              />
+            );
+            rects.push(
+              <rect
+                key={keyCounter++}
+                x={x}
+                y={y + tileW + grout}
+                width={tileH}
+                height={tileW}
+                fill="#cdc2b0"
+                stroke="#8a7f72"
+                strokeWidth={grout}
+              />
+            );
+          }
+        }
+        colIndex--;
+      }
+    }
+
+    return rects;
   };
 
-  const padding = 0.45;
-  const vBox = `${-padding} ${-padding} ${3 + padding*2} ${3 + padding*2}`;
+  const padding = Math.max(w_m, l_m) * 0.15;
+  const vBox = `${-padding} ${-padding} ${w_m + padding * 2} ${l_m + padding * 2}`;
+  const rotation = (room.pattern === 'diagonal' || room.pattern === 'herringbone' || room.pattern === 'double-herringbone') ? 45 : 0;
 
   return (
     <div className="w-full bg-[#faf8f5] rounded-xl overflow-hidden border border-zinc-200 no-print">
       <svg width="100%" height="280" viewBox={vBox}>
         <defs>
-          {getPattern()}
           <clipPath id={`clip-${room.id}`}>
             <polygon points={pts.map(p => `${p[0]},${p[1]}`).join(' ')} />
           </clipPath>
         </defs>
         <polygon points={pts.map(p => `${p[0]},${p[1]}`).join(' ')} fill="#e5e0d8" />
-        <rect x={-6} y={-6} width={18} height={18} fill={`url(#pat-${room.id})`} clipPath={`url(#clip-${room.id})`} />
+        <g clipPath={`url(#clip-${room.id})`}>
+          <g transform={rotation ? `rotate(${rotation} ${w_m / 2} ${l_m / 2})` : undefined}>
+            {renderTilesDirect()}
+          </g>
+        </g>
         <polygon points={pts.map(p => `${p[0]},${p[1]}`).join(' ')} fill="none" stroke="#8a7f72" strokeWidth={0.045} />
       </svg>
-      <p className="text-center text-[10px] text-zinc-400 pb-3 -mt-1">Pattern preview (3m × 3m reference)</p>
+      <p className="text-center text-[10px] text-zinc-400 pb-3 -mt-1">{label}</p>
     </div>
   );
 };
