@@ -226,8 +226,8 @@ const About = () => {
       {/* Narrative Section */}
       <section className="py-14 sm:py-20 md:py-24 relative overflow-hidden bg-[#fcfaf7]">
         <div className="container-custom">
-          <div className="grid lg:grid-cols-12 gap-8 sm:gap-12 md:gap-16 items-stretch">
-            <div className="lg:col-span-5 space-y-12">
+          <div className="grid lg:grid-cols-12 gap-8 sm:gap-12 md:gap-16 items-center">
+            <div className="lg:col-span-5 space-y-8">
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -261,41 +261,20 @@ const About = () => {
                   </p>
                 )}
               </motion.div>
-
-              <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                {[
-                  { label: 'Years Experiences', value: aboutSettings.statYears },
-                  { label: 'Happy Dealer', value: aboutSettings.statDealers },
-                  { label: 'Export Country', value: aboutSettings.statCountries },
-                  { label: 'Tiles Design', value: aboutSettings.statDesigns },
-                ].map((stat, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.4 + i * 0.1 }}
-                    className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-[#D2C9B1] hover:border-[#5D4037]/50 transition-colors group shadow-sm"
-                  >
-                    <h4 className="text-2xl sm:text-3xl font-bold text-zinc-900 mb-1 sm:mb-2 group-hover:text-[#5D4037] transition-colors">{stat.value}</h4>
-                    <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-zinc-500 font-bold">{stat.label}</p>
-                  </motion.div>
-                ))}
-              </div>
             </div>
 
-            <div className="lg:col-span-7 relative flex flex-col h-full">
+            <div className="lg:col-span-7 relative">
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, rotate: 2 }}
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 1 }}
-                className="relative z-10 rounded-3xl sm:rounded-[3rem] overflow-hidden shadow-2xl h-full flex flex-col"
+                className="relative z-10 rounded-3xl sm:rounded-[3rem] overflow-hidden shadow-2xl"
               >
                 <img loading="lazy"
                   src={getOptimizedImageUrl(aboutSettings.narrativeImage, 800)}
                   alt="FLAIS Design Innovation"
-                  className="w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-full min-h-[500px] object-cover hover:scale-110 transition-transform duration-1000 flex-1"
+                  className="w-full h-[350px] sm:h-[450px] md:h-[550px] lg:h-[600px] object-cover hover:scale-110 transition-transform duration-1000"
                 />
               </motion.div>
               <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#D2C9B1]/30 rounded-full blur-[100px] -z-0" />
@@ -422,38 +401,22 @@ const About = () => {
               </p>
             </motion.div>
 
-            {/* Right: More Text + Stats */}
+            {/* Right: More Text */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="space-y-8"
+              className="space-y-5"
             >
-              <div className="space-y-5">
+              <p className="text-zinc-600 text-lg leading-relaxed font-light">
+                {aboutSettings.filmDesc2}
+              </p>
+              {aboutSettings.filmDesc3 && (
                 <p className="text-zinc-600 text-lg leading-relaxed font-light">
-                  {aboutSettings.filmDesc2}
+                  {aboutSettings.filmDesc3}
                 </p>
-                {aboutSettings.filmDesc3 && (
-                  <p className="text-zinc-600 text-lg leading-relaxed font-light">
-                    {aboutSettings.filmDesc3}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { value: aboutSettings.statYears, label: 'Years of Craft' },
-                  { value: aboutSettings.statDesigns, label: 'Tile Designs' },
-                  { value: aboutSettings.statCountries, label: 'Export Countries' },
-                  { value: aboutSettings.statDealers, label: 'Happy Dealers' },
-                ].map((stat, i) => (
-                  <div key={i} className="p-4 sm:p-5 rounded-2xl bg-[#f4f1ec] border border-[#D2C9B1] hover:border-[#5D4037]/40 transition-colors group">
-                    <h4 className="text-xl sm:text-2xl font-bold text-zinc-900 group-hover:text-[#5D4037] transition-colors">{stat.value}</h4>
-                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 mt-1">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
+              )}
             </motion.div>
 
           </div>
@@ -463,10 +426,10 @@ const About = () => {
       {/* The Pillars / Core Values */}
       <section className="py-14 sm:py-20 md:py-24 bg-[#f4f1ec] rounded-[2rem] sm:rounded-[3rem] lg:rounded-[5rem] xl:rounded-[10rem]">
         <div className="container-custom">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 sm:mb-16 md:mb-24 gap-6 sm:gap-8">
-            <div className="space-y-4 text-center md:text-left">
-              <span className="text-[#5D4037] font-bold uppercase tracking-widest text-sm">Our Core</span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-display font-bold leading-none tracking-tighter text-zinc-900"> PILLARS</h2>
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 sm:mb-16 md:mb-24 gap-6 sm:gap-8">
+            <div className="space-y-2 text-center md:text-left w-full md:w-auto">
+              <span className="block text-[#5D4037] font-bold uppercase tracking-widest text-sm">Our Core</span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-display font-bold leading-none tracking-tighter text-zinc-900">PILLARS</h2>
             </div>
             <p className="text-zinc-600 max-w-md text-center md:text-right font-light text-lg">
               We are committed to eco-friendly practices and global distribution, ensuring timely delivery worldwide while exceeding your expectations.

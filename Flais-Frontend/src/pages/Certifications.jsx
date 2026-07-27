@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Award, ShieldCheck, Globe, Leaf, Star, CheckCircle2, TrendingUp, Trophy, MapPin, Calendar, ChevronLeft, ChevronRight, Volume2, VolumeX, Play, Pause } from 'lucide-react';
+import { Award, ShieldCheck, Globe, Leaf, Star, CheckCircle2, TrendingUp, Trophy, MapPin, Calendar, ChevronLeft, ChevronRight, Volume2, VolumeX, Play, Pause, Maximize2, ZoomIn } from 'lucide-react';
 import SEO from '../components/SEO';
 import api from '../utils/api';
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from '../utils/imageOptimizer';
@@ -75,6 +75,7 @@ const defaultCertifications = [
 const Certifications = () => {
   const exhibitionVideoRef = React.useRef(null);
   const [selectedDoc, setSelectedDoc] = React.useState(null);
+  const [fullScreenImage, setFullScreenImage] = React.useState(null);
   const [isMuted, setIsMuted] = React.useState(true);
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
@@ -508,48 +509,7 @@ const Certifications = () => {
         </div>
       </section>
 
-      {/* Certifications Grid */}
-      <section className="container-custom mb-16 sm:mb-24 md:mb-32">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex items-center justify-between mb-12"
-        >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-zinc-900">Global <span className="text-[#5D4037]">Certifications</span></h2>
-          <div className="hidden md:block h-px flex-1 bg-zinc-200 ml-8"></div>
-        </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-          {certifications.map((cert, index) => (
-            <motion.div
-              key={cert.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="group flex flex-col h-full bg-white rounded-3xl p-8 shadow-xl shadow-zinc-200/40 border border-zinc-100 hover:border-[#5D4037]/30 transition-all duration-300 hover:-translate-y-2 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#5D4037]/5 to-transparent rounded-bl-full -z-10 group-hover:scale-150 transition-transform duration-500"></div>
-
-              <div className="w-16 h-16 bg-zinc-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#5D4037] group-hover:text-white transition-colors duration-300">
-                <cert.icon size={32} className="text-[#5D4037] group-hover:text-white transition-colors" />
-              </div>
-
-              <h3 className="text-2xl font-bold text-zinc-900 mb-2">{cert.title}</h3>
-              <p className="text-sm font-semibold text-[#5D4037] mb-4 uppercase tracking-wider">{cert.desc}</p>
-              <p className="text-zinc-600 leading-relaxed text-sm mb-8">
-                {cert.details}
-              </p>
-
-              <div className="mt-auto pt-6 border-t border-zinc-100 flex items-center text-sm font-medium text-zinc-900">
-                <CheckCircle2 size={18} className="text-green-500 mr-2" />
-                Verified & Active
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
 
       {/* Certification Documents Section */}
       <section className="container-custom pb-20">
@@ -559,7 +519,7 @@ const Certifications = () => {
           viewport={{ once: true }}
           className="flex items-center justify-between mb-12"
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-zinc-900">Verification <span className="text-[#5D4037]">Certificates</span></h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-zinc-900">Global <span className="text-[#5D4037]">Certifications</span></h2>
           <div className="hidden md:block h-px flex-1 bg-zinc-200 ml-8"></div>
         </motion.div>
 
@@ -649,31 +609,77 @@ const Certifications = () => {
 
       {/* Lightbox / Modal */}
       {selectedDoc && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setSelectedDoc(null)}>
-          <div className="relative max-w-4xl w-full max-h-[90vh] bg-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row gap-8 overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 md:p-8 animate-fade-in" onClick={() => setSelectedDoc(null)}>
+          <div className="relative max-w-6xl w-full max-h-[94vh] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row items-stretch border border-zinc-200/50" onClick={e => e.stopPropagation()}>
             <button 
-              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-800 text-2xl transition-colors cursor-pointer"
+              className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 text-2xl transition-all shadow-md backdrop-blur-sm cursor-pointer"
               onClick={() => setSelectedDoc(null)}
+              aria-label="Close"
             >
               &times;
             </button>
-            <div className="flex-1 aspect-[3/4] max-h-[70vh] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-100 flex items-center justify-center p-2">
-              <img src={getOptimizedImageUrl(selectedDoc.image, 1200)} alt={selectedDoc.title} className="max-w-full max-h-full object-contain" />
+            <div 
+              className="flex-1 bg-zinc-100/80 p-3 sm:p-4 md:p-6 flex items-center justify-center min-h-[400px] md:min-h-[650px] lg:min-h-[720px] max-h-[90vh] relative group cursor-pointer"
+              onClick={() => setFullScreenImage(selectedDoc.image)}
+              title="Click to view full desktop screen"
+            >
+              <img 
+                src={getOptimizedImageUrl(selectedDoc.image, 1600)} 
+                alt={selectedDoc.title} 
+                className="w-full h-full max-h-[88vh] object-contain rounded-2xl shadow-sm bg-white group-hover:scale-[1.01] transition-transform duration-300" 
+              />
+              <div className="absolute inset-x-0 bottom-6 flex justify-center pointer-events-none">
+                <div className="bg-black/70 backdrop-blur-md text-white text-xs font-bold px-4 py-2 rounded-full border border-white/20 shadow-lg flex items-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
+                  <Maximize2 size={14} />
+                  <span>Click for Full Desktop Screen</span>
+                </div>
+              </div>
             </div>
-            <div className="md:w-80 flex flex-col justify-center space-y-4">
-              <span className="text-[#5D4037] text-xs font-bold uppercase tracking-wider bg-[#5D4037]/5 px-3 py-1 rounded-full w-fit">
+            <div className="md:w-96 lg:w-[420px] p-6 md:p-10 flex flex-col justify-center space-y-6 bg-white shrink-0">
+              <span className="text-[#5D4037] text-xs font-bold uppercase tracking-wider bg-[#5D4037]/5 px-4 py-1.5 rounded-full w-fit border border-[#5D4037]/10">
                 Official Certification
               </span>
-              <h3 className="text-2xl font-bold text-zinc-900 leading-tight">{selectedDoc.title}</h3>
+              <h3 className="text-3xl font-bold text-zinc-900 leading-tight">{selectedDoc.title}</h3>
               {selectedDoc.desc && (
-                <p className="text-sm text-zinc-600 leading-relaxed font-light">{selectedDoc.desc}</p>
+                <p className="text-base text-zinc-600 leading-relaxed font-light">{selectedDoc.desc}</p>
               )}
-              <div className="pt-4 border-t border-zinc-100">
-                <p className="text-xs text-zinc-400">Registered Entity:</p>
-                <p className="text-sm font-semibold text-zinc-700">KEVAL GRANITO LLP</p>
+
+              <button
+                onClick={() => setFullScreenImage(selectedDoc.image)}
+                className="flex items-center justify-center gap-2.5 w-full py-3 px-5 rounded-2xl bg-[#5D4037] text-white font-semibold text-sm hover:bg-[#4E342E] transition-all shadow-md active:scale-98 cursor-pointer"
+              >
+                <Maximize2 size={16} />
+                <span>View Full Desktop Screen</span>
+              </button>
+
+              <div className="pt-6 border-t border-zinc-100">
+                <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-1">Registered Entity</p>
+                <p className="text-base font-bold text-zinc-800">KEVAL GRANITO LLP</p>
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Full 100vw Desktop Lightbox Overlay */}
+      {fullScreenImage && (
+        <div 
+          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center p-2 sm:p-4 md:p-6 animate-fade-in cursor-zoom-out"
+          onClick={() => setFullScreenImage(null)}
+        >
+          <button
+            onClick={() => setFullScreenImage(null)}
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full border border-white/20 backdrop-blur-md transition-all active:scale-95 cursor-pointer font-bold text-xs sm:text-sm shadow-2xl"
+          >
+            <span>Close Fullscreen</span>
+            <span className="text-xl leading-none">&times;</span>
+          </button>
+          <img
+            src={getOptimizedImageUrl(fullScreenImage, 2400)}
+            alt="Full Desktop Screen Certification"
+            className="max-w-[98vw] max-h-[96vh] object-contain rounded-lg shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
 

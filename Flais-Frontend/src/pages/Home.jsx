@@ -773,7 +773,7 @@ const Home = () => {
                 <span className="text-zinc-800 font-medium tracking-wide">Luxurious Collection</span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-medium text-zinc-900 max-w-2xl leading-tight">
-                Discover Perfect Tile Sizes for Every Unique Space
+                Discover Perfect Tile Sizes For Every Unique Space
               </h2>
             </div>
 
