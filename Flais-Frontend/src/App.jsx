@@ -3,30 +3,59 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 
+// Helper to wrap lazy imports and catch chunk loading / network errors (e.g. after new deployments)
+const lazyWithRetry = (componentImport) => {
+  return lazy(async () => {
+    const hasReloadedKey = 'chunk-load-has-reloaded';
+    try {
+      return await componentImport();
+    } catch (error) {
+      const isChunkLoadFailed = error.name === 'ChunkLoadError' || 
+                                error.message?.includes('Failed to fetch dynamically imported module') ||
+                                error.message?.includes('Importing a module script failed');
+      
+      const hasReloaded = sessionStorage.getItem(hasReloadedKey);
+
+      if (isChunkLoadFailed && !hasReloaded) {
+        sessionStorage.setItem(hasReloadedKey, 'true');
+        window.location.reload();
+        // Return a pending promise to keep the suspense boundary active while reloading
+        return new Promise(() => {});
+      }
+      
+      throw error;
+    }
+  });
+};
+
 // Pages
 import Home from './pages/Home';
-const About = lazy(() => import('./pages/About'));
-const Products = lazy(() => import('./pages/Products'));
-const ProductDetails = lazy(() => import('./pages/ProductDetails'));
-const Catalog = lazy(() => import('./pages/Catalog'));
-const CatalogViewer = lazy(() => import('./pages/CatalogViewer'));
-const Blog = lazy(() => import('./pages/Blog'));
-const BlogDetails = lazy(() => import('./pages/BlogDetails'));
-const Contact = lazy(() => import('./pages/Contact'));
-const WhereToBuy = lazy(() => import('./pages/WhereToBuy'));
+const About = lazyWithRetry(() => import('./pages/About'));
+const Products = lazyWithRetry(() => import('./pages/Products'));
+const ProductDetails = lazyWithRetry(() => import('./pages/ProductDetails'));
+const Catalog = lazyWithRetry(() => import('./pages/Catalog'));
+const CatalogViewer = lazyWithRetry(() => import('./pages/CatalogViewer'));
+const Blog = lazyWithRetry(() => import('./pages/Blog'));
+const BlogDetails = lazyWithRetry(() => import('./pages/BlogDetails'));
+const Contact = lazyWithRetry(() => import('./pages/Contact'));
+const WhereToBuy = lazyWithRetry(() => import('./pages/WhereToBuy'));
 
 import SmoothScroll from './components/SmoothScroll';
 import Preloader from './components/Preloader';
 
-const Certifications = lazy(() => import('./pages/Certifications'));
-const InstallationGuide = lazy(() => import('./pages/InstallationGuide'));
-const TileCalculator = lazy(() => import('./pages/TileCalculator'));
+const Certifications = lazyWithRetry(() => import('./pages/Certifications'));
+const InstallationGuide = lazyWithRetry(() => import('./pages/InstallationGuide'));
+const TileCalculator = lazyWithRetry(() => import('./pages/TileCalculator'));
 
 import ComingSoon from './pages/ComingSoon';
 
 const appStatus = import.meta.env.VITE_APP_STATUS || "LIVE";
 
 function App() {
+  React.useEffect(() => {
+    sessionStorage.removeItem('chunk-load-has-reloaded');
+  }, []);
+
   if (appStatus === "COMING_SOON") {
     return <ComingSoon />;
   }
