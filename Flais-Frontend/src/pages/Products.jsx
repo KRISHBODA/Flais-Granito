@@ -100,7 +100,7 @@ const Products = () => {
       .toLowerCase()
       .replace(/×/g, 'x')
       .replace(/&/g, ' and ')
-      .replace(/\b(mm|cm|inches|inch|in)\b/g, '');
+      .replace(/(mm|cm|inches|inch|in)/gi, '');
     
     if (removeSpaces) {
       return str.replace(/[^a-z0-9x]+/g, '');
@@ -176,6 +176,7 @@ const Products = () => {
 
       const matchesThickness = thicknessFilter === 'all' || (
         normalizedProductThickness !== '' && (
+          normalizedProductThickness === normalizedThicknessFilter ||
           normalizedProductThickness.includes(normalizedThicknessFilter) ||
           normalizedThicknessFilter.includes(normalizedProductThickness)
         )
@@ -183,6 +184,7 @@ const Products = () => {
 
       const matchesSize = sizeFilter === 'all' || (
         normalizedProductSize !== '' && (
+          normalizedProductSize === normalizedSizeFilter ||
           normalizedProductSize.includes(normalizedSizeFilter) ||
           normalizedSizeFilter.includes(normalizedProductSize)
         )
