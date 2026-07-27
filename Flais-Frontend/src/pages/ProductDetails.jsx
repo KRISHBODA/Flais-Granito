@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
   ChevronRight, 
@@ -32,6 +32,7 @@ const ProductImage = ({ src, alt }) => {
 };
 
 const ProductDetails = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const { data: product, isLoading: loading, isError } = useQuery({
     queryKey: ['product', id],
@@ -56,6 +57,16 @@ const ProductDetails = () => {
     if (!product) return [];
     return relatedProducts.filter(item => item._id !== product._id);
   }, [relatedProducts, product]);
+
+  const handleBackToProducts = (e) => {
+    if (e) e.preventDefault();
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      navigate(-1);
+    } else {
+      const savedQuery = typeof window !== 'undefined' ? sessionStorage.getItem('flais:products-query') : null;
+      navigate('/products' + (savedQuery ? `?${savedQuery}` : ''));
+    }
+  };
 
   const loadError = isError ? 'Failed to load product details.' : '';
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -95,7 +106,7 @@ const ProductDetails = () => {
         <div className="max-w-md rounded-3xl border border-zinc-200 bg-zinc-50 p-8 text-zinc-600">
           <h2 className="text-2xl font-bold text-zinc-900">Product unavailable</h2>
           <p className="mt-3 text-sm">{loadError}</p>
-          <Link to="/products" className="text-[#5D4037] hover:underline mt-4 block">Back to products</Link>
+          <button onClick={handleBackToProducts} className="text-[#5D4037] hover:underline mt-4 block">Back to products</button>
         </div>
       </div>
     );
@@ -105,7 +116,7 @@ const ProductDetails = () => {
     return (
       <div className="pt-40 pb-24 text-center min-h-screen">
         <h2 className="text-2xl font-bold">Product not found</h2>
-        <Link to="/products" className="text-[#5D4037] hover:underline mt-4 block">Back to products</Link>
+        <button onClick={handleBackToProducts} className="text-[#5D4037] hover:underline mt-4 block">Back to products</button>
       </div>
     );
   }
@@ -175,7 +186,7 @@ const ProductDetails = () => {
           <nav className="flex items-center space-x-2 text-xs uppercase tracking-widest text-zinc-500 font-medium">
             <Link to="/" className="hover:text-zinc-950 transition-colors">Home</Link>
             <ChevronRight size={12} className="text-zinc-300" />
-            <Link to="/products" className="hover:text-zinc-950 transition-colors">Product</Link>
+            <button onClick={handleBackToProducts} className="hover:text-zinc-950 transition-colors uppercase">Product</button>
             <ChevronRight size={12} className="text-zinc-300" />
             <span className="text-zinc-900 font-semibold">{product.title || product.name}</span>
           </nav>

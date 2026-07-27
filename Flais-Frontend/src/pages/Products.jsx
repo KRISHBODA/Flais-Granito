@@ -121,11 +121,57 @@ const Products = () => {
     return { name: catParam, slug: catParam };
   }, [categories]);
 
+  const updateQueryParams = useCallback((newValues) => {
+    setSearchParams((prevParams) => {
+      const nextParams = new URLSearchParams(prevParams);
+      Object.entries(newValues).forEach(([key, val]) => {
+        if (!val || val === 'all') {
+          nextParams.delete(key);
+        } else {
+          nextParams.set(key, val);
+        }
+      });
+      return nextParams;
+    });
+  }, [setSearchParams]);
+
+  // Restore saved query params from sessionStorage on initial load if URL search is empty
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const currentSearch = searchParams.toString();
+    const savedQuery = sessionStorage.getItem('flais:products-query');
+    if (!currentSearch && savedQuery) {
+      setSearchParams(new URLSearchParams(savedQuery), { replace: true });
+    }
+  }, []);
+
+  // Sync states with URL searchParams
   useEffect(() => {
     const catParam = searchParams.get('cat');
     const { name, slug } = resolveCategoryFromParam(catParam);
     setFilter(name);
     setSelectedCategorySlug(slug);
+
+    const sizeParam = searchParams.get('size');
+    setSizeFilter(sizeParam || 'all');
+
+    const thicknessParam = searchParams.get('thickness');
+    setThicknessFilter(thicknessParam || 'all');
+
+    const appParam = searchParams.get('app');
+    setAppFilter(appParam || 'all');
+
+    const lookParam = searchParams.get('look');
+    setLookFilter(lookParam || 'all');
+
+    const searchParam = searchParams.get('search');
+    if (searchParam !== null) {
+      setSearchQuery(searchParam);
+      setDebouncedSearchQuery(searchParam);
+    } else if (searchParams.toString() === '') {
+      setSearchQuery('');
+      setDebouncedSearchQuery('');
+    }
   }, [searchParams, resolveCategoryFromParam]);
 
   const selectedCategoryName = filter === 'all' ? null : filter;
@@ -142,9 +188,10 @@ const Products = () => {
   const [appFilter, setAppFilter] = useState('all');
   const [lookFilter, setLookFilter] = useState('all');
 
-  const saveScrollPosition = () => {
+  const savePageState = () => {
     if (typeof window === 'undefined') return;
     sessionStorage.setItem('flais:products-scroll-y', String(window.scrollY || 0));
+    sessionStorage.setItem('flais:products-query', searchParams.toString());
   };
 
   // Debounce search query
@@ -154,6 +201,14 @@ const Products = () => {
     }, 300);
     return () => clearTimeout(handler);
   }, [searchQuery]);
+
+  // Sync debounced search query with URL query params
+  useEffect(() => {
+    const currentSearchParam = searchParams.get('search') || '';
+    if (debouncedSearchQuery !== currentSearchParam) {
+      updateQueryParams({ search: debouncedSearchQuery || null });
+    }
+  }, [debouncedSearchQuery, searchParams, updateQueryParams]);
 
   useEffect(() => {
     setVisibleCount(20);
@@ -226,12 +281,25 @@ const Products = () => {
 
   const handleFilterChange = (categoryName, categorySlug) => {
     const slugToUse = categorySlug ?? categoryName;
-    setFilter(categoryName);
-    setSelectedCategorySlug(slugToUse);
-    setSearchParams(slugToUse === 'all' ? {} : { cat: slugToUse });
+    updateQueryParams({ cat: slugToUse === 'all' ? null : slugToUse });
+  };
+
+  const handleThicknessChange = (thickVal) => {
+    updateQueryParams({ thickness: thickVal === 'all' ? null : thickVal });
+  };
+
+  const handleSizeChange = (sizeVal) => {
+    updateQueryParams({ size: sizeVal === 'all' ? null : sizeVal });
+  };
+
+  const handleAppChange = (appVal) => {
+    updateQueryParams({ app: appVal === 'all' ? null : appVal });
   };
 
   const clearAllFilters = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('flais:products-query');
+    }
     setFilter('all');
     setSelectedCategorySlug('all');
     setThicknessFilter('all');
@@ -239,7 +307,8 @@ const Products = () => {
     setAppFilter('all');
     setLookFilter('all');
     setSearchQuery('');
-    setSearchParams({});
+    setDebouncedSearchQuery('');
+    setSearchParams({}, { replace: true });
   };
 
   // Loaded dynamically from MongoDB API
@@ -402,7 +471,7 @@ const Products = () => {
                   ].map((thick) => (
                     <li key={thick.value}>
                       <button
-                        onClick={() => setThicknessFilter(thick.value)}
+                        onClick={() => handleThicknessChange(thick.value)}
                         className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${thicknessFilter === thick.value ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                       >
                         <span className={`mr-3 transition-colors ${thicknessFilter === thick.value ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {thick.label}
@@ -424,7 +493,7 @@ const Products = () => {
                   ].map((size) => (
                     <li key={size.value}>
                       <button
-                        onClick={() => setSizeFilter(size.value)}
+                        onClick={() => handleSizeChange(size.value)}
                         className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${sizeFilter === size.value ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                       >
                         <span className={`mr-3 transition-colors ${sizeFilter === size.value ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {size.label}
@@ -446,7 +515,7 @@ const Products = () => {
                   ].map((app) => (
                     <li key={app.value}>
                       <button
-                        onClick={() => setAppFilter(app.value)}
+                        onClick={() => handleAppChange(app.value)}
                         className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${appFilter === app.value ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                       >
                         <span className={`mr-3 transition-colors ${appFilter === app.value ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {app.label}
@@ -489,7 +558,7 @@ const Products = () => {
                         key={product._id}
                         className="p-4 pb-8 rounded-tl-[3.5rem] rounded-br-[3.5rem] rounded-tr-[1.25rem] rounded-bl-[1.25rem] bg-[#FAF8F5] border border-[#D2C9B1]/30 group flex flex-col h-full hover:shadow-xl hover:border-[#5D4037]/30"
                       >
-                        <Link to={`/products/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 transform-gpu">
+                        <Link to={`/products/${product.slug}`} onClick={savePageState} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 transform-gpu">
                           <ProductImage
                             src={getOptimizedImageUrl(product.images && product.images.length > 0 ? product.images[0] : (product.image || 'https://via.placeholder.com/400x400?text=No+Image'), 600)}
                             alt={product.title || product.name}
@@ -509,7 +578,7 @@ const Products = () => {
                           <div className="mt-auto">
                             <Link
                               to={`/products/${product.slug || product._id}`}
-                              onClick={saveScrollPosition}
+                              onClick={savePageState}
                               className="inline-flex items-center group/btn relative py-2"
                             >
                               <div className="absolute left-[-12px] w-10 h-10 bg-[#D2C9B1] rounded-full transition-all duration-500 ease-out group-hover/btn:w-[calc(100%+24px)] group-hover/btn:bg-[#5D4037]"></div>

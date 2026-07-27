@@ -479,12 +479,12 @@ const AdminAchievement = () => {
              activeTab === 'technical_guide' ? 'Manage Technical Guide specifications, pdf download link, and lists.' :
              activeTab === 'installation_guide' ? 'Manage Installation Guide content, background image, and accordion steps.' :
              activeTab === 'tile_calculator' ? 'Manage Tile Calculator page header text and badge.' :
-             activeTab === 'verification_certs' ? 'Manage Verification Certificates displayed at the bottom of the Certifications page.' :
+             activeTab === 'verification_certs' ? 'Manage Global Certificates displayed on the Certifications page.' :
              activeTab === 'awards' ? 'Manage Awards Accolades settings, stats, and the trophy showcase photo.' :
-             'Manage exhibitions, brand certifications, and exhibition showcase video.'}
+             'Manage exhibitions and exhibition showcase video.'}
           </p>
         </div>
-        {(activeTab === 'exhibitions' || activeTab === 'certifications' || activeTab === 'verification_certs' || activeTab === 'awards') && (
+        {(activeTab === 'exhibitions' || activeTab === 'verification_certs' || activeTab === 'awards') && (
           <button onClick={handleSave} className="flex items-center gap-2 rounded-xl bg-[#0145F2] px-6 py-3 font-bold text-white hover:bg-blue-700 transition-all shadow-lg">
             <Save size={18} /> Save Achievements
           </button>
@@ -500,16 +500,10 @@ const AdminAchievement = () => {
           <Video size={17} /> Exhibitions
         </button>
         <button
-          onClick={() => { setActiveTab('certifications'); setEditId(null); }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === 'certifications' ? 'bg-[#0145F2] text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
-        >
-          <ShieldCheck size={17} /> Certifications
-        </button>
-        <button
           onClick={() => { setActiveTab('verification_certs'); setEditId(null); }}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === 'verification_certs' ? 'bg-[#0145F2] text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
         >
-          <Award size={17} /> Verification Certs
+          <ShieldCheck size={17} /> Global Certifications
         </button>
         <button
           onClick={() => { setActiveTab('awards'); setEditId(null); }}
@@ -543,7 +537,7 @@ const AdminAchievement = () => {
         </button>
       </div>
 
-      {(activeTab === 'exhibitions' || activeTab === 'certifications' || activeTab === 'verification_certs') && (
+      {(activeTab === 'exhibitions' || activeTab === 'verification_certs') && (
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left/Middle: List View */}
           <div className="lg:col-span-2 space-y-6">
@@ -640,7 +634,9 @@ const AdminAchievement = () => {
             {/* List Display */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
               <div className="p-5 border-b border-slate-50 bg-slate-50/50">
-                <h3 className="font-bold text-slate-800 capitalize">{activeTab} Directory</h3>
+                <h3 className="font-bold text-slate-800 capitalize">
+                  {activeTab === 'verification_certs' ? 'Global Certifications' : activeTab} Directory
+                </h3>
               </div>
 
               <div className="divide-y divide-slate-100">
@@ -660,28 +656,6 @@ const AdminAchievement = () => {
                     </div>
                   </div>
                 ))}
-
-                {activeTab === 'certifications' && certifications.map(c => {
-                  const IconComponent = ICON_MAP[c.icon] || ShieldCheck;
-                  return (
-                    <div key={c.id} className="p-5 hover:bg-slate-50/50 transition-colors flex justify-between items-start gap-4">
-                      <div className="flex gap-3 items-start">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-[#0145F2] shrink-0">
-                          <IconComponent size={20} />
-                        </div>
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-slate-900">{c.title}</h4>
-                          <p className="text-xs font-semibold text-[#0145F2]">{c.desc}</p>
-                          <p className="text-xs text-slate-500 leading-relaxed max-w-lg mt-1">{c.details}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <button onClick={() => { setEditId(c.id); setCurrentCert(c); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit size={16} /></button>
-                        <button onClick={() => setCertifications(certifications.filter(cert => cert.id !== c.id))} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
-                      </div>
-                    </div>
-                  );
-                })}
 
                 {activeTab === 'verification_certs' && verificationDocs.map(vd => (
                   <div key={vd.id} className="p-5 hover:bg-slate-50/50 transition-colors flex justify-between items-start gap-4">
@@ -734,39 +708,6 @@ const AdminAchievement = () => {
                 </div>
                 <button type="submit" className="w-full bg-[#0145F2] text-white p-2.5 rounded-xl font-bold text-xs hover:bg-blue-700 transition-colors">
                   {editId ? 'Update Exhibition' : 'Add Exhibition'}
-                </button>
-              </form>
-            )}
-
-            {activeTab === 'certifications' && (
-              <form onSubmit={handleAddOrEditCert} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Certification Title</label>
-                  <input type="text" required value={currentCert.title} onChange={(e) => setCurrentCert({ ...currentCert, title: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="e.g. ISO 9001:2015" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Description / Subtitle</label>
-                  <input type="text" required value={currentCert.desc} onChange={(e) => setCurrentCert({ ...currentCert, desc: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="e.g. Quality Management Systems" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Icon Representation</label>
-                  <select
-                    value={currentCert.icon || 'ShieldCheck'}
-                    onChange={(e) => setCurrentCert({ ...currentCert, icon: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs focus:outline-none focus:border-[#0145F2]"
-                  >
-                    <option value="ShieldCheck">Shield & Check (ShieldCheck)</option>
-                    <option value="Leaf">Leaf / Green (Leaf)</option>
-                    <option value="Globe">Globe / International (Globe)</option>
-                    <option value="Star">Star / Premium (Star)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Details</label>
-                  <textarea rows="3" value={currentCert.details} onChange={(e) => setCurrentCert({ ...currentCert, details: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs focus:outline-none focus:border-[#0145F2]" placeholder="Further details..." />
-                </div>
-                <button type="submit" className="w-full bg-[#0145F2] text-white p-2.5 rounded-xl font-bold text-xs hover:bg-blue-700 transition-colors">
-                  {editId ? 'Update Certification' : 'Add Certification'}
                 </button>
               </form>
             )}
