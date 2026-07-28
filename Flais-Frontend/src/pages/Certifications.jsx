@@ -251,7 +251,7 @@ const Certifications = () => {
         keywords="ISO certified tile manufacturer, tile quality standards, green tiles certification, CE marking, Flais Granito awards"
       />
       {/* Hero Section */}
-      <section className="relative h-[40vh] sm:h-[50vh] md:h-[60vh] min-h-[300px] sm:min-h-[400px] md:min-h-[500px] flex items-center justify-center overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[3rem] mx-2 sm:mx-4 mb-10 sm:mb-16 md:mb-20 bg-[#f8f5f0]">
+      <section className="relative -mt-24 sm:-mt-28 md:-mt-32 -mx-2 sm:-mx-4 pt-28 sm:pt-32 md:pt-36 h-[75vh] sm:h-[85vh] md:h-[90vh] lg:h-[92vh] min-h-[500px] sm:min-h-[600px] md:min-h-[700px] flex items-center justify-center overflow-hidden rounded-t-none rounded-b-[2rem] sm:rounded-b-[2.5rem] md:rounded-b-[3rem] mb-10 sm:mb-16 md:mb-20 bg-[#f8f5f0]">
         <div className="absolute inset-0 z-0">
           {isHeroVideo ? (
             <video
@@ -279,10 +279,6 @@ const Certifications = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-[#5D4037]/20 text-[#5D4037] text-sm font-semibold mb-6">
-              <ShieldCheck size={16} />
-              <span>Global Standards of Excellence</span>
-            </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-display font-bold text-zinc-900 mb-4 sm:mb-6 uppercase tracking-wider">
               {pageSettings.heroTitle}
             </h1>
