@@ -244,14 +244,14 @@ const Certifications = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 font-sans">
+    <div className="min-h-screen bg-zinc-50 pb-12 sm:pb-16 md:pb-20 font-sans">
       <SEO
         title="Our Quality Certifications"
         description="FLAIS GRANITO is ISO certified and complies with international quality standards. Read about our ISO 9001, ISO 14001, CE markings, GBC awards, and global quality standards."
         keywords="ISO certified tile manufacturer, tile quality standards, green tiles certification, CE marking, Flais Granito awards"
       />
       {/* Hero Section */}
-      <section className="relative -mt-24 sm:-mt-28 md:-mt-32 -mx-2 sm:-mx-4 pt-28 sm:pt-32 md:pt-36 h-[75vh] sm:h-[85vh] md:h-[90vh] lg:h-[92vh] min-h-[500px] sm:min-h-[600px] md:min-h-[700px] flex items-center justify-center overflow-hidden rounded-t-none rounded-b-[2rem] sm:rounded-b-[2.5rem] md:rounded-b-[3rem] mb-10 sm:mb-16 md:mb-20 bg-[#f8f5f0]">
+      <section className="relative h-[45vh] min-h-[400px] flex items-center justify-center overflow-hidden mb-10 sm:mb-16 md:mb-20">
         <div className="absolute inset-0 z-0">
           {isHeroVideo ? (
             <video
@@ -272,17 +272,18 @@ const Certifications = () => {
             />
           )}
         </div>
-
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-16 sm:mt-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-display font-bold text-zinc-900 mb-4 sm:mb-6 uppercase tracking-wider">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white uppercase tracking-wider mb-6">
               {pageSettings.heroTitle}
             </h1>
-            <p className="text-xl text-zinc-600 font-light leading-relaxed">
+            <div className="h-1 w-20 bg-beige-600 mx-auto mb-6"></div>
+            <p className="text-lg text-white/90 font-light max-w-2xl mx-auto">
               {pageSettings.heroSubtitle}
             </p>
           </motion.div>
