@@ -524,7 +524,24 @@ const Certifications = () => {
                 <img loading="lazy" src={getOptimizedImageUrl(doc.image, 600)} alt={doc.title} className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-black/5 opacity-100 group-hover:bg-black/0 transition-colors duration-300" />
               </div>
-              <h4 className="text-xs md:text-sm font-bold text-zinc-900 text-center line-clamp-2 mt-auto">{doc.title}</h4>
+              <div className="flex items-center justify-center min-h-[48px] text-center w-full mt-auto">
+                <h4 className="text-xs md:text-sm font-bold text-zinc-900 text-center leading-snug">
+                  {(() => {
+                    if (!doc.title) return null;
+                    const match = doc.title.match(/^(.*?)\s*(\(.*\))$/);
+                    if (match) {
+                      return (
+                        <span className="block text-center">
+                          <span>{match[1]}</span>
+                          <br />
+                          <span className="inline-block">{match[2]}</span>
+                        </span>
+                      );
+                    }
+                    return doc.title;
+                  })()}
+                </h4>
+              </div>
             </motion.div>
           ))}
         </div>

@@ -91,8 +91,10 @@ const TilePreview = ({ room }) => {
     if (p === 'straight' || p === 'diagonal') {
       const stepX = tileW + grout;
       const stepY = tileH + grout;
-      for (let x = minX; x < maxX; x += stepX) {
-        for (let y = minY; y < maxY; y += stepY) {
+      const startX = Math.floor(minX / stepX) * stepX;
+      const startY = Math.floor(minY / stepY) * stepY;
+      for (let x = startX; x < maxX; x += stepX) {
+        for (let y = startY; y < maxY; y += stepY) {
           rects.push(
             <rect
               key={keyCounter++}
@@ -110,23 +112,27 @@ const TilePreview = ({ room }) => {
     } else if (p === 'brick') {
       const stepX = tileW + grout;
       const stepY = tileH + grout;
-      let rowIndex = 0;
-      for (let y = minY; y < maxY; y += stepY) {
-        const shiftX = (rowIndex % 2) * (stepX / 2);
-        for (let x = minX - stepX; x < maxX; x += stepX) {
+      const startY = Math.floor(minY / stepY) * stepY;
+      let y = startY;
+      let rowIndex = Math.round(startY / stepY);
+      while (y < maxY) {
+        const shiftX = (Math.abs(rowIndex) % 2) * (stepX / 2);
+        const startX = Math.floor((minX - shiftX) / stepX) * stepX + shiftX;
+        for (let x = startX; x < maxX; x += stepX) {
           rects.push(
             <rect
               key={keyCounter++}
-              x={x + shiftX}
+              x={x}
               y={y}
               width={tileW}
               height={tileH}
-              fill={rowIndex % 2 === 0 ? "#d4c9b8" : "#cdc2b0"}
+              fill={Math.abs(rowIndex) % 2 === 0 ? "#d4c9b8" : "#cdc2b0"}
               stroke="#8a7f72"
               strokeWidth={grout}
             />
           );
         }
+        y += stepY;
         rowIndex++;
       }
     } else if (p === 'herringbone') {
