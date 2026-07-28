@@ -1,4 +1,5 @@
 const FlaisParkPage = require("../models/FlaisParkPage");
+const { createSingletonPageController } = require("../utils/singletonPage");
 
 const DEFAULT_FLAIS_PARK = {
   pageSettings: {
@@ -11,30 +12,13 @@ const DEFAULT_FLAIS_PARK = {
   dealers: []
 };
 
-exports.getFlaisParkPage = async (req, res) => {
-  try {
-    let flaisPark = await FlaisParkPage.findOne();
-    if (!flaisPark) {
-      flaisPark = await FlaisParkPage.create(DEFAULT_FLAIS_PARK);
-    }
-    res.status(200).json({ success: true, flaisPark });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+const { get: getFlaisParkPage, upsert: upsertFlaisParkPage } = createSingletonPageController({
+  Model: FlaisParkPage,
+  defaults: DEFAULT_FLAIS_PARK,
+  bodyKey: "flaisPark",
+  resourceKey: "flaisPark",
+  updateMessage: "Flais Park page details updated",
+});
 
-exports.upsertFlaisParkPage = async (req, res) => {
-  try {
-    const payload = req.body?.flaisPark ? req.body.flaisPark : req.body;
-
-    const flaisPark = await FlaisParkPage.findOneAndUpdate({}, payload, {
-      new: true,
-      upsert: true,
-      setDefaultsOnInsert: true,
-    });
-
-    res.status(200).json({ success: true, message: "Flais Park page details updated", flaisPark });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+exports.getFlaisParkPage = getFlaisParkPage;
+exports.upsertFlaisParkPage = upsertFlaisParkPage;

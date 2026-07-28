@@ -1,4 +1,6 @@
 const AnalyticsEvent = require("../models/AnalyticsEvent");
+const asyncHandler = require("../utils/asyncHandler");
+const { sendSuccess, sendError } = require("../utils/apiResponse");
 
 const VALID_EVENT_TYPES = new Set(["page_view", "pdf_view", "pdf_download"]);
 
@@ -11,19 +13,18 @@ function buildPageKey(payload = {}) {
   return cleanString(payload.pageKey || payload.pageLabel || payload.path || "unknown") || "unknown";
 }
 
-exports.logAnalyticsEvent = async (req, res) => {
-  try {
+exports.logAnalyticsEvent = asyncHandler(async (req, res) => {
     const payload = req.body || {};
     const eventType = cleanString(payload.eventType);
     const sessionId = cleanString(payload.sessionId);
     const visitorId = cleanString(payload.visitorId);
 
     if (!VALID_EVENT_TYPES.has(eventType)) {
-      return res.status(400).json({ success: false, message: "Invalid event type" });
+      return sendError(res, 400, "Invalid event type");
     }
 
     if (!sessionId || !visitorId) {
-      return res.status(400).json({ success: false, message: "sessionId and visitorId are required" });
+      return sendError(res, 400, "sessionId and visitorId are required");
     }
 
     const event = await AnalyticsEvent.create({
@@ -43,15 +44,10 @@ exports.logAnalyticsEvent = async (req, res) => {
       metadata: typeof payload.metadata === "object" && payload.metadata !== null ? payload.metadata : {}
     });
 
-    res.status(201).json({ success: true, eventId: event._id.toString() });
-  } catch (error) {
-    console.error("[analyticsController] logAnalyticsEvent error:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+    sendSuccess(res, 201, { eventId: event._id.toString() });
+});
 
-exports.getAnalyticsSummary = async (req, res) => {
-  try {
+exports.getAnalyticsSummary = asyncHandler(async (req, res) => {
     const days = Math.max(1, Math.min(parseInt(req.query.days, 10) || 30, 365));
     const since = new Date();
     since.setDate(since.getDate() - days);
@@ -125,8 +121,7 @@ exports.getAnalyticsSummary = async (req, res) => {
         visitorId: event.visitorId
       }));
 
-    res.status(200).json({
-      success: true,
+    sendSuccess(res, 200, {
       summary: {
         rangeDays: days,
         totalEvents,
@@ -141,8 +136,4 @@ exports.getAnalyticsSummary = async (req, res) => {
         recentEvents
       }
     });
-  } catch (error) {
-    console.error("[analyticsController] getAnalyticsSummary error:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+});

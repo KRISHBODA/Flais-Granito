@@ -1,5 +1,8 @@
 const HomePage = require("../models/HomePage");
 const uploadService = require("../services/storage/UploadService");
+const asyncHandler = require("../utils/asyncHandler");
+const { sendSuccess, sendError } = require("../utils/apiResponse");
+const { createSingletonPageController } = require("../utils/singletonPage");
 
 const DEFAULT_HOME = {
   homeTexts: {
@@ -29,20 +32,13 @@ const DEFAULT_HOME = {
   video: { url: "", name: "", path: "" },
 };
 
-exports.getHomePage = async (req, res) => {
-  try {
-    let home = await HomePage.findOne();
-    if (!home) {
-      home = await HomePage.create(DEFAULT_HOME);
-    }
-    res.status(200).json({ success: true, home });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+exports.getHomePage = createSingletonPageController({
+  Model: HomePage,
+  defaults: DEFAULT_HOME,
+  resourceKey: "home",
+}).get;
 
-exports.upsertHomePage = async (req, res) => {
-  try {
+exports.upsertHomePage = asyncHandler(async (req, res) => {
     const payload = req.body?.home ? req.body.home : req.body;
     
     // Handle video upload if video file is provided
@@ -61,10 +57,7 @@ exports.upsertHomePage = async (req, res) => {
           path: uploadResult.path,
         };
       } catch (uploadError) {
-        return res.status(500).json({ 
-          success: false, 
-          message: "Failed to upload video: " + uploadError.message 
-        });
+        return sendError(res, 500, "Failed to upload video: " + uploadError.message);
       }
     }
 
@@ -77,8 +70,5 @@ exports.upsertHomePage = async (req, res) => {
         setDefaultsOnInsert: true,
       }
     );
-    res.status(200).json({ success: true, message: "Home page updated", home });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+    sendSuccess(res, 200, { message: "Home page updated", home });
+});

@@ -1,4 +1,6 @@
 const Settings = require("../models/Settings");
+const asyncHandler = require("../utils/asyncHandler");
+const { sendSuccess } = require("../utils/apiResponse");
 
 const DEFAULT_SETTINGS = {
   phone1: '+91 95867 33300',
@@ -14,23 +16,17 @@ const DEFAULT_SETTINGS = {
   youtube: 'https://www.youtube.com/@FlaisGranito'
 };
 
-exports.getSettings = async (req, res) => {
-  try {
+exports.getSettings = asyncHandler(async (req, res) => {
     let settings = await Settings.findOne();
     if (!settings) {
       settings = await Settings.create(DEFAULT_SETTINGS);
     }
-    res.status(200).json({
-      success: true,
+    sendSuccess(res, 200, {
       settings: { ...DEFAULT_SETTINGS, ...settings.toObject() }
     });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+});
 
-exports.updateSettings = async (req, res) => {
-  try {
+exports.updateSettings = asyncHandler(async (req, res) => {
     const {
       phone1,
       phone2,
@@ -61,8 +57,5 @@ exports.updateSettings = async (req, res) => {
     if (youtube !== undefined) settings.youtube = youtube;
 
     await settings.save();
-    res.status(200).json({ success: true, message: "Settings updated successfully", settings });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+    sendSuccess(res, 200, { message: "Settings updated successfully", settings });
+});
