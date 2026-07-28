@@ -55,8 +55,15 @@ app.use(
       // Allow exact matches from the Set
       if (allowedOrigins.has(origin)) return cb(null, true);
 
-      // Allow dynamic Vercel preview domains temporarily
-      if (origin.endsWith('.vercel.app')) return cb(null, true);
+      // Optional: allow Vercel preview deployments for a specific project only
+      // (e.g. VERCEL_PREVIEW_PREFIX=flais-frontend -> https://flais-frontend-*.vercel.app)
+      const previewPrefix = process.env.VERCEL_PREVIEW_PREFIX;
+      if (previewPrefix) {
+        const previewPattern = new RegExp(
+          `^https://${previewPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[a-z0-9-]*\\.vercel\\.app$`
+        );
+        if (previewPattern.test(origin)) return cb(null, true);
+      }
 
       console.warn(`CORS blocked for unauthorized origin: ${origin}`);
       // Safely return false instead of throwing an Error (which causes 500s)
@@ -81,8 +88,17 @@ const apiLimiter = createRateLimit({
 app.use("/api", apiLimiter);
 
 // Serve static files (local storage)
-app.use("/media", express.static(path.join(__dirname, "uploads")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Uploaded assets are user-supplied: block inline script execution (e.g. SVG payloads)
+// and MIME sniffing so they can never run in the site's origin.
+const staticOptions = {
+  setHeaders(res) {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+  },
+};
+
+app.use("/media", express.static(path.join(__dirname, "uploads"), staticOptions));
+app.use("/uploads", express.static(path.join(__dirname, "uploads"), staticOptions));
 
 // Routes
 app.use("/api/admin", require("./routes/adminRoutes"));

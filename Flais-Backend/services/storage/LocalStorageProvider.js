@@ -17,9 +17,13 @@ class LocalStorageProvider {
     if (!relativePath) {
       throw new Error("Relative path is required for resolution");
     }
-    // Resolve absolute path and verify prefix against directory traversal
+    // Resolve absolute path and verify containment against directory traversal
     const absolutePath = path.resolve(this.storageRoot, relativePath);
-    if (!absolutePath.startsWith(this.storageRoot)) {
+    const relativeToRoot = path.relative(this.storageRoot, absolutePath);
+    if (
+      relativeToRoot !== "" &&
+      (relativeToRoot.startsWith("..") || path.isAbsolute(relativeToRoot))
+    ) {
       throw new Error("Security Violation: Path traversal detected");
     }
     return absolutePath;

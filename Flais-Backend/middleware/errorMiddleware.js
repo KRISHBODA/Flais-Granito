@@ -1,10 +1,15 @@
 const errorHandler = (err, req, res, next) => {
-  const statusCode = res.statusCode ? res.statusCode : 500;
+  const statusCode = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (isProduction) {
+    console.error("[errorHandler]", err);
+  }
 
   res.status(statusCode).json({
     success: false,
-    message: err.message,
-    stack: process.env.NODE_ENV === "production" ? null : err.stack,
+    message: isProduction && statusCode >= 500 ? "Server Error" : err.message,
+    stack: isProduction ? null : err.stack,
   });
 };
 

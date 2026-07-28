@@ -1,6 +1,10 @@
 const Product = require("../models/Product");
 const uploadService = require("../services/storage/UploadService");
 
+const MAX_PAGE_SIZE = 1000;
+const MAX_SEARCH_LENGTH = 100;
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // @desc    Create a product
 // @route   POST /api/products
 // @access  Private/Admin
@@ -51,24 +55,24 @@ exports.createProduct = async (req, res) => {
 // @access  Public
 exports.getProducts = async (req, res) => {
   try {
-    const { page = 1, search = "", category = "All", limit: queryLimit } = req.query;
-    
+    const { search = "", category = "All", limit: queryLimit } = req.query;
+
+    const page = Math.max(1, Number(req.query.page) || 1);
+
     let limit = 12;
-    let skip = (page - 1) * limit;
-    
     if (queryLimit) {
-      if (queryLimit === "all") {
-        limit = 0;
-      } else {
-        limit = Number(queryLimit);
-        skip = (page - 1) * limit;
-      }
+      const parsedLimit = queryLimit === "all" ? MAX_PAGE_SIZE : Number(queryLimit);
+      limit = Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(Math.floor(parsedLimit), MAX_PAGE_SIZE)
+        : 12;
     }
+    const skip = (page - 1) * limit;
 
     let query = {};
-    
+
     if (search) {
-      query.title = { $regex: search, $options: "i" };
+      const term = String(search).slice(0, MAX_SEARCH_LENGTH);
+      query.title = { $regex: escapeRegExp(term), $options: "i" };
     }
 
     if (category && category !== "All" && category !== "All Categories") {
