@@ -58,7 +58,7 @@ const Preloader = () => {
         transition: "opacity 500ms ease-in-out",
         opacity: isFading ? 0 : 1,
       }}
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#f8f5f0] ${
         isFading ? "pointer-events-none" : "pointer-events-auto"
       }`}
     >
@@ -71,6 +71,11 @@ const Preloader = () => {
         onEnded={handleVideoEnded}
         className="w-[85%] max-w-[700px] md:max-w-[950px] lg:max-w-[1140px] h-auto object-contain pointer-events-none select-none"
       />
+      {!motionLogo && (
+        <div className="absolute bottom-8 text-xs font-semibold tracking-[0.2em] uppercase text-[#5D4037]/70">
+          Loading Flais Granito
+        </div>
+      )}
     </div>
   );
 };
