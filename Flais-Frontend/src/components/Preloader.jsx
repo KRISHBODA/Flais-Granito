@@ -15,7 +15,7 @@ const Preloader = () => {
       return;
     }
 
-    // Backup timer: if video doesn't end, fade out and unmount after 5 seconds
+    // Backup timer: fade out and unmount after 5 seconds
     const timer = setTimeout(() => {
       setIsFading(true);
       const closeTimer = setTimeout(() => {
@@ -58,7 +58,7 @@ const Preloader = () => {
         transition: "opacity 500ms ease-in-out",
         opacity: isFading ? 0 : 1,
       }}
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#f8f5f0] ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#f8f5f0] bg-[radial-gradient(circle_at_center,_rgba(93,64,55,0.08)_0%,_rgba(248,245,240,1)_60%)] ${
         isFading ? "pointer-events-none" : "pointer-events-auto"
       }`}
     >
@@ -69,13 +69,8 @@ const Preloader = () => {
         playsInline
         preload="auto"
         onEnded={handleVideoEnded}
-        className="w-[85%] max-w-[700px] md:max-w-[950px] lg:max-w-[1140px] h-auto object-contain pointer-events-none select-none"
+        className="w-[min(90vw,1080px)] max-h-[80vh] object-contain select-none pointer-events-none mix-blend-multiply"
       />
-      {!motionLogo && (
-        <div className="absolute bottom-8 text-xs font-semibold tracking-[0.2em] uppercase text-[#5D4037]/70">
-          Loading Flais Granito
-        </div>
-      )}
     </div>
   );
 };
