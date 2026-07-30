@@ -99,6 +99,9 @@ const Certifications = () => {
     introTitle: "Our Commitment to Quality",
     introDescription: "Quality is not just a standard at Flais Granito; it's our signature. Every tile that leaves our state-of-the-art manufacturing facility carries the weight of rigorous testing, meticulous craftsmanship, and an unwavering dedication to perfection. Our global certifications are a testament to our promise of delivering uncompromised excellence to homes and commercial spaces worldwide."
   });
+  const [flaisParkSettings, setFlaisParkSettings] = React.useState({
+    introDescription: "Premium Pavilion"
+  });
 
   const isHeroVideo = React.useMemo(() => {
     const media = pageSettings.heroMedia;
@@ -216,6 +219,24 @@ const Certifications = () => {
       }
     };
     loadFlaisGuideData();
+  }, []);
+
+  React.useEffect(() => {
+    const loadFlaisParkData = async () => {
+      try {
+        const response = await api.get('/flais-park');
+        if (response.data && response.data.success && response.data.flaisPark?.pageSettings) {
+          setFlaisParkSettings(prev => ({
+            ...prev,
+            ...response.data.flaisPark.pageSettings
+          }));
+        }
+      } catch (err) {
+        // Keep the default label if the request fails.
+      }
+    };
+
+    loadFlaisParkData();
   }, []);
 
   if (loading) {
@@ -425,10 +446,21 @@ const Certifications = () => {
                       </p>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-500 group-hover:text-[#c5a880] transition-colors">
-                      <span>Premium Pavilion</span>
+                    <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-bold text-zinc-500 group-hover:text-[#c5a880] transition-colors">
+                      <span
+                        title={flaisParkSettings.introDescription}
+                        className="max-w-full"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        {flaisParkSettings.introDescription || 'Premium Pavilion'}
+                      </span>
                     </div>
-                  </motion.div>
+                  </motion.div> 
                 ))}
               </div>
 
