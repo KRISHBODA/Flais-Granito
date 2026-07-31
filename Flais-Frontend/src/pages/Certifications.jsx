@@ -420,9 +420,7 @@ const Certifications = () => {
                         </div>
                       </div>
 
-                      <p className="text-zinc-400 text-xs leading-relaxed font-light font-sans pt-2">
-                        {exh.description}
-                      </p>
+       
                     </div>
 
                     <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-bold text-zinc-500 group-hover:text-[#c5a880] transition-colors">
