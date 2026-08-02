@@ -18,6 +18,13 @@ exports.createMessage = async (req, res) => {
       });
     }
 
+    if (name.length > 120 || email.length > 254 || phone.length > 30 || message.length > 5000) {
+      return res.status(400).json({
+        success: false,
+        message: "One or more fields exceed the maximum allowed length"
+      });
+    }
+
     const phonePattern = /^\+[0-9-]+(?:\s+[0-9-]+)*$/;
 
     // Keep the country-code format that the frontend uses, including hyphenated country codes.

@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const { exec } = require("child_process");
+const { execFile } = require("child_process");
 const localStorageProvider = require("../storage/LocalStorageProvider");
 
 // Default conversion settings (overridable via environment variables)
@@ -98,8 +98,9 @@ class ConversionService {
   _getPageCount(absolutePdfPath) {
     return new Promise((resolve, reject) => {
       // 1. Try pdfinfo first (faster, lighter, and doesn't require decoding page contents)
-      exec(
-        `pdfinfo "${absolutePdfPath}"`,
+      execFile(
+        "pdfinfo",
+        [absolutePdfPath],
         { timeout: 15000 },
         (pdfinfoError, pdfinfoStdout) => {
           if (!pdfinfoError && pdfinfoStdout) {
@@ -114,8 +115,9 @@ class ConversionService {
           }
 
           // 2. Fallback to GraphicsMagick identify if pdfinfo failed or returned invalid results
-          exec(
-            `gm identify "${absolutePdfPath}"`,
+          execFile(
+            "gm",
+            ["identify", absolutePdfPath],
             { timeout: 30000 },
             (gmError, gmStdout) => {
               if (gmError) {
@@ -150,17 +152,17 @@ class ConversionService {
       const density = 150; // DPI for rendering
 
       // gm convert: render PDF page at given DPI, resize to target width, output as WebP
-      const cmd = [
-        `gm convert`,
-        `-density ${density}`,
-        `"${absolutePdfPath}[${pageIndex}]"`,
-        `-resize ${DEFAULT_PAGE_WIDTH}x`,
-        `-quality ${DEFAULT_QUALITY}`,
-        `+profile "*"`,
-        `"${outputPath}"`,
-      ].join(" ");
+      const args = [
+        "convert",
+        "-density", String(density),
+        `${absolutePdfPath}[${pageIndex}]`,
+        "-resize", `${DEFAULT_PAGE_WIDTH}x`,
+        "-quality", String(DEFAULT_QUALITY),
+        "+profile", "*",
+        outputPath,
+      ];
 
-      exec(cmd, { timeout: 120000 }, (error, stdout, stderr) => {
+      execFile("gm", args, { timeout: 120000 }, (error, stdout, stderr) => {
         if (error) {
           reject(new Error(`Failed to convert page ${pageNum}: ${error.message}`));
           return;

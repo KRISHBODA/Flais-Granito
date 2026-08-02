@@ -3,13 +3,20 @@ const connectDB = require("../config/db");
 const Admin = require("../models/Admin");
 
 const DEFAULT_EMAIL = "admin@flais.com";
-const DEFAULT_PASSWORD = "password123";
+const MIN_PASSWORD_LENGTH = 12;
 
 const run = async () => {
-  await connectDB();
-
   const email = process.env.ADMIN_SEED_EMAIL || DEFAULT_EMAIL;
-  const password = process.env.ADMIN_SEED_PASSWORD || DEFAULT_PASSWORD;
+  const password = process.env.ADMIN_SEED_PASSWORD;
+
+  if (!password || password.length < MIN_PASSWORD_LENGTH) {
+    console.error(
+      `ADMIN_SEED_PASSWORD is required and must be at least ${MIN_PASSWORD_LENGTH} characters.`
+    );
+    process.exit(1);
+  }
+
+  await connectDB();
 
   const existing = await Admin.findOne({ email });
   if (existing) {

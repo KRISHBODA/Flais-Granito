@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ISSUER = "flais-admin";
 const JWT_AUDIENCE = "flais-dashboard";
+const MIN_PASSWORD_LENGTH = 12;
 
 const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -78,6 +79,12 @@ exports.updateAdminProfile = async (req, res) => {
     
     // Update password only if the user typed something in the password field
     if (password && password.trim() !== "") {
+      if (password.length < MIN_PASSWORD_LENGTH) {
+        return res.status(400).json({
+          success: false,
+          message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+        });
+      }
       admin.password = password; 
       // Note: The pre-save hook in models/Admin.js will automatically hash this
     }
