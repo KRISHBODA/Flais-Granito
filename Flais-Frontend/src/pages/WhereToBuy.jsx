@@ -93,7 +93,7 @@ const WhereToBuy = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8f5f0] px-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6">
         <div className="flex flex-col items-center space-y-4 animate-pulse">
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 rounded-full border-4 border-[#5D4037]/10" />
@@ -107,7 +107,7 @@ const WhereToBuy = () => {
 
   if (loadError) {
     return (
-      <div className="pt-24 min-h-screen bg-[#FDFBF7] flex items-center justify-center px-6 text-zinc-600">
+      <div className="pt-24 min-h-screen bg-white flex items-center justify-center px-6 text-zinc-600">
         <div className="max-w-md text-center space-y-3 rounded-3xl border border-zinc-200 bg-white p-8">
           <p className="text-lg font-bold text-zinc-900">Where to Buy unavailable</p>
           <p className="text-sm">{loadError}</p>
@@ -117,7 +117,7 @@ const WhereToBuy = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7]">
+    <div className="min-h-screen bg-white">
       <SEO 
         title={`${pageSettings.heroTitle} - Find Showrooms & Dealers`}
         description={pageSettings.heroSubtitle}

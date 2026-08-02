@@ -68,7 +68,7 @@ function App() {
         <SmoothScroll>
           <Layout>
             <Suspense fallback={
-              <div className="w-full h-screen flex flex-col items-center justify-center bg-[#f8f5f0] px-6">
+              <div className="w-full h-screen flex flex-col items-center justify-center bg-white px-6">
                 <div className="flex flex-col items-center space-y-4">
                   <div className="relative w-14 h-14">
                     <div className="absolute inset-0 rounded-full border-4 border-[#5D4037]/10" />

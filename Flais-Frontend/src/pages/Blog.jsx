@@ -48,7 +48,7 @@ const Blog = () => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-[linear-gradient(180deg,_#f8f5f0_0%,_#e9dfcf_100%)]" />
+            <div className="w-full h-full bg-white" />
           )}
         </div>
         <div className="absolute inset-0 bg-black/60" />

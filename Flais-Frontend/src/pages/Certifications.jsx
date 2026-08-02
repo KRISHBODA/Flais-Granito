@@ -220,7 +220,7 @@ const Certifications = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8f5f0] px-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6">
         <div className="flex flex-col items-center space-y-4 animate-pulse">
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 rounded-full border-4 border-[#5D4037]/10" />
@@ -234,7 +234,7 @@ const Certifications = () => {
 
   if (loadError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 text-zinc-600 px-6">
+      <div className="min-h-screen flex items-center justify-center bg-white text-zinc-600 px-6">
         <div className="max-w-md text-center space-y-3 rounded-3xl border border-zinc-200 bg-white p-8">
           <p className="text-lg font-bold text-zinc-900">Certifications page unavailable</p>
           <p className="text-sm text-zinc-600">{loadError}</p>
@@ -244,7 +244,7 @@ const Certifications = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 pb-12 sm:pb-16 md:pb-20 font-sans">
+    <div className="min-h-screen bg-white pb-12 sm:pb-16 md:pb-20 font-sans">
       <SEO
         title="Our Quality Certifications"
         description="FLAIS GRANITO is ISO certified and complies with international quality standards. Read about our ISO 9001, ISO 14001, CE markings, GBC awards, and global quality standards."
@@ -649,9 +649,6 @@ const Certifications = () => {
               </div>
             </div>
             <div className="md:w-96 lg:w-[420px] p-6 md:p-10 flex flex-col justify-center space-y-6 bg-white shrink-0">
-              <span className="text-[#5D4037] text-xs font-bold uppercase tracking-wider bg-[#5D4037]/5 px-4 py-1.5 rounded-full w-fit border border-[#5D4037]/10">
-                Official Certification
-              </span>
               <h3 className="text-3xl font-bold text-zinc-900 leading-tight">{selectedDoc.title}</h3>
               {selectedDoc.desc && (
                 <p className="text-base text-zinc-600 leading-relaxed font-light">{selectedDoc.desc}</p>

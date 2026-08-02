@@ -170,7 +170,7 @@ const Catalog = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8f5f0] px-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6">
         <div className="flex flex-col items-center space-y-4 animate-pulse">
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 rounded-full border-4 border-[#5D4037]/10" />
@@ -183,7 +183,7 @@ const Catalog = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-white">
       <SEO
         title={pageSettings.heroTitle}
         description={pageSettings.heroSubtitle}

@@ -58,7 +58,7 @@ const Preloader = () => {
         transition: "opacity 500ms ease-in-out",
         opacity: isFading ? 0 : 1,
       }}
-      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#f8f5f0] bg-[radial-gradient(circle_at_center,_rgba(93,64,55,0.08)_0%,_rgba(248,245,240,1)_60%)] ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-white ${
         isFading ? "pointer-events-none" : "pointer-events-auto"
       }`}
     >

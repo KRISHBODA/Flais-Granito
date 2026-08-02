@@ -21,7 +21,7 @@ const Navbar = () => {
     if (newTab) {
       newTab.document.title = "Loading Technical Guide...";
       newTab.document.body.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #f8f5f0; color: #5D4037; margin: 0;">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #ffffff; color: #5D4037; margin: 0;">
           <div style="border: 4px solid rgba(93, 64, 55, 0.1); border-top: 4px solid #5D4037; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
           <p style="font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">Opening Technical Guide...</p>
           <style>
@@ -48,7 +48,7 @@ const Navbar = () => {
       if (!latestPdfUrl) {
         if (newTab) {
           newTab.document.body.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, sans-serif; background-color: #f8f5f0; color: #5D4037; padding: 20px; text-align: center;">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, sans-serif; background-color: #ffffff; color: #5D4037; padding: 20px; text-align: center;">
               <p style="font-size: 16px; font-weight: 600;">Technical Guide PDF is not available yet.</p>
               <button onclick="window.close()" style="margin-top: 15px; padding: 8px 16px; background-color: #5D4037; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold;">Close Tab</button>
             </div>
@@ -83,7 +83,7 @@ const Navbar = () => {
           newTab.location.href = resolvedUrl;
         } else {
           newTab.document.body.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, sans-serif; background-color: #f8f5f0; color: #5D4037; padding: 20px; text-align: center;">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, sans-serif; background-color: #ffffff; color: #5D4037; padding: 20px; text-align: center;">
               <p style="font-size: 16px; font-weight: 600;">Failed to load the Technical Guide.</p>
               <button onclick="window.close()" style="margin-top: 15px; padding: 8px 16px; background-color: #5D4037; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold;">Close Tab</button>
             </div>

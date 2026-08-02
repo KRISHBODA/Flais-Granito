@@ -153,7 +153,7 @@ const About = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8f5f0] px-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6">
         <div className="flex flex-col items-center space-y-4 animate-pulse">
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 rounded-full border-4 border-[#5D4037]/10" />
@@ -224,7 +224,7 @@ const About = () => {
       </section>
 
       {/* Narrative Section */}
-      <section className="py-14 sm:py-20 md:py-24 relative overflow-hidden bg-[#fcfaf7]">
+      <section className="py-14 sm:py-20 md:py-24 relative overflow-hidden bg-white">
         <div className="container-custom">
           <div className="grid lg:grid-cols-12 gap-8 sm:gap-12 md:gap-16 items-center">
             <div className="lg:col-span-5 space-y-8">
@@ -464,7 +464,7 @@ const About = () => {
                       ? 'bg-white/10 text-white border border-white/20'
                       : color.includes('bg-[#D2C9B1]')
                         ? 'bg-white/40 text-zinc-900'
-                        : 'bg-[#f8f5f0] text-[#5D4037] border border-[#D2C9B1]/20'
+                        : 'bg-white text-[#5D4037] border border-zinc-200'
                       } backdrop-blur-xl shadow-inner`}>
                       {React.cloneElement(pillar.icon, {
                         size: 32,
@@ -634,9 +634,6 @@ const About = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16 space-y-4"
           >
-            <span className="inline-block px-4 py-1.5 border border-[#5D4037]/30 rounded-full text-[#5D4037] text-xs font-bold uppercase tracking-[0.3em] bg-[#5D4037]/5">
-              Global Presence
-            </span>
             <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold text-zinc-900 leading-none tracking-tighter">
               {aboutSettings.exportTitle || "Export Details"}
             </h2>

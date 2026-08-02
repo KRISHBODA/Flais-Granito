@@ -510,7 +510,7 @@ const TileCalculator = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8f5f0] px-6">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6">
         <div className="flex flex-col items-center space-y-4 animate-pulse">
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 rounded-full border-4 border-[#5D4037]/10" />
@@ -524,7 +524,7 @@ const TileCalculator = () => {
 
   if (loadError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 text-zinc-600 px-6">
+      <div className="min-h-screen flex items-center justify-center bg-white text-zinc-600 px-6">
         <div className="max-w-md text-center space-y-3 rounded-3xl border border-zinc-200 bg-white p-8">
           <p className="text-lg font-bold text-zinc-900">Tile Calculator unavailable</p>
           <p className="text-sm text-zinc-600">{loadError}</p>
@@ -589,7 +589,7 @@ const TileCalculator = () => {
   const inputClasses = "w-full bg-[#faf8f5] border border-zinc-200 focus:border-[#886d5e] focus:ring-1 focus:ring-[#886d5e] rounded-xl px-4 py-3 outline-none transition-all";
 
   return (
-    <div className="min-h-screen bg-[#FCFCFC] pt-28 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-20 font-sans">
+    <div className="min-h-screen bg-white pt-28 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-20 font-sans">
       <SEO 
         title="Tile Calculator - Estimate Required Tiles & Boxes"
         description="Estimate exactly how many tile boxes, grout bags, and adhesive you need for your project. Choose patterns like Straight Lay, Brick Offset, or Herringbone."
