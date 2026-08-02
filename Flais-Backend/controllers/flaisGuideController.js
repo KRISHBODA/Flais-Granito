@@ -1,4 +1,7 @@
 const FlaisGuidePage = require("../models/FlaisGuidePage");
+const asyncHandler = require("../utils/asyncHandler");
+const { sendSuccess } = require("../utils/apiResponse");
+const { createSingletonPageController } = require("../utils/singletonPage");
 
 const DEFAULT_FLAIS_GUIDE = {
   achievementsSettings: {
@@ -66,8 +69,7 @@ const DEFAULT_FLAIS_GUIDE = {
   }
 };
 
-exports.getFlaisGuidePage = async (req, res) => {
-  try {
+exports.getFlaisGuidePage = asyncHandler(async (req, res) => {
     let flaisGuide = await FlaisGuidePage.findOne();
     if (!flaisGuide) {
       flaisGuide = await FlaisGuidePage.create(DEFAULT_FLAIS_GUIDE);
@@ -99,22 +101,13 @@ exports.getFlaisGuidePage = async (req, res) => {
         await flaisGuide.save();
       }
     }
-    res.status(200).json({ success: true, flaisGuide });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+    sendSuccess(res, 200, { flaisGuide });
+});
 
-exports.upsertFlaisGuidePage = async (req, res) => {
-  try {
-    const payload = req.body?.flaisGuide ? req.body.flaisGuide : req.body;
-    const flaisGuide = await FlaisGuidePage.findOneAndUpdate({}, payload, {
-      new: true,
-      upsert: true,
-      setDefaultsOnInsert: true,
-    });
-    res.status(200).json({ success: true, message: "Flais Guide page details updated", flaisGuide });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+exports.upsertFlaisGuidePage = createSingletonPageController({
+  Model: FlaisGuidePage,
+  defaults: DEFAULT_FLAIS_GUIDE,
+  bodyKey: "flaisGuide",
+  resourceKey: "flaisGuide",
+  updateMessage: "Flais Guide page details updated",
+}).upsert;

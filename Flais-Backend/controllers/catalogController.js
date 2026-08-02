@@ -1,6 +1,8 @@
 const CatalogPage = require("../models/CatalogPage");
 const PdfJob = require("../models/PdfJob");
 const conversionService = require("../services/conversion/ConversionService");
+const asyncHandler = require("../utils/asyncHandler");
+const { sendSuccess, sendError } = require("../utils/apiResponse");
 
 const DEFAULT_CATALOG = {
   pageSettings: {
@@ -58,8 +60,7 @@ function extractRelativePath(urlOrPath) {
 
 // ── Controllers ──────────────────────────────────────────────────────────────
 
-exports.getCatalogPage = async (req, res) => {
-  try {
+exports.getCatalogPage = asyncHandler(async (req, res) => {
     let catalog = await CatalogPage.findOne();
     if (!catalog) {
       catalog = await CatalogPage.create(DEFAULT_CATALOG);
@@ -102,14 +103,10 @@ exports.getCatalogPage = async (req, res) => {
         await catalog.save();
       }
     }
-    res.status(200).json({ success: true, catalog });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+    sendSuccess(res, 200, { catalog });
+});
 
-exports.upsertCatalogPage = async (req, res) => {
-  try {
+exports.upsertCatalogPage = asyncHandler(async (req, res) => {
     const payload = req.body?.catalog ? req.body.catalog : req.body;
 
     if (payload.catalogs && Array.isArray(payload.catalogs)) {
@@ -121,7 +118,7 @@ exports.upsertCatalogPage = async (req, res) => {
       const seqNums = payload.catalogs.map(cat => cat.sequenceNumber).filter(num => num !== undefined && num !== null);
       const uniqueSeqNums = new Set(seqNums);
       if (seqNums.length !== uniqueSeqNums.size) {
-        return res.status(400).json({ success: false, message: "Catalog sequence numbers must be unique and cannot be repeated." });
+        return sendError(res, 400, "Catalog sequence numbers must be unique and cannot be repeated.");
       }
     }
 
@@ -201,23 +198,17 @@ exports.upsertCatalogPage = async (req, res) => {
     // Re-fetch the document to include the updated conversionStatus values
     const updatedCatalog = await CatalogPage.findOne();
 
-    res.status(200).json({
-      success: true,
+    sendSuccess(res, 200, {
       message: "Catalog page settings updated",
       catalog: updatedCatalog,
       jobsCreated: jobsCreated.length > 0 ? jobsCreated : undefined,
     });
-  } catch (error) {
-    console.error("[catalogController] upsertCatalogPage error:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+});
 
-exports.getCatalogJobStatus = async (req, res) => {
-  try {
+exports.getCatalogJobStatus = asyncHandler(async (req, res) => {
     const { catalogItemId } = req.params;
     if (!catalogItemId) {
-      return res.status(400).json({ success: false, message: "catalogItemId is required" });
+      return sendError(res, 400, "catalogItemId is required");
     }
 
     const job = await PdfJob.findOne({ catalogItemId })
@@ -225,11 +216,8 @@ exports.getCatalogJobStatus = async (req, res) => {
       .lean();
 
     if (!job) {
-      return res.status(200).json({ success: true, job: null });
+      return sendSuccess(res, 200, { job: null });
     }
 
-    res.status(200).json({ success: true, job });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+    sendSuccess(res, 200, { job });
+});

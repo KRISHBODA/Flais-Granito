@@ -1,4 +1,5 @@
 const AboutPage = require("../models/AboutPage");
+const { createSingletonPageController } = require("../utils/singletonPage");
 
 const DEFAULT_ABOUT = {
   aboutSettings: {
@@ -103,28 +104,13 @@ const DEFAULT_ABOUT = {
   ]
 };
 
-exports.getAboutPage = async (req, res) => {
-  try {
-    let about = await AboutPage.findOne();
-    if (!about) {
-      about = await AboutPage.create(DEFAULT_ABOUT);
-    }
-    res.status(200).json({ success: true, about });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+const { get: getAboutPage, upsert: upsertAboutPage } = createSingletonPageController({
+  Model: AboutPage,
+  defaults: DEFAULT_ABOUT,
+  bodyKey: "about",
+  resourceKey: "about",
+  updateMessage: "About page updated",
+});
 
-exports.upsertAboutPage = async (req, res) => {
-  try {
-    const payload = req.body?.about ? req.body.about : req.body;
-    const about = await AboutPage.findOneAndUpdate({}, payload, {
-      new: true,
-      upsert: true,
-      setDefaultsOnInsert: true,
-    });
-    res.status(200).json({ success: true, message: "About page updated", about });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+exports.getAboutPage = getAboutPage;
+exports.upsertAboutPage = upsertAboutPage;

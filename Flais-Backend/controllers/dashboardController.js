@@ -3,12 +3,13 @@ const Blog = require("../models/Blog");
 const Contact = require("../models/Contact");
 const Category = require("../models/Category");
 const CatalogPage = require("../models/CatalogPage");
+const asyncHandler = require("../utils/asyncHandler");
+const { sendSuccess } = require("../utils/apiResponse");
 
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard/stats
 // @access  Private/Admin
-exports.getDashboardStats = async (req, res) => {
-  try {
+exports.getDashboardStats = asyncHandler(async (req, res) => {
     // Get counts directly from MongoDB so the dashboard cards always reflect live data.
     const catalogPage = await CatalogPage.findOne();
     const activeCatalog = catalogPage?.catalogs?.length || 0;
@@ -22,8 +23,7 @@ exports.getDashboardStats = async (req, res) => {
     const recentMessages = await Contact.find().sort({ createdAt: -1 }).limit(5);
 
 
-    res.status(200).json({
-      success: true,
+    sendSuccess(res, 200, {
       stats: {
         activeCatalog,
         totalProducts: activeCatalog,
@@ -38,7 +38,4 @@ exports.getDashboardStats = async (req, res) => {
         recentMessages,
       }
     });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+});
