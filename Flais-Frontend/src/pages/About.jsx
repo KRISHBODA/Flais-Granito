@@ -460,18 +460,7 @@ const About = () => {
                 >
                   <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 bg-gradient-to-br ${gradient}`} />
                   <div className="relative z-10 space-y-8">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${color.includes('bg-[#5D4037]')
-                      ? 'bg-white/10 text-white border border-white/20'
-                      : color.includes('bg-[#D2C9B1]')
-                        ? 'bg-white/40 text-zinc-900'
-                        : 'bg-white text-[#5D4037] border border-zinc-200'
-                      } backdrop-blur-xl shadow-inner`}>
-                      {React.cloneElement(pillar.icon, {
-                        size: 32,
-                        strokeWidth: 1.5,
-                        className: "drop-shadow-sm"
-                      })}
-                    </div>
+      
                     <div className="space-y-4">
                       <h3 className="text-2xl font-display font-bold tracking-tight">
                         {pillar.title}
