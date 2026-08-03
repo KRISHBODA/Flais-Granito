@@ -301,11 +301,6 @@ const Certifications = () => {
             className="space-y-8"
           >
             <div className="space-y-4">
-              {awardsSettings.badge && (
-                <span className="text-[#5D4037] font-bold uppercase tracking-[0.25em] text-xs px-3 py-1 rounded-full bg-[#5D4037]/5 w-fit inline-block">
-                  {awardsSettings.badge}
-                </span>
-              )}
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-tight text-zinc-900">
                 {awardsSettings.title.split('\n').map((line, idx) => (
                   <React.Fragment key={idx}>
