@@ -290,6 +290,71 @@ const Certifications = () => {
         </div>
       </section>
 
+      {/* Awards & Recognition Section */}
+      <section className="container-custom py-12 sm:py-16 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="space-y-8"
+          >
+            <div className="space-y-4">
+              {awardsSettings.badge && (
+                <span className="text-[#5D4037] font-bold uppercase tracking-[0.25em] text-xs px-3 py-1 rounded-full bg-[#5D4037]/5 w-fit inline-block">
+                  {awardsSettings.badge}
+                </span>
+              )}
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-tight text-zinc-900">
+                {awardsSettings.title.split('\n').map((line, idx) => (
+                  <React.Fragment key={idx}>
+                    {idx > 0 && <br />}
+                    {line}
+                  </React.Fragment>
+                ))}
+              </h2>
+            </div>
+            <p className="text-zinc-600 text-lg leading-relaxed font-light">
+              {awardsSettings.desc}
+            </p>
+            <div className="flex items-center space-x-8 pt-4">
+              <div>
+                <h4 className="text-3xl font-bold text-zinc-950">{awardsSettings.stat1Val}</h4>
+                <p className="text-zinc-500 text-xs uppercase tracking-widest mt-1">{awardsSettings.stat1Label}</p>
+              </div>
+              <div className="w-px h-12 bg-zinc-200" />
+              <div>
+                <h4 className="text-3xl font-bold text-zinc-950">{awardsSettings.stat2Val}</h4>
+                <p className="text-zinc-500 text-xs uppercase tracking-widest mt-1">{awardsSettings.stat2Label}</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative group cursor-pointer aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl border border-zinc-200/50 bg-white p-4"
+            onClick={() => setSelectedDoc({
+              title: awardsSettings.title.replace('\n', ' '),
+              image: awardsSettings.image,
+              desc: awardsSettings.desc
+            })}
+          >
+            <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
+              <img loading="lazy" src={getOptimizedImageUrl(awardsSettings.image, 800)} alt="Awards Showcase" className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700" />
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300" />
+              {/* Zoom Overlay indicator on hover */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 transition-opacity duration-300 text-white font-bold uppercase tracking-wider text-xs">
+                Click to View Gallery
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Global Exhibition Showcase */}
       <section className="py-12 sm:py-16 md:py-24 bg-zinc-950 text-white overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[3rem] mx-2 sm:mx-4 mb-10 sm:mb-16 md:mb-20 shadow-xl border border-white/5">
         <div className="container-custom">
@@ -554,69 +619,6 @@ const Certifications = () => {
               </div>
             </motion.div>
           ))}
-        </div>
-      </section>
-
-      {/* Awards & Recognition Section */}
-      <section className="container-custom pb-16 sm:pb-20 md:pb-28 border-t border-zinc-200/80 pt-12 sm:pt-16 md:pt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="space-y-8"
-          >
-            <div className="space-y-4">
-              <span className="text-[#5D4037] font-bold uppercase tracking-[0.25em] text-xs px-3 py-1 rounded-full bg-[#5D4037]/5 w-fit inline-block">
-                {awardsSettings.badge}
-              </span>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-tight text-zinc-900">
-                {awardsSettings.title.split('\n').map((line, idx) => (
-                  <React.Fragment key={idx}>
-                    {idx > 0 && <br />}
-                    {line}
-                  </React.Fragment>
-                ))}
-              </h2>
-            </div>
-            <p className="text-zinc-600 text-lg leading-relaxed font-light">
-              {awardsSettings.desc}
-            </p>
-            <div className="flex items-center space-x-8 pt-4">
-              <div>
-                <h4 className="text-3xl font-bold text-zinc-950">{awardsSettings.stat1Val}</h4>
-                <p className="text-zinc-500 text-xs uppercase tracking-widest mt-1">{awardsSettings.stat1Label}</p>
-              </div>
-              <div className="w-px h-12 bg-zinc-200" />
-              <div>
-                <h4 className="text-3xl font-bold text-zinc-950">{awardsSettings.stat2Val}</h4>
-                <p className="text-zinc-500 text-xs uppercase tracking-widest mt-1">{awardsSettings.stat2Label}</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative group cursor-pointer aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl border border-zinc-200/50 bg-white p-4"
-            onClick={() => setSelectedDoc({
-              title: awardsSettings.title.replace('\n', ' '),
-              image: awardsSettings.image,
-              desc: awardsSettings.desc
-            })}
-          >
-            <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
-              <img loading="lazy" src={getOptimizedImageUrl(awardsSettings.image, 800)} alt="Awards Showcase" className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300" />
-              {/* Zoom Overlay indicator on hover */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 transition-opacity duration-300 text-white font-bold uppercase tracking-wider text-xs">
-                Click to View Gallery
-              </div>
-            </div>
-          </motion.div>
         </div>
       </section>
 
