@@ -220,39 +220,17 @@ const WorldMap = ({ countries }) => {
                   top: `${tooltipPos.y}px`,
                   transform: 'translate(-50%, -100%)',
                 }}
-                className="pointer-events-none z-40 w-72 bg-white/95 backdrop-blur-md border border-[#D2C9B1]/40 p-4 rounded-2xl shadow-xl space-y-2.5"
+                className="pointer-events-none z-40 w-fit max-w-[280px] bg-white/95 backdrop-blur-md border border-[#D2C9B1]/40 p-3 rounded-2xl shadow-xl"
               >
                 {/* Arrow pointer */}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-x-[8px] border-x-transparent border-t-[8px] border-t-white/95" />
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 whitespace-nowrap">
                   <span className="text-2xl filter drop-shadow-sm select-none">{hoveredCountry.flag}</span>
-                  <div>
-                    <h4 className="font-display font-bold text-zinc-900 text-sm leading-tight">
-                      {hoveredCountry.fullName}
-                    </h4>
-                    {hoveredCountry.region && (
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-[#5D4037]">
-                        {hoveredCountry.region}
-                      </span>
-                    )}
-                  </div>
+                  <h4 className="font-display font-bold text-zinc-900 text-sm leading-none">
+                    {hoveredCountry.fullName}
+                  </h4>
                 </div>
-                
-                {hoveredCountry.detail && (
-                  <p className="text-zinc-600 text-xs leading-relaxed font-light">
-                    {hoveredCountry.detail}
-                  </p>
-                )}
-                
-                {hoveredCountry.highlight && (
-                  <div className="pt-2 border-t border-[#D2C9B1]/30">
-                    <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">Key Focus</span>
-                    <p className="text-[11px] font-bold text-[#5D4037] leading-snug">
-                      {hoveredCountry.highlight}
-                    </p>
-                  </div>
-                )}
               </motion.div>
             )}
           </AnimatePresence>
