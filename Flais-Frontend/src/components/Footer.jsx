@@ -164,6 +164,7 @@ const Footer = () => {
               <ul className="space-y-4 text-[15px] font-medium">
                 <li><Link to="/products?cat=full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Full Body Tiles</Link></li>
                 <li><Link to="/products?cat=digital-full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Color Body Tiles</Link></li>
+                <li><Link to="/products?cat=gvt-pgvt" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> GVT/PGVT Tiles</Link></li>
                 <li><Link to="/catalog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Catalogues</Link></li>
                 <li><Link to="/blog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Latest Blogs</Link></li>
               </ul>
