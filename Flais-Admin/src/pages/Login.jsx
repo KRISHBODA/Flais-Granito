@@ -65,7 +65,7 @@ const Login = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@flais.com"
+                  placeholder="Enter email"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm transition-all focus:border-[#0145F2] outline-none"
                 />
               </div>
