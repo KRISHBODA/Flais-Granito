@@ -147,9 +147,9 @@ const Footer = () => {
             </h4>
             <ul className="space-y-4 text-[15px] font-medium">
               <li><Link to="/about" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Why FLAIS</Link></li>
-              <li><Link to="/where-to-buy" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Where to Buy</Link></li>
-              <li><Link to="/about" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Manufacturing Excellence</Link></li>
-              <li><Link to="/about" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Certification</Link></li>
+              <li><Link to="/where-to-buy" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Flais Park</Link></li>
+              <li><Link to="/installation-guide" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Installation Guide</Link></li>
+              <li><Link to="/certifications" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Achievement</Link></li>
               <li><Link to="/calculator" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Tile Calculator</Link></li>
             </ul>
           </div>
@@ -164,7 +164,7 @@ const Footer = () => {
               <ul className="space-y-4 text-[15px] font-medium">
                 <li><Link to="/products?cat=full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Full Body Tiles</Link></li>
                 <li><Link to="/products?cat=digital-full-body" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Color Body Tiles</Link></li>
-                <li><Link to="/catalog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Downloads</Link></li>
+                <li><Link to="/catalog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Catalogues</Link></li>
                 <li><Link to="/blog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Latest Blogs</Link></li>
               </ul>
             </div>
