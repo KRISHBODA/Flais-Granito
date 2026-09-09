@@ -15,6 +15,14 @@ const WhereToBuy = () => {
   const [isCityOpen, setIsCityOpen] = useState(false);
   const [selectedDealer, setSelectedDealer] = useState(null);
 
+  const formatDealerName = (name) => {
+    if (!name) return '';
+    return name
+      .replace(/\s*\(\s*/g, ' (')
+      .replace(/\s*\)\s*/g, ')')
+      .trim();
+  };
+
   const getMapQuery = (dealer) => {
     if (!dealer) return '';
     const latLngPattern = /^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/;
@@ -311,15 +319,19 @@ const WhereToBuy = () => {
                           : 'border-zinc-100 hover:border-[#5D4037]/30 hover:shadow-md'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <h4 className={`font-bold text-lg transition-colors ${
+                      <div className="flex justify-between items-start gap-2.5 mb-3">
+                        <h4 className={`font-bold text-base sm:text-lg leading-snug transition-colors ${
                           isSelected ? 'text-[#5D4037]' : 'text-zinc-900 group-hover:text-[#5D4037]'
-                        }`}>{dealer.name}</h4>
-                        <span className={`text-[10px] uppercase font-bold tracking-widest py-1 px-2 rounded transition-colors ${
-                          isSelected ? 'bg-[#5D4037] text-white' : 'bg-beige-100 text-[#5D4037]'
                         }`}>
-                          {dealer.type}
-                        </span>
+                          {formatDealerName(dealer.name)}
+                        </h4>
+                        {dealer.type && (
+                          <span className={`shrink-0 whitespace-nowrap text-[9px] sm:text-[10px] uppercase font-bold tracking-wider py-1 px-2.5 rounded-full transition-colors ${
+                            isSelected ? 'bg-[#5D4037] text-white' : 'bg-[#5D4037]/10 text-[#5D4037]'
+                          }`}>
+                            {dealer.type}
+                          </span>
+                        )}
                       </div>
                       
                       <div className="space-y-3 text-sm text-zinc-600">
