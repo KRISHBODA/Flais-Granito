@@ -436,14 +436,15 @@ const About = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8">
             {pillars.map((pillar, i) => {
-              const color = i === 1
+              const isBrown = i === 1 || i === 3;
+              const color = isBrown
                 ? "bg-[#5D4037] text-white shadow-xl shadow-[#5D4037]/20"
                 : i === 5
                   ? "bg-[#D2C9B1] text-zinc-900 border border-[#D2C9B1]"
                   : "bg-white text-zinc-900 border border-[#D2C9B1]/30";
-              const gradient = i === 1
+              const gradient = isBrown
                 ? "from-[#2C1810] to-[#5D4037]"
                 : i === 5
                   ? "from-[#D2C9B1] to-[#A89F8A]"
@@ -456,17 +457,16 @@ const About = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.7, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                  className={`group relative p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] overflow-hidden transition-all duration-700 hover:-translate-y-3 shadow-sm hover:shadow-xl ${color}`}
+                  className={`group relative p-6 sm:p-8 lg:p-6 xl:p-8 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden transition-all duration-700 hover:-translate-y-3 shadow-sm hover:shadow-xl flex flex-col justify-between h-full ${color}`}
                 >
                   <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-3xl opacity-20 bg-gradient-to-br ${gradient}`} />
-                  <div className="relative z-10 space-y-8">
-      
+                  <div className="relative z-10 space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-2xl font-display font-bold tracking-tight">
+                      <h3 className="text-xl sm:text-2xl lg:text-xl xl:text-2xl font-display font-bold tracking-tight">
                         {pillar.title}
                       </h3>
-                      <div className={`w-10 h-0.5 rounded-full transition-all duration-500 group-hover:w-20 ${color.includes('bg-[#5D4037]') ? 'bg-white/30' : 'bg-[#5D4037]/30'}`} />
-                      <p className={`text-base leading-relaxed font-light ${color.includes('bg-[#5D4037]') ? 'text-white/70' : 'text-zinc-600'}`}>
+                      <div className={`w-10 h-0.5 rounded-full transition-all duration-500 group-hover:w-20 ${isBrown ? 'bg-white/30' : 'bg-[#5D4037]/30'}`} />
+                      <p className={`text-sm sm:text-base leading-relaxed font-light ${isBrown ? 'text-white/70' : 'text-zinc-600'}`}>
                         {pillar.desc}
                       </p>
                     </div>
