@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Globe, ChevronDown, Search } from 'lucide-react';
+import { Menu, X, Globe, ChevronDown, Search, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoBlack from '../assets/Flais_black.png';
 import logoWhite from '../assets/Flais White.png';
@@ -157,85 +157,56 @@ const Navbar = () => {
   const [showLangs, setShowLangs] = useState(false);
   const [langSearch, setLangSearch] = useState('');
 
-  useEffect(() => {
-    window.googleTranslateElementInit = () => {
-      try {
-        if (window.google && window.google.translate && window.google.translate.TranslateElement) {
-          const layout = window.google.translate.TranslateElement.InlineLayout?.SIMPLE || 0;
-          new window.google.translate.TranslateElement(
-            { pageLanguage: 'en', includedLanguages: '', layout: layout, autoDisplay: false },
-            'google_translate_element'
-          );
-        }
-      } catch (err) {
-              }
-    };
-    if (window.google && window.google.translate) {
-      try {
-        window.googleTranslateElementInit();
-      } catch (err) {
-              }
-    }
+  const [currentLang, setCurrentLang] = useState('en');
 
-    const style = document.createElement('style');
-    style.id = 'hide-gt-banner';
-    style.innerHTML = `.goog-te-banner-frame, #goog-gt-tt, .goog-te-balloon-frame { display: none !important; } body { top: 0 !important; } .skiptranslate { display: none !important; }`;
-    document.head.appendChild(style);
-    return () => { const el = document.getElementById('hide-gt-banner'); if (el) el.remove(); };
+  useEffect(() => {
+    // Read active language from googtrans cookie
+    const getActiveLangFromCookie = () => {
+      const match = document.cookie.match(/googtrans=\/[a-zA-Z-]+\/([a-zA-Z-]+)/);
+      if (match && match[1]) {
+        setCurrentLang(match[1]);
+      }
+    };
+    getActiveLangFromCookie();
+
+    // Check if Google Translate was initialized; if not, trigger initialization once
+    if (window.googleTranslateElementInit && !window._gt_init) {
+      window.googleTranslateElementInit();
+    }
   }, []);
 
   const selectLanguage = (code) => {
-    // Set cookies for both main domain and subdomains to persist translation across routing
-    const cookieValue = code === 'en' ? '/en/en' : `/en/${code}`;
-
-    // Clear existing googtrans cookies across all possible domain levels to avoid duplicates
+    const isEnglish = code === 'en';
+    const cookieValue = isEnglish ? '/en/en' : `/en/${code}`;
     const hostname = window.location.hostname;
-    const parts = hostname.split('.');
-    
-    const clearCookie = (domain) => {
-      const base = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;';
-      document.cookie = base;
-      if (domain) {
-        document.cookie = `${base} domain=${domain};`;
-        document.cookie = `${base} domain=.${domain};`;
-      }
-    };
 
-    // Clear without domain (defaults to current host)
-    clearCookie();
-    // Clear on current hostname
-    clearCookie(hostname);
-
-    // Clear on all parent domain levels
-    for (let i = 0; i < parts.length - 1; i++) {
-      const parentDomain = parts.slice(i).join('.');
-      if (parentDomain) {
-        clearCookie(parentDomain);
-      }
-    }
-
-    // Set new cookie value across all possible domain levels
+    // Set cookie on all paths and hostnames
     document.cookie = `googtrans=${cookieValue}; path=/;`;
-    document.cookie = `googtrans=${cookieValue}; domain=${hostname}; path=/;`;
-    document.cookie = `googtrans=${cookieValue}; domain=.${hostname}; path=/;`;
-
-    for (let i = 0; i < parts.length - 1; i++) {
-      const parentDomain = parts.slice(i).join('.');
-      if (parentDomain && parentDomain !== hostname) {
-        document.cookie = `googtrans=${cookieValue}; domain=${parentDomain}; path=/;`;
-        document.cookie = `googtrans=${cookieValue}; domain=.${parentDomain}; path=/;`;
+    if (hostname !== 'localhost' && !hostname.includes('127.0.0.1')) {
+      document.cookie = `googtrans=${cookieValue}; domain=.${hostname}; path=/;`;
+      document.cookie = `googtrans=${cookieValue}; domain=${hostname}; path=/;`;
+      const parts = hostname.split('.');
+      for (let i = 0; i < parts.length - 1; i++) {
+        const parentDomain = parts.slice(i).join('.');
+        if (parentDomain) {
+          document.cookie = `googtrans=${cookieValue}; domain=.${parentDomain}; path=/;`;
+        }
       }
     }
 
-    // Dispatch native Google combo box translation change if loaded
+    setCurrentLang(code);
+    setShowLangs(false);
+
+    // Dispatch native Google combo box translation change if available
     const select = document.querySelector('.goog-te-combo');
     if (select) {
       select.value = code;
-      select.dispatchEvent(new Event('change'));
+      select.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // Refresh to force the Google Translate script to translate immediately
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 200);
   };
 
   const filteredLanguages = availableLanguages.filter(lang =>
@@ -423,15 +394,23 @@ const Navbar = () => {
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-2 gap-y-1 overflow-y-auto overscroll-contain custom-scrollbar pr-2 pb-2 notranslate">
                         {filteredLanguages.length > 0 ? (
-                          filteredLanguages.map((lang) => (
-                            <button
-                              key={lang.code}
-                              onClick={() => selectLanguage(lang.code)}
-                              className="text-left py-2 px-3 text-[14px] leading-normal text-zinc-600 hover:bg-beige-50 hover:text-[#5D4037] rounded-lg transition-colors block w-full whitespace-nowrap overflow-visible"
-                            >
-                              {lang.label}
-                            </button>
-                          ))
+                          filteredLanguages.map((lang) => {
+                            const isSelected = currentLang === lang.code;
+                            return (
+                              <button
+                                key={lang.code}
+                                onClick={() => selectLanguage(lang.code)}
+                                className={`text-left py-2 px-3 text-[14px] leading-normal rounded-lg transition-colors flex items-center justify-between w-full whitespace-nowrap overflow-visible ${
+                                  isSelected
+                                    ? 'bg-[#5D4037] text-white font-bold shadow-sm'
+                                    : 'text-zinc-600 hover:bg-beige-50 hover:text-[#5D4037]'
+                                }`}
+                              >
+                                <span>{lang.label}</span>
+                                {isSelected && <Check size={14} className="text-white ml-2 shrink-0" />}
+                              </button>
+                            );
+                          })
                         ) : (
                           <div className="col-span-full py-10 text-center text-zinc-400 text-sm">
                             No languages found matching "{langSearch}"

@@ -29,60 +29,66 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="apple-touch-icon" sizes="180x180"
       href="https://www.flaisgranito.com/apple-touch-icon.png" />
 
-    <!-- Security Headers (Server-side handled in production) -->
+    <!-- Security Headers -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta
       http-equiv="Content-Security-Policy"
       content="
-    default-src 'self';
-      https://www.google.com
-      https://translate.google.com
-      https://translate.googleapis.com
-      https://translate-pa.googleapis.com
-      https://translate-a.translate.google.com
-      https://translate-b.translate.google.com
-      https://www.googletagmanager.com
-      https://www.google-analytics.com
-      https://www.gstatic.com;  
-    style-src 'self' 'unsafe-inline'
-      https://fonts.googleapis.com
-      https://translate.googleapis.com
-      https://www.gstatic.com;
-    font-src 'self'
-      https://fonts.googleapis.com
-      https://fonts.gstatic.com
-      https://translate.gstatic.com
-      data:;
-    img-src 'self' data: blob:
-      http://localhost:8000
-      https://www.flaisgranito.com
-      https:;
-    media-src 'self' blob:
-      http://localhost:8000
-      https://www.flaisgranito.com
-      https:;
-    connect-src 'self'
-      blob:
-      http://localhost:8000
-      https://www.flaisgranito.com
-      https://www.google.com
-      https://translate.google.com
-      https://translate.googleapis.com
-      https://translate-pa.googleapis.com
-      https://translate-a.translate.google.com
-      https://translate-b.translate.google.com
-      https://www.google-analytics.com
-      https://www.googletagmanager.com
-      wss:
-      https:;
-    frame-src 'self'
-      https://translate.google.com
-      https://www.google.com
-      https://maps.google.com
-      https://www.googletagmanager.com;
-    base-uri 'self';
-    form-action 'self';
-  " />
+        default-src 'self' https: http: data: blob:;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval'
+          https://translate.google.com
+          https://translate.googleapis.com
+          https://translate-pa.googleapis.com
+          https://translate-a.translate.google.com
+          https://translate-b.translate.google.com
+          https://www.google.com
+          https://www.gstatic.com
+          https://www.googletagmanager.com
+          https://www.google-analytics.com;
+        style-src 'self' 'unsafe-inline'
+          https://fonts.googleapis.com
+          https://translate.googleapis.com
+          https://translate.google.com
+          https://www.gstatic.com;
+        font-src 'self'
+          https://fonts.googleapis.com
+          https://fonts.gstatic.com
+          https://translate.gstatic.com
+          data:;
+        img-src 'self' data: blob:
+          http://localhost:8000
+          https://www.flaisgranito.com
+          https://translate.google.com
+          https://translate.googleapis.com
+          https://www.gstatic.com
+          https://www.google.com
+          https:;
+        media-src 'self' blob:
+          http://localhost:8000
+          https://www.flaisgranito.com
+          https:;
+        connect-src 'self'
+          blob:
+          http://localhost:8000
+          https://www.flaisgranito.com
+          https://www.google.com
+          https://translate.google.com
+          https://translate.googleapis.com
+          https://translate-pa.googleapis.com
+          https://translate-a.translate.google.com
+          https://translate-b.translate.google.com
+          https://www.google-analytics.com
+          https://www.googletagmanager.com
+          wss:
+          https:;
+        frame-src 'self'
+          https://translate.google.com
+          https://www.google.com
+          https://maps.google.com
+          https://www.googletagmanager.com;
+        base-uri 'self';
+        form-action 'self';
+      " />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta property="og:site_name" content="FLAIS GRANITO" />
 
@@ -100,43 +106,95 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
       rel="stylesheet">
 
-    <!-- Suppress Google Translate toolbar -->
+    <!-- Suppress Google Translate default banner and popups completely -->
     <style>
+    body {
+      top: 0px !important;
+      position: static !important;
+    }
+
+    body > .skiptranslate,
+    body > iframe.skiptranslate,
+    body > iframe.goog-te-banner-frame,
     .goog-te-banner-frame,
     .goog-te-balloon-frame,
-    #goog-gt-tt {
+    .goog-te-banner,
+    #goog-gt-tt,
+    .goog-tooltip,
+    .goog-tooltip:hover,
+    .VIpgJd-ZVi9od-OR9uAe-HvHrfc,
+    .VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+    [class*="VIpgJd-ZVi9od"],
+    body > iframe[id*=":"] {
       display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      height: 0px !important;
+      width: 0px !important;
+      border: none !important;
+      pointer-events: none !important;
     }
 
-    .skiptranslate {
-      display: none !important;
-    }
-
-    body {
-      top: 0 !important;
+    .goog-text-highlight {
+      background: none !important;
+      box-shadow: none !important;
     }
 
     #google_translate_element {
-      display: none !important;
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
     }
   </style>
 
-    <!-- Security: Initialize empty for translate -->
+  <script>
+    // MutationObserver to ensure Google Translate never pushes the body down or shows banners
+    (function () {
+      function fixLayout() {
+        if (document.body && document.body.style.top && document.body.style.top !== '0px') {
+          document.body.style.top = '0px';
+        }
+        var banners = document.querySelectorAll('.goog-te-banner-frame, body > .skiptranslate, body > iframe.skiptranslate, [class*="VIpgJd-ZVi9od"], [id*=":1.container"]');
+        banners.forEach(function (el) {
+          el.style.display = 'none';
+          el.style.visibility = 'hidden';
+        });
+      }
+      if (typeof MutationObserver !== 'undefined') {
+        var observer = new MutationObserver(fixLayout);
+        window.addEventListener('DOMContentLoaded', function () {
+          observer.observe(document.body, { attributes: true, attributeFilter: ['style'], childList: true });
+          fixLayout();
+        });
+      }
+      setInterval(fixLayout, 500);
+    })();
+  </script>
+
+    <!-- Security: Initialize translate element safely once -->
     <script>
     window.googleTranslateElementInit = function () {
-      if (window.google && window.google.translate && window.google.translate.TranslateElement) {
-        new window.google.translate.TranslateElement({
-          pageLanguage: 'en',
-          includedLanguages: '',
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false
-        }, 'google_translate_element');
+      try {
+        if (!window._gt_init && window.google && window.google.translate && window.google.translate.TranslateElement) {
+          window._gt_init = true;
+          new window.google.translate.TranslateElement({
+            pageLanguage: 'en',
+            autoDisplay: false
+          }, 'google_translate_element');
+        }
+      } catch (e) {
+        console.error("Translate init error:", e);
       }
     };
   </script>
 
-    <!-- Google Translate Script (async with integrity checks) -->
-    <script async
+    <!-- Google Translate Script -->
+    <script
       src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <script type="application/ld+json">

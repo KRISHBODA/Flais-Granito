@@ -21,6 +21,36 @@ body {
     overflow-x: hidden;
     width: 100%;
     background: #ffffff;
+    top: 0px !important;
+    position: static !important;
+}
+
+/* Suppress Google Translate default banner bar and tooltip popups */
+body > .skiptranslate,
+body > iframe.skiptranslate,
+body > iframe.goog-te-banner-frame,
+.goog-te-banner-frame,
+.goog-te-balloon-frame,
+.goog-te-banner,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover,
+.VIpgJd-ZVi9od-OR9uAe-HvHrfc,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+[class*="VIpgJd-ZVi9od"],
+body > iframe[id*=":"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0px !important;
+    width: 0px !important;
+    border: none !important;
+    pointer-events: none !important;
+}
+
+.goog-text-highlight {
+    background: none !important;
+    box-shadow: none !important;
 }
 
 #root {
