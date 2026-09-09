@@ -6,12 +6,14 @@ const {
   getProductById,
   updateProduct,
   deleteProduct,
+  scanProduct,
 } = require("../controllers/productController");
 const upload = require("../middleware/upload");
 const { protect } = require("../middleware/authMiddleware");
 
 // Public Routes
 router.get("/", getProducts);
+router.get("/scan/:code", scanProduct);
 router.get("/:id", getProductById);
 
 // Protected Routes (Admin)

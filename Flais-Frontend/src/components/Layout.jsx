@@ -10,10 +10,11 @@ const Layout = ({ children }) => {
   const { pathname } = useLocation();
 
   const isViewerPage = pathname.startsWith('/catalog/view');
+  const isSmartpage = pathname.startsWith('/box-countertop-15mm');
 
-  if (isViewerPage) {
+  if (isViewerPage || isSmartpage) {
     return (
-      <div className="flex flex-col min-h-screen bg-zinc-950">
+      <div className={`flex flex-col min-h-screen ${isViewerPage ? 'bg-zinc-950' : ''}`}>
         <Toaster position="top-right" />
         <AnalyticsTracker />
         <main className="flex-grow">

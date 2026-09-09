@@ -225,3 +225,77 @@ exports.deleteProduct = async (req, res) => {
     });
   }
 };
+
+// @desc    Scan / lookup product by code, slug, id, or title
+// @route   GET /api/products/scan/:code
+// @access  Public
+exports.scanProduct = async (req, res) => {
+  try {
+    let rawCode = (req.params.code || "").trim();
+    if (!rawCode) {
+      return res.status(400).json({ success: false, message: "Product code is required" });
+    }
+
+    try {
+      rawCode = decodeURIComponent(rawCode);
+    } catch (e) {
+      // ignore decode error
+    }
+
+    // If rawCode is a full URL or path containing /products/:slug
+    let code = rawCode;
+    const urlMatch = rawCode.match(/\/products\/([^/?#]+)/i);
+    if (urlMatch && urlMatch[1]) {
+      code = urlMatch[1].trim();
+    }
+
+    // Strip common brand prefixes (e.g. FG-, fg-, FLAIS-)
+    const cleanPrefixCode = code.replace(/^(?:FG|fg|FLAIS|flais)[\s-_:]*/i, "").trim();
+
+    // 1. Check if 24-hex ObjectId
+    if (code.match(/^[0-9a-fA-F]{24}$/)) {
+      const byId = await Product.findById(code);
+      if (byId) return res.status(200).json({ success: true, product: byId });
+    }
+
+    // 2. Exact slug match
+    const slugCandidates = [code.toLowerCase(), cleanPrefixCode.toLowerCase()];
+    for (const s of slugCandidates) {
+      if (!s) continue;
+      const bySlug = await Product.findOne({ slug: s });
+      if (bySlug) return res.status(200).json({ success: true, product: bySlug });
+    }
+
+    // 3. Exact title match (case-insensitive)
+    const titleCandidates = [code, cleanPrefixCode];
+    for (const t of titleCandidates) {
+      if (!t) continue;
+      const byTitle = await Product.findOne({
+        title: { $regex: `^${escapeRegExp(t)}$`, $options: "i" },
+      });
+      if (byTitle) return res.status(200).json({ success: true, product: byTitle });
+    }
+
+    // 4. Fuzzy / substring match across title and slug
+    const searchTerm = cleanPrefixCode || code;
+    if (searchTerm.length >= 2) {
+      const fuzzyProduct = await Product.findOne({
+        $or: [
+          { title: { $regex: escapeRegExp(searchTerm), $options: "i" } },
+          { slug: { $regex: escapeRegExp(searchTerm.toLowerCase().replace(/\s+/g, "-")), $options: "i" } },
+        ],
+      });
+
+      if (fuzzyProduct) {
+        return res.status(200).json({ success: true, product: fuzzyProduct });
+      }
+    }
+
+    return res.status(404).json({
+      success: false,
+      message: "Product not found",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error: error.message });
+  }
+};

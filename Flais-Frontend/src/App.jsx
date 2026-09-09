@@ -46,6 +46,8 @@ import Preloader from './components/Preloader';
 const Certifications = lazyWithRetry(() => import('./pages/Certifications'));
 const InstallationGuide = lazyWithRetry(() => import('./pages/InstallationGuide'));
 const TileCalculator = lazyWithRetry(() => import('./pages/TileCalculator'));
+const Scan = lazyWithRetry(() => import('./pages/Scan'));
+const CountertopSmartpage = lazyWithRetry(() => import('./pages/CountertopSmartpage'));
 
 import ComingSoon from './pages/ComingSoon';
 
@@ -94,6 +96,9 @@ function App() {
                 <Route path="/certifications" element={<Certifications />} />
                 <Route path="/installation-guide" element={<InstallationGuide />} />
                 <Route path="/calculator" element={<TileCalculator />} />
+                <Route path="/scan" element={<Scan />} />
+                <Route path="/box-countertop-15mm-english" element={<CountertopSmartpage />} />
+                <Route path="/box-countertop-15mm" element={<CountertopSmartpage />} />
               </Routes>
             </Suspense>
           </Layout>
