@@ -26,7 +26,6 @@ import {
   ThumbsDown, 
   Send, 
   Loader2, 
-  ArrowLeft,
   Share2,
   Check
 } from 'lucide-react';
@@ -161,25 +160,6 @@ const CountertopSmartpage = () => {
       {/* Main Content Container */}
       <div className="relative z-10 w-full max-w-xl mx-auto px-4 py-8 sm:py-12 flex flex-col items-center">
         
-        {/* Top Minimal Navigation Bar */}
-        <div className="w-full flex items-center justify-between mb-6 text-white/80">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/15 text-xs font-medium transition-colors"
-          >
-            <ArrowLeft size={13} />
-            <span>flaisgranito.com</span>
-          </Link>
-
-          <Link
-            to="/catalog"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/15 text-xs font-medium transition-colors"
-          >
-            <span>Catalog</span>
-            <ExternalLink size={12} />
-          </Link>
-        </div>
-
         {/* Brand Card & Profile Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -541,6 +521,8 @@ const CountertopSmartpage = () => {
         {/* Minimal Luxury Footer */}
         <footer className="w-full text-center text-white/75 text-xs space-y-3 pb-8">
           <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] font-semibold tracking-wider uppercase">
+            <Link to="/catalog" className="hover:text-white transition-colors">Catalog</Link>
+            <span>•</span>
             <Link to="/calculator" className="hover:text-white transition-colors">Tile Calculator</Link>
             <span>•</span>
             <Link to="/products" className="hover:text-white transition-colors">Products</Link>
