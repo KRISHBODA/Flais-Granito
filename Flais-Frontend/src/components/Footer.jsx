@@ -169,11 +169,14 @@ const Footer = () => {
                 <li><Link to="/blog" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Latest Blogs</Link></li>
               </ul>
             </div>
-            <div className="pt-6 mt-auto flex flex-col items-start justify-start gap-2 select-none">
-              <span className="text-[15px] font-semibold tracking-wider text-zinc-500">
-                Developed by Krish Boda
+            <div className="pt-6 mt-auto flex flex-col items-start justify-start gap-1 select-none">
+              <span className="text-[14px] font-medium tracking-wider text-zinc-500">
+                Developed by
               </span>
-              <a href="tel:9313735697" className="text-[15px] font-medium tracking-wider text-zinc-500 hover:text-white transition-colors select-text">
+              <span className="text-[15px] font-semibold tracking-wider text-zinc-400">
+                Krish Boda
+              </span>
+              <a href="tel:9313735697" className="text-[15px] font-medium tracking-wider text-zinc-500 hover:text-white transition-colors select-text pt-1">
                 +91 93137 35697
               </a>
             </div>
