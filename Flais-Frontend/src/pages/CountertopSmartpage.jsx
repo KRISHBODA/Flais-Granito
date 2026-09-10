@@ -132,7 +132,7 @@ const CountertopSmartpage = () => {
           <h1 className="text-2xl sm:text-3xl font-display font-bold text-white uppercase tracking-tight mb-1">
             Learn before you lay
           </h1>
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#D4AF37] mb-3">
+          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#c5a880] mb-3">
             15mm Countertop & Porcelain Slabs
           </p>
           <p className="text-xs text-zinc-400 font-light max-w-sm mx-auto leading-relaxed">
@@ -144,7 +144,7 @@ const CountertopSmartpage = () => {
             <a
               href="tel:+919586733300"
               aria-label="Call technical desk"
-              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#D4AF37] text-[#D4AF37] hover:text-black border border-zinc-800 hover:border-[#D4AF37] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
+              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#5D4037] text-[#c5a880] hover:text-white border border-zinc-800 hover:border-[#c5a880] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
             >
               <Phone size={18} />
             </a>
@@ -162,7 +162,7 @@ const CountertopSmartpage = () => {
             <a
               href="mailto:info@flaisgranito.com?subject=15mm%20Countertop%20Technical%20Inquiry"
               aria-label="Send email"
-              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#D4AF37] text-[#D4AF37] hover:text-black border border-zinc-800 hover:border-[#D4AF37] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
+              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#5D4037] text-[#c5a880] hover:text-white border border-zinc-800 hover:border-[#c5a880] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
             >
               <Mail size={18} />
             </a>
@@ -172,7 +172,7 @@ const CountertopSmartpage = () => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View Factory & Showroom Location"
-              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#D4AF37] text-[#D4AF37] hover:text-black border border-zinc-800 hover:border-[#D4AF37] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
+              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#5D4037] text-[#c5a880] hover:text-white border border-zinc-800 hover:border-[#c5a880] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
             >
               <MapPin size={18} />
             </a>
@@ -197,22 +197,22 @@ const CountertopSmartpage = () => {
               >
                 <CardWrapper
                   {...wrapperProps}
-                  className="group relative w-full bg-zinc-950/95 hover:bg-black backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-zinc-800 hover:border-[#D4AF37]/80 shadow-xl hover:shadow-[0_12px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(212,175,55,0.15)] transition-all duration-300 cursor-pointer flex items-center gap-4 select-none active:scale-[0.99] text-inherit no-underline"
+                  className="group relative w-full bg-zinc-950/95 hover:bg-black backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-zinc-800 hover:border-[#c5a880]/60 shadow-xl hover:shadow-[0_12px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(197,168,128,0.12)] transition-all duration-300 cursor-pointer flex items-center gap-4 select-none active:scale-[0.99] text-inherit no-underline"
                 >
                   {/* Left Icon */}
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shrink-0 bg-[#1C1A17] border border-[#D4AF37]/35 text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black group-hover:border-[#D4AF37] transition-all duration-300 shadow-inner">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shrink-0 bg-[#1c1a17] border border-[#c5a880]/30 text-[#c5a880] group-hover:bg-[#5D4037] group-hover:text-white group-hover:border-[#c5a880] transition-all duration-300 shadow-inner">
                     <IconComponent size={24} />
                   </div>
 
                   {/* Center Content - Only Title */}
                   <div className="flex-1 min-w-0 text-left">
-                    <h3 className="text-base sm:text-lg font-display font-bold text-white group-hover:text-[#D4AF37] transition-colors tracking-wide truncate">
+                    <h3 className="text-base sm:text-lg font-display font-bold text-white group-hover:text-[#c5a880] transition-colors tracking-wide truncate">
                       {item.title}
                     </h3>
                   </div>
 
                   {/* Right Action Chevron / External Link Indicator */}
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 group-hover:border-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 group-hover:border-[#c5a880] group-hover:bg-[#5D4037] group-hover:text-white flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm">
                     {item.link ? <ExternalLink size={16} /> : <ChevronRight size={18} />}
                   </div>
                 </CardWrapper>
