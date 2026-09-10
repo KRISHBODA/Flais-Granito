@@ -36,21 +36,18 @@ const SMARTPAGE_ITEMS = [
     id: 'catalogue',
     title: 'Catalogue',
     icon: BookOpen,
-    iconColor: 'text-amber-800 bg-[#FAF8F5] border-[#D2C9B1]/60 group-hover:bg-[#5D4037] group-hover:text-white',
     link: '/catalog'
   },
   {
     id: 'installation-guide',
     title: 'Installation Guide',
     icon: Wrench,
-    iconColor: 'text-blue-800 bg-[#FAF8F5] border-[#D2C9B1]/60 group-hover:bg-[#5D4037] group-hover:text-white',
     link: '/installation-guide'
   },
   {
     id: 'packing-manual',
     title: 'Packing Manual',
-    icon: Package,
-    iconColor: 'text-emerald-800 bg-[#FAF8F5] border-[#D2C9B1]/60 group-hover:bg-[#5D4037] group-hover:text-white'
+    icon: Package
   }
 ];
 
@@ -120,11 +117,11 @@ const CountertopSmartpage = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full bg-white/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-zinc-200/90 shadow-xl text-center mb-6"
+          className="w-full bg-zinc-950/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-zinc-800 shadow-2xl text-center mb-6"
         >
           {/* Flais Logo */}
           <div className="flex justify-center mb-4">
-            <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#D2C9B1]/50 shadow-inner inline-flex items-center justify-center">
+            <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#D2C9B1]/60 shadow-md inline-flex items-center justify-center">
               <img
                 src={flaisLogoBlack}
                 alt="FLAIS Granito"
@@ -133,24 +130,23 @@ const CountertopSmartpage = () => {
             </div>
           </div>
 
-
           {/* Title & Subtitle */}
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-zinc-900 uppercase tracking-tight mb-1">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-white uppercase tracking-tight mb-1">
             Learn before you lay
           </h1>
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#5D4037] mb-3">
+          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#D4AF37] mb-3">
             15mm Countertop & Porcelain Slabs
           </p>
-          <p className="text-xs text-zinc-500 font-light max-w-sm mx-auto leading-relaxed">
+          <p className="text-xs text-zinc-400 font-light max-w-sm mx-auto leading-relaxed">
             Essential catalogue collections, technical installation manual, and packaging specifications for architects, fabricators, and master contractors.
           </p>
 
           {/* Quick Contact Bar */}
-          <div className="mt-6 pt-5 border-t border-zinc-100 flex items-center justify-center gap-3 sm:gap-4">
+          <div className="mt-6 pt-5 border-t border-zinc-800 flex items-center justify-center gap-3 sm:gap-4">
             <a
               href="tel:+919586733300"
               aria-label="Call technical desk"
-              className="w-11 h-11 rounded-full bg-[#FAF8F5] hover:bg-[#5D4037] text-[#5D4037] hover:text-white border border-[#D2C9B1]/60 flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
+              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#D4AF37] text-[#D4AF37] hover:text-black border border-zinc-800 hover:border-[#D4AF37] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
             >
               <Phone size={18} />
             </a>
@@ -160,7 +156,7 @@ const CountertopSmartpage = () => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Chat on WhatsApp"
-              className="w-11 h-11 rounded-full bg-[#FAF8F5] hover:bg-[#25D366] text-[#5D4037] hover:text-white border border-[#D2C9B1]/60 flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
+              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-zinc-800 hover:border-[#25D366] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
             >
               <WhatsAppIcon size={19} />
             </a>
@@ -168,7 +164,7 @@ const CountertopSmartpage = () => {
             <a
               href="mailto:info@flaisgranito.com?subject=15mm%20Countertop%20Technical%20Inquiry"
               aria-label="Send email"
-              className="w-11 h-11 rounded-full bg-[#FAF8F5] hover:bg-[#5D4037] text-[#5D4037] hover:text-white border border-[#D2C9B1]/60 flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
+              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#D4AF37] text-[#D4AF37] hover:text-black border border-zinc-800 hover:border-[#D4AF37] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
             >
               <Mail size={18} />
             </a>
@@ -178,7 +174,7 @@ const CountertopSmartpage = () => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View Factory & Showroom Location"
-              className="w-11 h-11 rounded-full bg-[#FAF8F5] hover:bg-[#5D4037] text-[#5D4037] hover:text-white border border-[#D2C9B1]/60 flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
+              className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#D4AF37] text-[#D4AF37] hover:text-black border border-zinc-800 hover:border-[#D4AF37] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
             >
               <MapPin size={18} />
             </a>
@@ -203,22 +199,22 @@ const CountertopSmartpage = () => {
               >
                 <CardWrapper
                   {...wrapperProps}
-                  className="group relative w-full bg-white/95 hover:bg-white backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-zinc-200/90 hover:border-[#5D4037]/50 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer flex items-center gap-4 select-none active:scale-[0.99] text-inherit no-underline"
+                  className="group relative w-full bg-zinc-950/95 hover:bg-black backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-zinc-800 hover:border-[#D4AF37]/80 shadow-xl hover:shadow-[0_12px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(212,175,55,0.15)] transition-all duration-300 cursor-pointer flex items-center gap-4 select-none active:scale-[0.99] text-inherit no-underline"
                 >
                   {/* Left Icon */}
-                  <div className={`w-13 h-13 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-300 ${item.iconColor}`}>
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shrink-0 bg-[#1C1A17] border border-[#D4AF37]/35 text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black group-hover:border-[#D4AF37] transition-all duration-300 shadow-inner">
                     <IconComponent size={24} />
                   </div>
 
                   {/* Center Content - Only Title */}
                   <div className="flex-1 min-w-0 text-left">
-                    <h3 className="text-base sm:text-lg font-display font-bold text-zinc-900 group-hover:text-[#5D4037] transition-colors truncate">
+                    <h3 className="text-base sm:text-lg font-display font-bold text-white group-hover:text-[#D4AF37] transition-colors tracking-wide truncate">
                       {item.title}
                     </h3>
                   </div>
 
                   {/* Right Action Chevron / External Link Indicator */}
-                  <div className="w-9 h-9 rounded-full bg-zinc-100 group-hover:bg-[#5D4037] text-zinc-400 group-hover:text-white flex items-center justify-center shrink-0 transition-colors shadow-2xs">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 group-hover:border-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm">
                     {item.link ? <ExternalLink size={16} /> : <ChevronRight size={18} />}
                   </div>
                 </CardWrapper>
