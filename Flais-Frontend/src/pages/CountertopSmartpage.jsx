@@ -135,7 +135,7 @@ const CountertopSmartpage = () => {
           <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#c5a880] mb-3">
             15mm Countertop & Porcelain Slabs
           </p>
-          <p className="text-xs text-zinc-400 font-light max-w-sm mx-auto leading-relaxed">
+          <p className="text-xs sm:text-[13px] text-zinc-200 font-normal max-w-md mx-auto leading-relaxed">
             Essential catalogue collections, technical installation manual, and packaging specifications for architects, fabricators, and master contractors.
           </p>
 
@@ -222,14 +222,14 @@ const CountertopSmartpage = () => {
         </div>
 
         {/* Minimal Luxury Footer */}
-        <footer className="w-full text-center text-zinc-600 text-xs space-y-1.5 pb-8">
-          <p className="text-xs font-medium text-zinc-600 tracking-wide">
-            Manufacture By Keval Granito
+        <footer className="w-full text-center text-zinc-900 text-xs space-y-1.5 pb-8">
+          <p className="text-xs sm:text-[13px] font-bold text-zinc-950 tracking-wide">
+            Manufactured By Keval Granito LLP
           </p>
-          <p className="text-[11px] font-light text-zinc-500">
+          <p className="text-[11px] sm:text-xs font-semibold text-zinc-800">
             FLAIS GRANITO • Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India
           </p>
-          <p className="text-[10px] text-zinc-400">
+          <p className="text-[10px] sm:text-[11px] font-medium text-zinc-700">
             © {new Date().getFullYear()} FLAIS GRANITO. All rights reserved.
           </p>
         </footer>
