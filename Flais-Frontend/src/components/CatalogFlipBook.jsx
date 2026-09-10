@@ -20,6 +20,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './CatalogFlipBook.css';
 import { resolveMediaUrl } from '../utils/imageOptimizer';
+import { trackAnalyticsEvent } from '../utils/analytics';
 
 const ASSETS_BASE_URL = import.meta.env.BASE_URL || '/';
 
@@ -217,7 +218,21 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
     'Preparing Pages',
     'Rendering First Page',
   ];
-  // Detailed stage UI removed — loader simplified to a spinner and 'Loading...'.
+  const handleDownloadPdf = () => {
+    trackAnalyticsEvent('pdf_download', {
+      pageKey: 'catalog-viewer',
+      pageLabel: 'Catalog PDF Viewer',
+      path: typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '/catalog/view',
+      title: catalogTitle || 'Catalog',
+      targetType: 'catalog_pdf',
+      targetId: flipPath || pdfUrl || catalogTitle,
+      targetLabel: catalogTitle || 'Catalog',
+      metadata: {
+        pdfUrl: pdfUrl || '',
+        flipPath: flipPath || '',
+      },
+    });
+  };
 
   // ── Prefetch PDF as a blob to avoid browser-native download handling ──
   useEffect(() => {
@@ -734,6 +749,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                     href={resolvedPdfUrl}
                     download
                     className="flipbook-download-btn"
+                    onClick={handleDownloadPdf}
                   >
                     <Download size={16} />
                     Download PDF
@@ -764,6 +780,7 @@ const CatalogFlipBook = ({ pdfUrl, flipPath, catalogTitle, onClose }) => {
                     href={resolvedPdfUrl}
                     download
                     className="flipbook-download-btn"
+                    onClick={handleDownloadPdf}
                   >
                     <Download size={16} />
                     Download PDF

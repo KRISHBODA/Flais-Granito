@@ -162,6 +162,20 @@ const Catalog = () => {
         console.error('Download failed:', err);
         // Fallback: open in new tab if blob fetch fails
         window.open(link, '_blank');
+        trackAnalyticsEvent('pdf_download', {
+          pageKey: 'catalog',
+          pageLabel: 'Catalog Library',
+          path: '/catalog',
+          title: catalog.title || 'Catalog',
+          targetType: 'catalog_pdf',
+          targetId: catalog._id || catalog.id || catalog.title,
+          targetLabel: catalog.title || 'Catalog',
+          metadata: {
+            pdfUrl: link,
+            flipPath: catalog.flipPath || '',
+            fallback: true,
+          },
+        });
       })
       .finally(() => {
         setDownloadingKey(null);

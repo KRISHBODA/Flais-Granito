@@ -74,11 +74,46 @@ exports.getAnalyticsSummary = async (req, res) => {
       topPagesMap.set(key, current);
     });
 
+    const CatalogPage = require("../models/CatalogPage");
+    let catalogTitleLookup = new Map();
+    try {
+      const catalogPage = await CatalogPage.findOne().lean();
+      if (catalogPage && Array.isArray(catalogPage.catalogs)) {
+        catalogPage.catalogs.forEach((cat) => {
+          if (cat.title) {
+            if (cat._id) catalogTitleLookup.set(cat._id.toString(), cat.title);
+            if (cat.flipPath) {
+              catalogTitleLookup.set(cat.flipPath.toLowerCase(), cat.title);
+              catalogTitleLookup.set(cat.flipPath.replace(/^flipbooks\//i, "").toLowerCase(), cat.title);
+            }
+            if (cat.link) catalogTitleLookup.set(cat.link.toLowerCase(), cat.title);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn("[analyticsController] CatalogPage lookup failed:", err.message);
+    }
+
     const pdfMap = new Map();
     [...pdfViews, ...pdfDownloads].forEach((event) => {
-      const key = event.targetId || event.targetLabel || event.path || "Unknown";
-      const label = event.targetLabel || event.title || key;
+      let rawLabel = cleanString(event.targetLabel || event.title);
+      if (!rawLabel && event.targetId) {
+        const idKey = event.targetId.trim().toLowerCase();
+        rawLabel = catalogTitleLookup.get(idKey) || catalogTitleLookup.get(idKey.replace(/^flipbooks\//i, "")) || cleanString(event.targetId);
+      }
+      if (!rawLabel) {
+        rawLabel = cleanString(event.path) || "Untitled PDF";
+      }
+
+      const label = rawLabel;
+      const key = label.toLowerCase().trim();
       const current = pdfMap.get(key) || { key, label, views: 0, downloads: 0, total: 0 };
+
+      // Keep the most descriptive, formatted display label
+      if (event.targetLabel && (current.label === "Untitled PDF" || current.label.includes("/") || current.label === current.key)) {
+        current.label = cleanString(event.targetLabel);
+      }
+
       if (event.eventType === "pdf_view") current.views += 1;
       if (event.eventType === "pdf_download") current.downloads += 1;
       current.total += 1;

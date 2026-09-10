@@ -75,11 +75,81 @@ const Analytics = () => {
     { label: 'Sessions', value: summary?.uniqueSessions, icon: Clock3, tone: 'from-rose-500 to-pink-500' },
   ];
 
-  const getEventLabel = (eventType) => {
-    if (eventType === 'page_view') return 'Page view';
-    if (eventType === 'pdf_view') return 'PDF view';
-    if (eventType === 'pdf_download') return 'PDF download';
-    return eventType;
+  const getEventBadge = (eventType) => {
+    if (eventType === 'pdf_download') {
+      return {
+        label: 'PDF download',
+        className: 'bg-amber-50 text-amber-700 border border-amber-200/80',
+        Icon: Download,
+      };
+    }
+    if (eventType === 'pdf_view') {
+      return {
+        label: 'PDF view',
+        className: 'bg-emerald-50 text-emerald-700 border border-emerald-200/80',
+        Icon: FileText,
+      };
+    }
+    return {
+      label: 'Page view',
+      className: 'bg-blue-50 text-[#0145F2] border border-blue-200/80',
+      Icon: Eye,
+    };
+  };
+
+  const formatPageTitle = (event) => {
+    if (event.eventType === 'pdf_view' || event.eventType === 'pdf_download') {
+      return event.targetLabel || event.title || event.pageLabel || 'Brochure PDF';
+    }
+
+    const raw = event.pageLabel || event.targetLabel || event.title || '';
+    if (!raw) {
+      if (event.path === '/' || event.pageKey === 'home') return 'Home';
+      return event.path || event.pageKey || 'Page View';
+    }
+
+    if (/[A-Z]/.test(raw)) return raw;
+
+    return raw
+      .split(/[\s-]+/)
+      .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ''))
+      .join(' ');
+  };
+
+  const formatEventTime = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const formatEventDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const isToday =
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear();
+
+    if (isToday) return 'Today';
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const isYesterday =
+      date.getDate() === yesterday.getDate() &&
+      date.getMonth() === yesterday.getMonth() &&
+      date.getFullYear() === yesterday.getFullYear();
+
+    if (isYesterday) return 'Yesterday';
+
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+    });
   };
 
   return (
@@ -208,10 +278,10 @@ const Analytics = () => {
                   </thead>
                   <tbody>
                     {topPdfs.length > 0 ? topPdfs.map((item) => (
-                      <tr key={item.key} className="border-t border-slate-100">
+                      <tr key={item.key} className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
                         <td className="px-5 py-4">
                           <div className="max-w-[260px]">
-                            <p className="font-semibold text-slate-900 truncate">{item.label || 'Untitled PDF'}</p>
+                            <p className="font-semibold text-slate-900 truncate" title={item.label || 'Untitled PDF'}>{item.label || 'Untitled PDF'}</p>
                           </div>
                         </td>
                         <td className="px-5 py-4 text-slate-600">{formatNumber(item.views)}</td>
@@ -238,34 +308,47 @@ const Analytics = () => {
                 </div>
                 <Clock3 className="text-[#0145F2]" size={20} />
               </div>
-              <div className="max-h-[420px] overflow-y-auto">
-                <table className="w-full">
-                  <thead className="text-left text-xs uppercase tracking-wider text-slate-400">
+              <div className="max-h-[620px] overflow-y-auto">
+                <table className="w-full table-fixed">
+                  <thead className="sticky top-0 z-10 bg-slate-50/95 text-left text-xs uppercase tracking-wider text-slate-400 backdrop-blur-sm border-b border-slate-100">
                     <tr>
-                      <th className="px-5 py-3">Action</th>
-                      <th className="px-5 py-3">Page</th>
-                      <th className="px-5 py-3">Time</th>
+                      <th className="px-5 py-3.5 w-[140px]">Action</th>
+                      <th className="px-5 py-3.5">Page / Target</th>
+                      <th className="px-5 py-3.5 text-right w-[115px]">Time</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {recentEvents.length > 0 ? recentEvents.map((event) => (
-                      <tr key={event._id} className="border-t border-slate-100">
-                        <td className="px-5 py-4">
-                          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                            {getEventLabel(event.eventType)}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4">
-                          <p className="font-semibold text-slate-900">{event.pageLabel || event.targetLabel || 'Unknown'}</p>
-                          <p className="text-xs text-slate-500 truncate max-w-[220px]">
-                            {event.targetLabel || event.path || event.pageKey}
-                          </p>
-                        </td>
-                        <td className="px-5 py-4 text-sm text-slate-500">
-                          {new Date(event.createdAt).toLocaleString()}
-                        </td>
-                      </tr>
-                    )) : (
+                    {recentEvents.length > 0 ? recentEvents.map((event) => {
+                      const badge = getEventBadge(event.eventType);
+                      const BadgeIcon = badge.Icon;
+                      const title = formatPageTitle(event);
+                      const subtitle = event.path || (event.eventType !== 'page_view' ? event.pageLabel : '');
+
+                      return (
+                        <tr key={event._id} className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
+                          <td className="px-5 py-4 align-middle whitespace-nowrap">
+                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${badge.className}`}>
+                              <BadgeIcon size={12} className="shrink-0" />
+                              <span className="whitespace-nowrap">{badge.label}</span>
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 align-middle">
+                            <p className="font-semibold text-slate-900 truncate" title={title}>
+                              {title}
+                            </p>
+                            {subtitle && (
+                              <p className="text-xs text-slate-400 truncate mt-0.5 font-mono" title={subtitle}>
+                                {subtitle}
+                              </p>
+                            )}
+                          </td>
+                          <td className="px-5 py-4 align-middle text-right whitespace-nowrap" title={new Date(event.createdAt).toLocaleString()}>
+                            <p className="text-xs font-semibold text-slate-700">{formatEventTime(event.createdAt)}</p>
+                            <p className="text-[11px] font-medium text-slate-400 mt-0.5">{formatEventDate(event.createdAt)}</p>
+                          </td>
+                        </tr>
+                      );
+                    }) : (
                       <tr>
                         <td colSpan="3" className="px-5 py-12 text-center text-slate-400">
                           No recent events found.
