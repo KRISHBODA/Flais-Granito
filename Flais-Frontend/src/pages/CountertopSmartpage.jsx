@@ -8,6 +8,9 @@ import {
   BookOpen,
   Wrench,
   Package,
+  Layers,
+  FileText,
+  Download,
   ChevronRight,
   ExternalLink,
   X,
@@ -16,6 +19,8 @@ import {
 import SEO from '../components/SEO';
 import flaisLogoWhite from '../assets/Flais White.png';
 import veraWhiteBg from '../assets/VERA WHITE F3 copy.jpg.jpeg';
+import packingManualPdf from '../assets/PRODUCT_PACKING_MANUAL_FLAIS-19-Sep.pdf';
+import tileAdhesivePdf from '../assets/Flais Granito - Tile Adhesive Corporate Profile.pdf';
 
 const WhatsAppIcon = ({ size = 18, className = '' }) => (
   <svg
@@ -46,8 +51,76 @@ const SMARTPAGE_ITEMS = [
   },
   {
     id: 'packing-manual',
-    title: 'Packing Manual',
-    icon: Package
+    title: 'Packing Manual Guide',
+    icon: Package,
+    link: packingManualPdf
+  },
+  {
+    id: 'tile-adhesive-guide',
+    title: 'Tile Adhesive Guide',
+    icon: Layers,
+    link: tileAdhesivePdf
+  }
+];
+
+const ADHESIVE_SPECS = [
+  {
+    property: 'Adhesive Classification',
+    standard: 'ISO 13007 / EN 12004',
+    specification: 'Class C2TE S1 (Standard) / C2TE S2 (Deformable)'
+  },
+  {
+    property: 'Deformation Rating',
+    standard: 'EN 12002',
+    specification: 'S1 (≥ 2.5 mm) | S2 (≥ 5.0 mm)'
+  },
+  {
+    property: 'Application Technique',
+    standard: 'Double-Spreading',
+    specification: '100% Void-Free Bedding (Back-Buttered)'
+  },
+  {
+    property: 'Substrate Trowel Notch',
+    standard: 'Slanted / Square Notch',
+    specification: '10 mm – 15 mm Trowel'
+  },
+  {
+    property: 'Slab Back Contact Coat',
+    standard: 'Flat Trowel Coat',
+    specification: '2 mm – 3 mm Continuous Layer'
+  },
+  {
+    property: 'Pot Life & Open Time',
+    standard: 'Ambient 25°C',
+    specification: 'Pot Life: ~3-4 Hours | Open Time: 20-30 Mins'
+  },
+  {
+    property: 'Grout Joint Clearance',
+    standard: 'Movement Provision',
+    specification: 'Min 2.0 mm (Interior) | Min 3.0 mm (Exterior/Heated)'
+  }
+];
+
+const ADHESIVE_PROTOCOLS = [
+  {
+    title: '1. Mandatory Class C2TE S1 / S2 Cementitious Mortar',
+    desc: 'Always use high-polymer, deformable cementitious adhesives formulated specifically for large format porcelain slabs and countertops. Never use standard sand-cement mortar or low-polymer adhesives.'
+  },
+  {
+    title: '2. 100% Void-Free Double Spreading (Back-Buttering)',
+    desc: 'Apply adhesive with a 10-15mm notched trowel to the substrate in parallel straight ridges (perpendicular to the short edge), and apply a 2-3mm flat contact coat on the back of the slab. This eliminates all air pockets beneath the 15mm surface.'
+  },
+  {
+    title: '3. Slake Time & Low-Speed Mechanical Mixing',
+    desc: 'Mix adhesive powder into measured potable water with a slow-speed paddle mixer (300-400 RPM). Allow 5 minutes slake time for chemical polymer activation, then re-mix briefly before spreading.'
+  },
+  {
+    title: '4. Skinning & Open Time Management',
+    desc: 'Never lay slabs onto adhesive that has formed a dry surface skin (usually after 20-30 minutes in warm conditions). Test ridges with a finger tip; if adhesive does not transfer, scrape off and re-apply fresh mortar.'
+  },
+  {
+    title: '5. Heated Screeds & Countertop Substrates (Class S2)',
+    desc: 'For installations over underfloor radiant heating, metal/wood countertop substructures, or outdoor kitchens subject to high thermal expansion, always specify ultra-flexible Class S2 mortar (transverse deformation ≥ 5.0mm).'
   }
 ];
 
@@ -92,13 +165,14 @@ const PACKAGING_SPECS = [
 
 const CountertopSmartpage = () => {
   const [packingModalOpen, setPackingModalOpen] = useState(false);
+  const [adhesiveModalOpen, setAdhesiveModalOpen] = useState(false);
 
   return (
     <div className="relative min-h-screen font-sans selection:bg-[#5D4037] selection:text-white bg-white">
       <SEO
         title="15mm Countertop Product Knowledge | FLAIS Granito"
-        description="Official technical manual, catalogue, installation guidelines, and packing manual for FLAIS Granito 15mm Porcelain Countertop Slabs."
-        keywords="15mm porcelain slabs, flais granito catalogue, countertop installation guide, tile packing manual, 15mm slab box specs"
+        description="Official technical manual, catalogue, installation guidelines, packing manual, and tile adhesive guide for FLAIS Granito 15mm Porcelain Countertop Slabs."
+        keywords="15mm porcelain slabs, flais granito catalogue, countertop installation guide, tile packing manual, tile adhesive guide, 15mm slab box specs"
       />
 
       {/* Natural Vera White Marble Countertop Background - Pure without dark veil */}
@@ -136,7 +210,7 @@ const CountertopSmartpage = () => {
             15mm Countertop & Porcelain Slabs
           </p>
           <p className="text-xs sm:text-[13px] text-zinc-200 font-normal max-w-md mx-auto leading-relaxed">
-            Essential catalogue collections, technical installation manual, and packaging specifications for architects, fabricators, and master contractors.
+            Essential catalogue collections, technical installation manual, packaging specifications, and adhesive standards for architects, fabricators, and master contractors.
           </p>
 
           {/* Quick Contact Bar */}
@@ -179,14 +253,35 @@ const CountertopSmartpage = () => {
           </div>
         </motion.div>
 
-        {/* 3 Main Action Cards */}
+        {/* 4 Main Action Cards */}
         <div className="w-full space-y-4 mb-8">
           {SMARTPAGE_ITEMS.map((item, index) => {
             const IconComponent = item.icon;
-            const CardWrapper = item.link ? Link : 'div';
+            const isExternal = Boolean(
+              item.link &&
+              (typeof item.link === 'string' &&
+                (item.link.startsWith('http') ||
+                 item.link.endsWith('.pdf') ||
+                 item.link.includes('.pdf') ||
+                 item.link.includes('/assets/')))
+            );
+            const CardWrapper = item.link ? (isExternal ? 'a' : Link) : 'div';
+            const handleCardClick = () => {
+              if (item.id === 'packing-manual') {
+                if (item.link) {
+                  window.open(item.link, '_blank');
+                } else {
+                  setPackingModalOpen(true);
+                }
+              } else if (item.id === 'tile-adhesive-guide') {
+                setAdhesiveModalOpen(true);
+              }
+            };
             const wrapperProps = item.link
-              ? { to: item.link, target: '_blank', rel: 'noopener noreferrer' }
-              : { onClick: () => setPackingModalOpen(true) };
+              ? (isExternal
+                  ? { href: item.link, target: '_blank', rel: 'noopener noreferrer' }
+                  : { to: item.link, target: '_blank', rel: 'noopener noreferrer' })
+              : { onClick: handleCardClick };
 
             return (
               <motion.div
@@ -372,6 +467,129 @@ const CountertopSmartpage = () => {
                 >
                   <Phone size={15} />
                   <span>Call Logistics Desk</span>
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL: Tile Adhesive Guide Modal */}
+      <AnimatePresence>
+        {adhesiveModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setAdhesiveModalOpen(false)}
+              className="absolute inset-0 bg-black/70 backdrop-blur-md"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl border border-zinc-200 shadow-2xl p-6 sm:p-8 z-10 scrollbar-none"
+            >
+              <div className="flex items-start justify-between border-b border-zinc-100 pb-4 mb-6">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#8D5B4C] bg-amber-50 px-2.5 py-0.5 rounded border border-[#c5a880]/30">
+                    Bonding & Materials
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-display font-bold text-zinc-900 mt-2">
+                    Tile Adhesive Guide
+                  </h3>
+                  <p className="text-xs text-zinc-500 font-light mt-1">
+                    EN 12004 Class C2TE S1/S2 adhesive standards, trowel application, and bonding protocols.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setAdhesiveModalOpen(false)}
+                  className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Adhesive Specifications Table */}
+              <div className="mb-6">
+                <h4 className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-2.5 flex items-center gap-2">
+                  <Layers size={14} className="text-[#5D4037]" />
+                  <span>Adhesive Technical Parameters (15mm Slabs)</span>
+                </h4>
+
+                <div className="overflow-x-auto rounded-2xl border border-zinc-200">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#FAF8F5] text-zinc-700 border-b border-zinc-200 font-bold uppercase text-[10px] tracking-wider">
+                      <tr>
+                        <th className="p-3">Specification Parameter</th>
+                        <th className="p-3">Standard / Method</th>
+                        <th className="p-3">FLAIS Recommended Specification</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 text-zinc-600">
+                      {ADHESIVE_SPECS.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-zinc-50/80 transition-colors">
+                          <td className="p-3 font-semibold text-zinc-900 whitespace-nowrap">{row.property}</td>
+                          <td className="p-3 whitespace-nowrap text-zinc-500">{row.standard}</td>
+                          <td className="p-3 font-medium text-[#5D4037]">{row.specification}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Adhesive Application Protocols */}
+              <div className="space-y-3 mb-6">
+                <h4 className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+                  <FileText size={14} className="text-[#5D4037]" />
+                  <span>Critical Installation & Troweling Protocols</span>
+                </h4>
+
+                {ADHESIVE_PROTOCOLS.map((protocol, idx) => (
+                  <div key={idx} className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
+                    <h5 className="text-xs font-bold text-zinc-900 mb-1">
+                      {protocol.title}
+                    </h5>
+                    <p className="text-xs text-zinc-600 font-light leading-relaxed">
+                      {protocol.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Action CTAs */}
+              <div className="pt-4 border-t border-zinc-100 flex flex-col sm:flex-row gap-3">
+                <a
+                  href="https://wa.me/919586733300?text=Hello%20FLAIS%20Granito%2C%20I%20have%20an%20inquiry%20regarding%20Tile%20Adhesive%20for%2015mm%20Slabs."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-3.5 px-4 bg-[#5D4037] hover:bg-[#4a332c] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm text-center"
+                >
+                  <WhatsAppIcon size={16} />
+                  <span>Inquire Adhesive on WhatsApp</span>
+                </a>
+
+                <a
+                  href={tileAdhesivePdf}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-3.5 px-5 bg-amber-50 hover:bg-amber-100 text-[#5D4037] border border-[#c5a880]/40 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 text-center"
+                >
+                  <Download size={15} />
+                  <span>Download Official PDF</span>
+                </a>
+
+                <a
+                  href="tel:+919586733300"
+                  className="py-3.5 px-5 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 text-center"
+                >
+                  <Phone size={15} />
+                  <span>Call Technical Desk</span>
                 </a>
               </div>
             </motion.div>
