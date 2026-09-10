@@ -50,16 +50,16 @@ const SMARTPAGE_ITEMS = [
     link: '/installation-guide'
   },
   {
-    id: 'packing-manual',
-    title: 'Packing Manual Guide',
-    icon: Package,
-    link: packingManualPdf
-  },
-  {
     id: 'tile-adhesive-guide',
     title: 'Tile Adhesive Guide',
     icon: Layers,
     link: tileAdhesivePdf
+  },
+  {
+    id: 'packing-manual',
+    title: 'Packing Manual Guide',
+    icon: Package,
+    link: packingManualPdf
   }
 ];
 
