@@ -14,7 +14,7 @@ import {
   Truck
 } from 'lucide-react';
 import SEO from '../components/SEO';
-import flaisLogoBlack from '../assets/Flais_black.png';
+import flaisLogoWhite from '../assets/Flais White.png';
 import veraWhiteBg from '../assets/VERA WHITE F3 copy.jpg.jpeg';
 
 const WhatsAppIcon = ({ size = 18, className = '' }) => (
@@ -119,15 +119,13 @@ const CountertopSmartpage = () => {
           transition={{ duration: 0.6 }}
           className="w-full bg-zinc-950/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-zinc-800 shadow-2xl text-center mb-6"
         >
-          {/* Flais Logo */}
-          <div className="flex justify-center mb-4">
-            <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#D2C9B1]/60 shadow-md inline-flex items-center justify-center">
-              <img
-                src={flaisLogoBlack}
-                alt="FLAIS Granito"
-                className="h-9 sm:h-11 w-auto object-contain"
-              />
-            </div>
+          {/* Flais White Logo */}
+          <div className="flex justify-center mb-5">
+            <img
+              src={flaisLogoWhite}
+              alt="FLAIS Granito"
+              className="h-9 sm:h-11 w-auto object-contain"
+            />
           </div>
 
           {/* Title & Subtitle */}
