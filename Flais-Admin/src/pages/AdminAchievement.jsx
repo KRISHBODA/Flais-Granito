@@ -38,6 +38,7 @@ const AdminAchievement = () => {
         exhibitionVideo: updatedData.exhibitionVideo !== undefined ? updatedData.exhibitionVideo : exhibitionVideo,
         technicalGuide: updatedData.technicalGuide || technicalGuide,
         installationGuide: updatedData.installationGuide || installationGuide,
+        packingManual: updatedData.packingManual || packingManual,
         tileCalculator: updatedData.tileCalculator || tileCalculatorSettings
       };
 
@@ -248,6 +249,51 @@ const AdminAchievement = () => {
     }
   };
 
+  // Packing Manual state
+  const [packingManual, setPackingManual] = useState({
+    title: "Packing Manual Guide",
+    subtitle: "Packaging dimensions, coverage, weights, and transport handling standards.",
+    pdfUrl: ""
+  });
+  const [uploadingPackingPdf, setUploadingPackingPdf] = useState(false);
+
+  const handlePackingManualPdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
+      toast.error('Please upload a PDF file only.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('category', 'guides');
+
+    setUploadingPackingPdf(true);
+    try {
+      const response = await api.post('/admin/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (response.data && response.data.fileUrl) {
+        const url = response.data.fileUrl;
+        const updatedGuide = { ...packingManual, pdfUrl: url };
+        setPackingManual(updatedGuide);
+        await persistFlaisGuide({ packingManual: updatedGuide });
+        toast.success('Packing Manual PDF uploaded to Cloudinary and settings saved!');
+      } else {
+        toast.error('Failed to get uploaded PDF URL');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Error uploading PDF to Cloudinary');
+    } finally {
+      setUploadingPackingPdf(false);
+    }
+  };
+
   // Tile Calculator state
   const [tileCalculatorSettings, setTileCalculatorSettings] = useState({
     badge: "Advanced Planning Tool",
@@ -317,6 +363,7 @@ const AdminAchievement = () => {
           if (data.exhibitionVideo) setExhibitionVideo(data.exhibitionVideo);
           if (data.technicalGuide) setTechnicalGuide(data.technicalGuide);
           if (data.installationGuide) setInstallationGuide(data.installationGuide);
+          if (data.packingManual) setPackingManual(data.packingManual);
           if (data.tileCalculator) setTileCalculatorSettings(data.tileCalculator);
 
         }
@@ -478,6 +525,7 @@ const AdminAchievement = () => {
             {activeTab === 'settings' ? 'Edit hero banner and introduction card text details for the certifications page.' : 
              activeTab === 'technical_guide' ? 'Manage Technical Guide specifications, pdf download link, and lists.' :
              activeTab === 'installation_guide' ? 'Manage Installation Guide content, background image, and accordion steps.' :
+             activeTab === 'packing_manual' ? 'Manage Packing Manual Guide specifications, title, and PDF file.' :
              activeTab === 'tile_calculator' ? 'Manage Tile Calculator page header text and badge.' :
              activeTab === 'verification_certs' ? 'Manage Global Certificates displayed on the Certifications page.' :
              activeTab === 'awards' ? 'Manage Awards Accolades settings, stats, and the trophy showcase photo.' :
@@ -522,6 +570,12 @@ const AdminAchievement = () => {
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === 'installation_guide' ? 'bg-[#0145F2] text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
         >
           <Ruler size={17} /> Installation Guide
+        </button>
+        <button
+          onClick={() => { setActiveTab('packing_manual'); setEditId(null); }}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === 'packing_manual' ? 'bg-[#0145F2] text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+        >
+          <Layers size={17} /> Packing Manual
         </button>
         <button
           onClick={() => { setActiveTab('tile_calculator'); setEditId(null); }}
@@ -1121,6 +1175,95 @@ const AdminAchievement = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {activeTab === 'packing_manual' && (
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          persistFlaisGuide({ packingManual });
+          toast.success('Packing Manual Guide settings saved!');
+        }} className="space-y-6 rounded-2xl bg-white p-6 shadow-sm">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Packing Manual Guide Settings</h2>
+            <p className="text-sm text-slate-500">Edit guide title, subtitle, and PDF download/view link.</p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Guide Title</label>
+                <input
+                  type="text"
+                  value={packingManual.title}
+                  onChange={(e) => setPackingManual({ ...packingManual, title: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm focus:border-[#0145F2] focus:outline-none"
+                  placeholder="Packing Manual Guide"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">PDF File Download URL / Path</label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={packingManual.pdfUrl}
+                    onChange={(e) => setPackingManual({ ...packingManual, pdfUrl: e.target.value })}
+                    className="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm focus:border-[#0145F2] focus:outline-none"
+                    placeholder="Leave blank to use default PDF or enter custom link"
+                  />
+                  {packingManual.pdfUrl && (
+                    <a
+                      href={getPdfPreviewUrl(packingManual.pdfUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-zinc-800 hover:bg-zinc-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors flex items-center justify-center shrink-0"
+                    >
+                      Preview PDF
+                    </a>
+                  )}
+                </div>
+                {/* Upload Button */}
+                <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <Upload size={16} className="text-[#0145F2] shrink-0" />
+                  <div className="flex-1">
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Or upload local PDF file</label>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      disabled={uploadingPackingPdf}
+                      onChange={handlePackingManualPdfUpload}
+                      className="w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-700 file:hover:bg-blue-100 cursor-pointer"
+                    />
+                  </div>
+                  {uploadingPackingPdf && (
+                    <span className="text-xs text-[#0145F2] font-semibold animate-pulse shrink-0">Uploading...</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Guide Subtitle / Description</label>
+              <input
+                type="text"
+                value={packingManual.subtitle}
+                onChange={(e) => setPackingManual({ ...packingManual, subtitle: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm focus:border-[#0145F2] focus:outline-none"
+                placeholder="Packaging dimensions, coverage, weights..."
+                required
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              type="submit"
+              className="flex items-center gap-2 rounded-lg bg-[#0145F2] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-blue-700"
+            >
+              <Save size={16} /> Save Packing Manual Settings
+            </button>
+          </div>
+        </form>
       )}
 
       {activeTab === 'tile_calculator' && (

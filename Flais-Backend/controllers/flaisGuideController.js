@@ -39,6 +39,11 @@ const DEFAULT_FLAIS_GUIDE = {
     pdfUrl: "",
     steps: []
   },
+  packingManual: {
+    title: "Packing Manual Guide",
+    subtitle: "Packaging dimensions, coverage, weights, and transport handling standards.",
+    pdfUrl: ""
+  },
   tileCalculator: {
     badge: "Advanced Planning Tool",
     title: "Tile Calculator",

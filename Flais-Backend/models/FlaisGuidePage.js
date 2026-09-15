@@ -87,6 +87,11 @@ const flaisGuidePageSchema = new mongoose.Schema(
       pdfUrl: { type: String, default: "" },
       steps: [stepSchema]
     },
+    packingManual: {
+      title: { type: String, default: "Packing Manual Guide" },
+      subtitle: { type: String, default: "Packaging dimensions, coverage, weights, and transport handling standards." },
+      pdfUrl: { type: String, default: "" }
+    },
     tileCalculator: {
       badge: { type: String, default: "Advanced Planning Tool" },
       title: { type: String, default: "Tile Calculator" },

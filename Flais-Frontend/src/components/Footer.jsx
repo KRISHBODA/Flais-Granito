@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Globe, ArrowRight } from 'lucide-react';
 import logo from '../assets/Flais White.png';
+import packingManualPdf from '../assets/PRODUCT_PACKING_MANUAL_FLAIS-19-Sep.pdf';
 import api from '../utils/api';
 
 
@@ -149,6 +150,7 @@ const Footer = () => {
               <li><Link to="/about" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Why FLAIS</Link></li>
               <li><Link to="/where-to-buy" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Flais Park</Link></li>
               <li><Link to="/installation-guide" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Installation Guide</Link></li>
+              <li><a href={packingManualPdf} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Packing Manual Guide</a></li>
               <li><Link to="/certifications" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Achievement</Link></li>
               <li><Link to="/calculator" className="hover:text-white transition-colors flex items-center group"><ArrowRight size={14} className="mr-2 opacity-0 group-hover:opacity-100 -ml-5 group-hover:ml-0 transition-all text-[#5D4037]" /> Tile Calculator</Link></li>
             </ul>

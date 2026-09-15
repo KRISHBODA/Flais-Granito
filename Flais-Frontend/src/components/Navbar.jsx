@@ -4,6 +4,7 @@ import { Menu, X, Globe, ChevronDown, Search, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoBlack from '../assets/Flais_black.png';
 import logoWhite from '../assets/Flais White.png';
+import packingManualPdf from '../assets/PRODUCT_PACKING_MANUAL_FLAIS-19-Sep.pdf';
 import api from '../utils/api';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
@@ -95,6 +96,49 @@ const Navbar = () => {
     }
   };
 
+  const handlePackingManualClick = async (e) => {
+    if (e) e.preventDefault();
+    setIsOpen(false);
+
+    // Open a blank tab immediately to bypass popup blocker
+    const newTab = window.open('', '_blank');
+    if (newTab) {
+      newTab.document.title = "Loading Packing Manual...";
+      newTab.document.body.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #ffffff; color: #5D4037; margin: 0;">
+          <div style="border: 4px solid rgba(93, 64, 55, 0.1); border-top: 4px solid #5D4037; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
+          <p style="font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">Opening Packing Manual...</p>
+          <style>
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          </style>
+        </div>
+      `;
+    }
+
+    let resolvedUrl = packingManualPdf;
+    try {
+      // Fetch latest guide configuration from backend dynamically to avoid stale state
+      const response = await api.get('/flais-guide');
+      if (response.data && response.data.success) {
+        const data = response.data.flaisGuide || {};
+        if (data.packingManual?.pdfUrl) {
+          resolvedUrl = getOptimizedImageUrl(data.packingManual.pdfUrl);
+        }
+      }
+    } catch (err) {
+      resolvedUrl = packingManualPdf;
+    }
+
+    if (newTab) {
+      newTab.location.href = resolvedUrl;
+    } else {
+      window.open(resolvedUrl, '_blank');
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       // Use requestAnimationFrame to debounce slightly and avoid layout thrashing
@@ -122,6 +166,7 @@ const Navbar = () => {
         { name: 'Achievement', path: '/certifications' },
         { name: 'Technical Guide', path: '#', isTechnicalGuide: true },
         { name: 'Installation Guide', path: '/installation-guide' },
+        { name: 'Packing Manual Guide', path: '#', isPackingManual: true },
         { name: 'Tile Calculator', path: '/calculator' },
       ]
     },
@@ -304,6 +349,14 @@ const Navbar = () => {
                           >
                             {sub.name}
                           </button>
+                        ) : sub.isPackingManual ? (
+                          <button
+                            key={sub.name}
+                            onClick={handlePackingManualClick}
+                            className="w-full text-left block px-6 py-2.5 text-sm font-medium text-zinc-600 hover:text-[#5D4037] hover:bg-beige-50 transition-colors cursor-pointer"
+                          >
+                            {sub.name}
+                          </button>
                         ) : (
                           <Link
                             key={sub.name}
@@ -458,6 +511,14 @@ const Navbar = () => {
                             <button
                               key={sub.name}
                               onClick={handleTechnicalGuideClick}
+                              className="text-left w-full text-base font-semibold text-zinc-700 hover:text-[#5D4037] cursor-pointer"
+                            >
+                              {sub.name}
+                            </button>
+                          ) : sub.isPackingManual ? (
+                            <button
+                              key={sub.name}
+                              onClick={handlePackingManualClick}
                               className="text-left w-full text-base font-semibold text-zinc-700 hover:text-[#5D4037] cursor-pointer"
                             >
                               {sub.name}
