@@ -41,6 +41,11 @@ const Products = () => {
   const [selectedCategorySlug, setSelectedCategorySlug] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [thicknessFilter, setThicknessFilter] = useState('all');
+  const [sizeFilter, setSizeFilter] = useState('all');
+  const [appFilter, setAppFilter] = useState('all');
+  const [lookFilter, setLookFilter] = useState('all');
+  const [visibleCount, setVisibleCount] = useState(20);
   const videoRef = useIntersectionVideoRef();
 
   const categoryParam = filter === 'all' ? '' : filter;
@@ -180,13 +185,133 @@ const Products = () => {
   const dbSizeOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'size'), [filterOptionsData]);
   const dbApplicationOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'application'), [filterOptionsData]);
 
-  const [visibleCount, setVisibleCount] = useState(20);
+  const productMatchesThickness = useCallback((productThickness, optValue) => {
+    const pNorm = normalizeFilterString(productThickness, true);
+    const optNorm = normalizeFilterString(optValue, true);
+    if (!pNorm || !optNorm) return false;
+    return pNorm === optNorm || pNorm.includes(optNorm) || optNorm.includes(pNorm);
+  }, [normalizeFilterString]);
 
-  // Additional frontend-only filters (mocked/optional based on backend schema)
-  const [thicknessFilter, setThicknessFilter] = useState('all');
-  const [sizeFilter, setSizeFilter] = useState('all');
-  const [appFilter, setAppFilter] = useState('all');
-  const [lookFilter, setLookFilter] = useState('all');
+  const productMatchesSize = useCallback((productSize, optValue) => {
+    const pNorm = normalizeFilterString(productSize, true);
+    const optNorm = normalizeFilterString(optValue, true);
+    if (!pNorm || !optNorm) return false;
+    return pNorm === optNorm || pNorm.includes(optNorm) || optNorm.includes(pNorm);
+  }, [normalizeFilterString]);
+
+  const productMatchesApp = useCallback((productApp, optValue) => {
+    const pNorm = normalizeFilterString(productApp, false);
+    const optNorm = normalizeFilterString(optValue, false);
+    if (!pNorm || !optNorm) return false;
+    return pNorm.includes(optNorm) || optNorm.includes(pNorm);
+  }, [normalizeFilterString]);
+
+  // Compute available options based on current collection/category products
+  const availableThicknessOptions = useMemo(() => {
+    if (!products || products.length === 0) return [];
+    const matched = dbThicknessOptions.filter(opt =>
+      products.some(p => productMatchesThickness(p.thickness, opt.value))
+    );
+    if (matched.length > 0) return matched;
+    const unique = [...new Set(products.map(p => p.thickness).filter(Boolean))];
+    return unique.map(t => ({ value: t, label: t }));
+  }, [products, dbThicknessOptions, productMatchesThickness]);
+
+  const availableSizeOptions = useMemo(() => {
+    if (!products || products.length === 0) return [];
+    const matched = dbSizeOptions.filter(opt =>
+      products.some(p => productMatchesSize(p.size, opt.value))
+    );
+    if (matched.length > 0) return matched;
+    const unique = [...new Set(products.map(p => p.size).filter(Boolean))];
+    return unique.map(s => ({ value: s, label: s }));
+  }, [products, dbSizeOptions, productMatchesSize]);
+
+  const availableApplicationOptions = useMemo(() => {
+    if (!products || products.length === 0) return [];
+    const matched = dbApplicationOptions.filter(opt =>
+      products.some(p => productMatchesApp(p.application, opt.value))
+    );
+    if (matched.length > 0) return matched;
+    const unique = [...new Set(products.map(p => p.application).filter(Boolean))];
+    return unique.map(a => ({ value: a, label: a }));
+  }, [products, dbApplicationOptions, productMatchesApp]);
+
+  const thicknessOptionsToRender = useMemo(() => {
+    if (availableThicknessOptions.length > 1) {
+      return [
+        { value: 'all', label: 'All Thickness' },
+        ...availableThicknessOptions
+      ];
+    }
+    return availableThicknessOptions;
+  }, [availableThicknessOptions]);
+
+  const sizeOptionsToRender = useMemo(() => {
+    if (availableSizeOptions.length > 1) {
+      return [
+        { value: 'all', label: 'All Sizes' },
+        ...availableSizeOptions
+      ];
+    }
+    return availableSizeOptions;
+  }, [availableSizeOptions]);
+
+  const appOptionsToRender = useMemo(() => {
+    if (availableApplicationOptions.length > 1) {
+      return [
+        { value: 'all', label: 'All Applications' },
+        ...availableApplicationOptions
+      ];
+    }
+    return availableApplicationOptions;
+  }, [availableApplicationOptions]);
+
+  const isThicknessActive = useCallback((thickVal) => {
+    if (availableThicknessOptions.length === 1) {
+      return true;
+    }
+    const currentNorm = normalizeFilterString(thicknessFilter, true);
+    const valNorm = normalizeFilterString(thickVal, true);
+    if (thickVal === 'all') {
+      return thicknessFilter === 'all' || !availableThicknessOptions.some(opt => 
+        normalizeFilterString(opt.value, true) === currentNorm
+      );
+    }
+    if (thicknessFilter === 'all') return false;
+    return currentNorm === valNorm;
+  }, [availableThicknessOptions, thicknessFilter, normalizeFilterString]);
+
+  const isSizeActive = useCallback((sizeVal) => {
+    if (availableSizeOptions.length === 1) {
+      return true;
+    }
+    const currentNorm = normalizeFilterString(sizeFilter, true);
+    const valNorm = normalizeFilterString(sizeVal, true);
+    if (sizeVal === 'all') {
+      return sizeFilter === 'all' || !availableSizeOptions.some(opt => 
+        normalizeFilterString(opt.value, true) === currentNorm
+      );
+    }
+    if (sizeFilter === 'all') return false;
+    return currentNorm === valNorm;
+  }, [availableSizeOptions, sizeFilter, normalizeFilterString]);
+
+  const isAppActive = useCallback((appVal) => {
+    if (availableApplicationOptions.length === 1) {
+      return true;
+    }
+    const currentNorm = normalizeFilterString(appFilter, false);
+    const valNorm = normalizeFilterString(appVal, false);
+    if (appVal === 'all') {
+      return appFilter === 'all' || !availableApplicationOptions.some(opt => 
+        normalizeFilterString(opt.value, false) === currentNorm
+      );
+    }
+    if (appFilter === 'all') return false;
+    return currentNorm === valNorm;
+  }, [availableApplicationOptions, appFilter, normalizeFilterString]);
+
 
   const savePageState = () => {
     if (typeof window === 'undefined') return;
@@ -281,18 +406,32 @@ const Products = () => {
 
   const handleFilterChange = (categoryName, categorySlug) => {
     const slugToUse = categorySlug ?? categoryName;
-    updateQueryParams({ cat: slugToUse === 'all' ? null : slugToUse });
+    updateQueryParams({
+      cat: slugToUse === 'all' ? null : slugToUse,
+      size: null,
+      thickness: null,
+      app: null
+    });
   };
 
   const handleThicknessChange = (thickVal) => {
+    if (availableThicknessOptions.length === 1 && (thickVal === availableThicknessOptions[0].value || productMatchesThickness(availableThicknessOptions[0].value, thickVal))) {
+      return;
+    }
     updateQueryParams({ thickness: thickVal === 'all' ? null : thickVal });
   };
 
   const handleSizeChange = (sizeVal) => {
+    if (availableSizeOptions.length === 1 && (sizeVal === availableSizeOptions[0].value || productMatchesSize(availableSizeOptions[0].value, sizeVal))) {
+      return;
+    }
     updateQueryParams({ size: sizeVal === 'all' ? null : sizeVal });
   };
 
   const handleAppChange = (appVal) => {
+    if (availableApplicationOptions.length === 1 && (appVal === availableApplicationOptions[0].value || productMatchesApp(availableApplicationOptions[0].value, appVal))) {
+      return;
+    }
     updateQueryParams({ app: appVal === 'all' ? null : appVal });
   };
 
@@ -465,19 +604,22 @@ const Products = () => {
                   Thickness
                 </h3>
                 <ul className="space-y-1">
-                  {[
-                    { value: 'all', label: 'All Thickness' },
-                    ...dbThicknessOptions.map(opt => ({ value: opt.value, label: opt.label }))
-                  ].map((thick) => (
-                    <li key={thick.value}>
-                      <button
-                        onClick={() => handleThicknessChange(thick.value)}
-                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${thicknessFilter === thick.value ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
-                      >
-                        <span className={`mr-3 transition-colors ${thicknessFilter === thick.value ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {thick.label}
-                      </button>
-                    </li>
-                  ))}
+                  {thicknessOptionsToRender.map((thick) => {
+                    const active = isThicknessActive(thick.value);
+                    return (
+                      <li key={thick.value}>
+                        <button
+                          onClick={() => handleThicknessChange(thick.value)}
+                          className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${active ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                        >
+                          <span className={`mr-3 transition-colors ${active ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {thick.label}
+                        </button>
+                      </li>
+                    );
+                  })}
+                  {thicknessOptionsToRender.length === 0 && (
+                    <li className="text-sm text-zinc-400 px-4 py-1">No thickness options available.</li>
+                  )}
                 </ul>
               </div>
 
@@ -487,19 +629,22 @@ const Products = () => {
                   Available Size
                 </h3>
                 <ul className="space-y-1">
-                  {[
-                    { value: 'all', label: 'All Sizes' },
-                    ...dbSizeOptions.map(opt => ({ value: opt.value, label: opt.label }))
-                  ].map((size) => (
-                    <li key={size.value}>
-                      <button
-                        onClick={() => handleSizeChange(size.value)}
-                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${sizeFilter === size.value ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
-                      >
-                        <span className={`mr-3 transition-colors ${sizeFilter === size.value ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {size.label}
-                      </button>
-                    </li>
-                  ))}
+                  {sizeOptionsToRender.map((size) => {
+                    const active = isSizeActive(size.value);
+                    return (
+                      <li key={size.value}>
+                        <button
+                          onClick={() => handleSizeChange(size.value)}
+                          className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${active ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                        >
+                          <span className={`mr-3 transition-colors ${active ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {size.label}
+                        </button>
+                      </li>
+                    );
+                  })}
+                  {sizeOptionsToRender.length === 0 && (
+                    <li className="text-sm text-zinc-400 px-4 py-1">No size options available.</li>
+                  )}
                 </ul>
               </div>
 
@@ -509,19 +654,22 @@ const Products = () => {
                   Application
                 </h3>
                 <ul className="space-y-1">
-                  {[
-                    { value: 'all', label: 'All Applications' },
-                    ...dbApplicationOptions.map(opt => ({ value: opt.value, label: opt.label }))
-                  ].map((app) => (
-                    <li key={app.value}>
-                      <button
-                        onClick={() => handleAppChange(app.value)}
-                        className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${appFilter === app.value ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
-                      >
-                        <span className={`mr-3 transition-colors ${appFilter === app.value ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {app.label}
-                      </button>
-                    </li>
-                  ))}
+                  {appOptionsToRender.map((app) => {
+                    const active = isAppActive(app.value);
+                    return (
+                      <li key={app.value}>
+                        <button
+                          onClick={() => handleAppChange(app.value)}
+                          className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${active ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                        >
+                          <span className={`mr-3 transition-colors ${active ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {app.label}
+                        </button>
+                      </li>
+                    );
+                  })}
+                  {appOptionsToRender.length === 0 && (
+                    <li className="text-sm text-zinc-400 px-4 py-1">No application options available.</li>
+                  )}
                 </ul>
               </div>
 
