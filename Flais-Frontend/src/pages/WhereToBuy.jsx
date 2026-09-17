@@ -11,8 +11,10 @@ const WhereToBuy = () => {
   const [loadError, setLoadError] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+  const [selectedType, setSelectedType] = useState('');
   const [isStateOpen, setIsStateOpen] = useState(false);
   const [isCityOpen, setIsCityOpen] = useState(false);
+  const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [selectedDealer, setSelectedDealer] = useState(null);
 
   const formatDealerName = (name) => {
@@ -77,13 +79,22 @@ const WhereToBuy = () => {
       : [];
   }, [dealers, selectedState]);
 
+  const TYPES = useMemo(() => {
+    const defaultTypes = ['Company Outlet', 'Exclusive Showroom', 'Authorized Dealer', 'Distributor'];
+    const fromDealers = dealers.map(d => d.type).filter(Boolean);
+    const set = new Set(defaultTypes);
+    fromDealers.forEach(t => set.add(t));
+    return [...set];
+  }, [dealers]);
+
   const filteredDealers = useMemo(() => {
     return dealers.filter(dealer => {
       if (selectedState && dealer.state !== selectedState) return false;
       if (selectedCity && dealer.city !== selectedCity) return false;
+      if (selectedType && dealer.type !== selectedType) return false;
       return true;
     });
-  }, [dealers, selectedState, selectedCity]);
+  }, [dealers, selectedState, selectedCity, selectedType]);
 
   useEffect(() => {
     if (filteredDealers.length > 0) {
@@ -197,14 +208,14 @@ const WhereToBuy = () => {
               <Search className="text-[#5D4037]" size={20} />
               Find a Dealer
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               {/* State Dropdown */}
               <div className="relative">
                 <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Select State</label>
                 <div 
                   className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-4 flex justify-between items-center cursor-pointer hover:border-[#5D4037] transition-colors"
-                  onClick={() => { setIsStateOpen(!isStateOpen); setIsCityOpen(false); }}
+                  onClick={() => { setIsStateOpen(!isStateOpen); setIsCityOpen(false); setIsTypeOpen(false); }}
                 >
                   <span className={selectedState ? 'text-zinc-900 font-medium' : 'text-zinc-400'}>
                     {selectedState || 'All States'}
@@ -246,7 +257,7 @@ const WhereToBuy = () => {
                 <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Select City</label>
                 <div 
                   className={`w-full bg-zinc-50 border border-zinc-200 rounded-xl p-4 flex justify-between items-center transition-colors ${!selectedState ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[#5D4037]'}`}
-                  onClick={() => { if(selectedState) setIsCityOpen(!isCityOpen); setIsStateOpen(false); }}
+                  onClick={() => { if(selectedState) setIsCityOpen(!isCityOpen); setIsStateOpen(false); setIsTypeOpen(false); }}
                 >
                   <span className={selectedCity ? 'text-zinc-900 font-medium' : 'text-zinc-400'}>
                     {selectedCity || 'All Cities'}
@@ -283,6 +294,87 @@ const WhereToBuy = () => {
                 </AnimatePresence>
               </div>
 
+              {/* Type Dropdown */}
+              <div className="relative">
+                <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">Location Type</label>
+                <div 
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-4 flex justify-between items-center cursor-pointer hover:border-[#5D4037] transition-colors"
+                  onClick={() => { setIsTypeOpen(!isTypeOpen); setIsStateOpen(false); setIsCityOpen(false); }}
+                >
+                  <span className={selectedType ? 'text-zinc-900 font-medium' : 'text-zinc-400'}>
+                    {selectedType || 'All Types'}
+                  </span>
+                  <ChevronDown size={18} className={`text-zinc-500 transition-transform ${isTypeOpen ? 'rotate-180' : ''}`} />
+                </div>
+                <AnimatePresence>
+                  {isTypeOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full left-0 w-full mt-2 bg-white border border-zinc-100 rounded-xl shadow-xl z-50 overflow-hidden"
+                    >
+                      <div className="max-h-60 overflow-y-auto">
+                        <div 
+                          className="p-3 hover:bg-beige-50 cursor-pointer flex items-center justify-between transition-colors"
+                          onClick={() => { setSelectedType(''); setIsTypeOpen(false); }}
+                        >
+                          <span className="text-zinc-700">All Types</span>
+                          {!selectedType && <Check size={16} className="text-[#5D4037]" />}
+                        </div>
+                        {TYPES.map(type => (
+                          <div 
+                            key={type}
+                            className="p-3 hover:bg-beige-50 cursor-pointer flex items-center justify-between transition-colors"
+                            onClick={() => { setSelectedType(type); setIsTypeOpen(false); }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-zinc-700">{type}</span>
+                              {type === 'Company Outlet' && (
+                                <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">New</span>
+                              )}
+                            </div>
+                            {selectedType === type && <Check size={16} className="text-[#5D4037]" />}
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+            </div>
+
+            {/* Quick Type Filter Pills */}
+            <div className="mt-5 pt-4 border-t border-zinc-100 flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-zinc-400 font-medium mr-1">Quick Filter:</span>
+              <button
+                type="button"
+                onClick={() => setSelectedType('')}
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
+                  !selectedType 
+                    ? 'bg-[#5D4037] text-white shadow-sm' 
+                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                }`}
+              >
+                All Types
+              </button>
+              {TYPES.map(type => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setSelectedType(selectedType === type ? '' : type)}
+                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                    selectedType === type
+                      ? type === 'Company Outlet'
+                        ? 'bg-amber-500 text-white shadow-sm font-semibold'
+                        : 'bg-[#5D4037] text-white shadow-sm'
+                      : type === 'Company Outlet'
+                        ? 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                        : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -295,9 +387,9 @@ const WhereToBuy = () => {
                 <h3 className="font-bold text-zinc-900">
                   {filteredDealers.length} {filteredDealers.length === 1 ? 'Dealer' : 'Dealers'} Found
                 </h3>
-                {selectedState && (
+                {(selectedState || selectedCity || selectedType) && (
                   <button 
-                    onClick={() => { setSelectedState(''); setSelectedCity(''); }}
+                    onClick={() => { setSelectedState(''); setSelectedCity(''); setSelectedType(''); }}
                     className="text-xs font-semibold text-[#5D4037] hover:underline"
                   >
                     Clear Filters
@@ -327,7 +419,13 @@ const WhereToBuy = () => {
                         </h4>
                         {dealer.type && (
                           <span className={`shrink-0 whitespace-nowrap text-[9px] sm:text-[10px] uppercase font-bold tracking-wider py-1 px-2.5 rounded-full transition-colors ${
-                            isSelected ? 'bg-[#5D4037] text-white' : 'bg-[#5D4037]/10 text-[#5D4037]'
+                            dealer.type === 'Company Outlet'
+                              ? isSelected
+                                ? 'bg-amber-500 text-white font-extrabold shadow-sm'
+                                : 'bg-amber-100 text-amber-900 border border-amber-300/80 font-bold'
+                              : isSelected 
+                                ? 'bg-[#5D4037] text-white' 
+                                : 'bg-[#5D4037]/10 text-[#5D4037]'
                           }`}>
                             {dealer.type}
                           </span>

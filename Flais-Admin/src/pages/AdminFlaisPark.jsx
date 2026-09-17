@@ -29,6 +29,7 @@ const AdminFlaisPark = () => {
 
   const [dealers, setDealers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState('All');
   const [isEditing, setIsEditing] = useState(false);
   const [currentDealer, setCurrentDealer] = useState(emptyDealer);
   const [heroMediaUploading, setHeroMediaUploading] = useState(false);
@@ -129,11 +130,15 @@ const AdminFlaisPark = () => {
     }
   };
 
-  const filteredDealers = dealers.filter(d =>
-    d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.state.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDealers = dealers.filter(d => {
+    const matchesSearch =
+      d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      d.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      d.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (d.type && d.type.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesType = selectedTypeFilter === 'All' || d.type === selectedTypeFilter;
+    return matchesSearch && matchesType;
+  });
 
   return (
     <div className="space-y-6">
@@ -142,7 +147,7 @@ const AdminFlaisPark = () => {
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-slate-900">Flais Park Management</h1>
           <p className="text-slate-500 text-sm">
-            {activeTab === 'locations' ? 'Manage dealers, showrooms, and interactive map coordinate markers.' : 'Customize the Flais Park page headers, text sections, and banner media.'}
+            {activeTab === 'locations' ? 'Manage dealers, showrooms, company outlets, and interactive map coordinate markers.' : 'Customize the Flais Park page headers, text sections, and banner media.'}
           </p>
         </div>
         {activeTab === 'locations' && !loading && (
@@ -189,20 +194,40 @@ const AdminFlaisPark = () => {
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Left/Middle: Dealers List & Search */}
               <div className="lg:col-span-2 space-y-4">
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
-                  <Search className="text-slate-400" size={20} />
-                  <input
-                    type="text"
-                    placeholder="Search dealers by name, city or state..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full focus:outline-none text-sm text-slate-700 bg-transparent"
-                  />
+                <div className="space-y-3">
+                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
+                    <Search className="text-slate-400" size={20} />
+                    <input
+                      type="text"
+                      placeholder="Search locations by name, city, state, or type..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full focus:outline-none text-sm text-slate-700 bg-transparent"
+                    />
+                  </div>
+
+                  {/* Type Filter Tabs */}
+                  <div className="flex flex-wrap gap-2">
+                    {['All', 'Exclusive Showroom', 'Company Outlet', 'Authorized Dealer', 'Distributor'].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setSelectedTypeFilter(t)}
+                        className={`text-xs px-3.5 py-1.5 rounded-xl font-medium transition-all ${
+                          selectedTypeFilter === t
+                            ? 'bg-[#0145F2] text-white shadow-sm'
+                            : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                   <div className="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                    <h3 className="font-bold text-slate-800">Dealer Directory</h3>
+                    <h3 className="font-bold text-slate-800">Dealer & Outlet Directory</h3>
                     <span className="text-xs font-bold bg-blue-50 text-[#0145F2] px-2.5 py-1 rounded-lg">
                       {filteredDealers.length} locations
                     </span>
@@ -216,7 +241,15 @@ const AdminFlaisPark = () => {
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-slate-900">{dealer.name}</span>
-                              <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded">
+                              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                                dealer.type === 'Company Outlet'
+                                  ? 'bg-amber-100 text-amber-900 border border-amber-300/70 font-semibold'
+                                  : dealer.type === 'Exclusive Showroom'
+                                    ? 'bg-blue-50 text-[#0145F2] border border-blue-200/60 font-semibold'
+                                    : dealer.type === 'Authorized Dealer'
+                                      ? 'bg-purple-50 text-purple-700 border border-purple-200/60 font-semibold'
+                                      : 'bg-zinc-100 text-zinc-600 border border-zinc-200'
+                              }`}>
                                 {dealer.type}
                               </span>
                             </div>
@@ -351,6 +384,7 @@ const AdminFlaisPark = () => {
                         className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs focus:outline-none focus:border-[#0145F2]"
                       >
                         <option value="Exclusive Showroom">Exclusive Showroom</option>
+                        <option value="Company Outlet">Company Outlet</option>
                         <option value="Authorized Dealer">Authorized Dealer</option>
                         <option value="Distributor">Distributor</option>
                       </select>
