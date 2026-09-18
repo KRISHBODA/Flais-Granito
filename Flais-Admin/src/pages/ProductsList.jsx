@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2, ChevronLeft, ChevronRight, Layers, FileText, Package, Save } from 'lucide-react';
+import { Plus, Search, Filter, MoreVertical, Edit, Trash2, ChevronLeft, ChevronRight, Layers, FileText, Package, Save, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CatalogFilters from './CatalogFilters.jsx';
 import { getImageUrl } from '../utils/api';
 
 const ProductsList = () => {
-  const [activeTab, setActiveTab] = useState('inventory');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+
   const API = import.meta.env.VITE_BACKEND_URL;
   const [collectionSettings, setCollectionSettings] = useState({
     bannerVideo: "",
@@ -42,14 +44,96 @@ const ProductsList = () => {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   
+  // Read initial filter values from URL first, fallback to sessionStorage
+  const getInitialFilters = () => {
+    const urlCategory = searchParams.get('category');
+    const urlSearch = searchParams.get('search');
+    const urlPage = searchParams.get('page');
+    const urlTab = searchParams.get('tab');
+
+    if (urlCategory !== null || urlSearch !== null || urlPage !== null || urlTab !== null) {
+      return {
+        category: urlCategory || 'All',
+        search: urlSearch || '',
+        page: urlPage ? parseInt(urlPage, 10) || 1 : 1,
+        tab: urlTab || 'inventory'
+      };
+    }
+
+    try {
+      const saved = sessionStorage.getItem('admin_products_filter');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          category: parsed.category || 'All',
+          search: parsed.search || '',
+          page: parsed.page || 1,
+          tab: parsed.tab || 'inventory'
+        };
+      }
+    } catch (e) {}
+
+    return { category: 'All', search: '', page: 1, tab: 'inventory' };
+  };
+
+  const initialFilters = useMemo(getInitialFilters, []);
+
   // Filter States
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState(initialFilters.tab);
+  const [searchTerm, setSearchTerm] = useState(initialFilters.search);
+  const [selectedCategory, setSelectedCategory] = useState(initialFilters.category);
+  const [currentPage, setCurrentPage] = useState(initialFilters.page);
   const [paginationData, setPaginationData] = useState({
     totalProducts: 0,
     totalPages: 1
   });
+
+  // Sync state to URL search parameters & sessionStorage
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (activeTab !== 'inventory') params.set('tab', activeTab);
+    if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory);
+    if (searchTerm) params.set('search', searchTerm);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+
+    if (params.toString() !== searchParams.toString()) {
+      setSearchParams(params, { replace: true });
+    }
+
+    try {
+      sessionStorage.setItem('admin_products_filter', JSON.stringify({
+        category: selectedCategory,
+        search: searchTerm,
+        page: currentPage,
+        tab: activeTab
+      }));
+    } catch (e) {}
+  }, [activeTab, selectedCategory, searchTerm, currentPage]);
+
+  // Handle browser Back / Forward history navigation
+  useEffect(() => {
+    const urlCategory = searchParams.get('category') || 'All';
+    const urlSearch = searchParams.get('search') || '';
+    const urlPage = searchParams.get('page') ? parseInt(searchParams.get('page'), 10) || 1 : 1;
+    const urlTab = searchParams.get('tab') || 'inventory';
+
+    setSelectedCategory(prev => prev !== urlCategory ? urlCategory : prev);
+    setSearchTerm(prev => prev !== urlSearch ? urlSearch : prev);
+    setCurrentPage(prev => prev !== urlPage ? urlPage : prev);
+    setActiveTab(prev => prev !== urlTab ? urlTab : prev);
+  }, [searchParams]);
+
+  const handleClearFilters = () => {
+    setSelectedCategory('All');
+    setSearchTerm('');
+    setCurrentPage(1);
+    const params = new URLSearchParams();
+    if (activeTab !== 'inventory') params.set('tab', activeTab);
+    setSearchParams(params, { replace: true });
+    try {
+      sessionStorage.removeItem('admin_products_filter');
+    } catch (e) {}
+  };
 
   const fetchCategories = async () => {
     try {
@@ -130,7 +214,11 @@ const ProductsList = () => {
           </p>
         </div>
         {activeTab === 'inventory' && (
-          <Link to="/admin/products/add" className="flex items-center gap-2 rounded-lg bg-[#0145F2] px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-blue-700">
+          <Link 
+            to="/admin/products/add" 
+            state={{ from: location.search }}
+            className="flex items-center gap-2 rounded-lg bg-[#0145F2] px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-blue-700"
+          >
             <Plus size={18} /> Add Piece
           </Link>
         )}
@@ -194,7 +282,7 @@ const ProductsList = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
-                className="bg-transparent focus:outline-none"
+                className="bg-transparent focus:outline-none cursor-pointer"
               >
                 <option value="All">All Categories</option>
                 {categories.map(cat => (
@@ -202,6 +290,16 @@ const ProductsList = () => {
                 ))}
               </select>
             </div>
+            {(selectedCategory !== 'All' || searchTerm) && (
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition-colors shrink-0"
+                title="Reset filters"
+              >
+                <X size={14} /> Clear Filter
+              </button>
+            )}
           </div>
 
           {/* Table */}
@@ -255,7 +353,12 @@ const ProductsList = () => {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
-                            <Link to={`/admin/products/edit/${product._id}`} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg">
+                            <Link 
+                              to={`/admin/products/edit/${product._id}`} 
+                              state={{ from: location.search }}
+                              className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg"
+                              title="Edit Piece"
+                            >
                               <Edit size={18} />
                             </Link>
                             <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:bg-red-50 p-2 rounded-lg">

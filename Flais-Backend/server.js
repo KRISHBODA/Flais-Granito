@@ -27,6 +27,7 @@ const defaultOrigins = [
   process.env.VITE_ADMIN_URL,
   "https://flaisgranito.com",
   "https://www.flaisgranito.com",
+  "http://localhost:5176",
   "http://localhost:5175",
   "http://localhost:5174",
   "http://localhost:5173",
@@ -54,6 +55,11 @@ app.use(
 
       // Allow exact matches from the Set
       if (allowedOrigins.has(origin)) return cb(null, true);
+
+      // Allow any localhost / 127.0.0.1 origin during local development
+      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?$/.test(origin)) {
+        return cb(null, true);
+      }
 
       // Optional: allow Vercel preview deployments for a specific project only
       // (e.g. VERCEL_PREVIEW_PREFIX=flais-frontend -> https://flais-frontend-*.vercel.app)

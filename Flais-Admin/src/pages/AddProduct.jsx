@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from "axios";
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   ArrowLeft,
   Upload,
@@ -16,6 +16,18 @@ const backend_url = import.meta.env.VITE_BACKEND_URL;
 
 const AddProduct = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleBack = () => {
+    if (location.state?.from) {
+      navigate(`/admin/products${location.state.from}`);
+    } else if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/admin/products');
+    }
+  };
+
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -127,7 +139,7 @@ const AddProduct = () => {
       );
 
       toast.success(response.data.message);
-      navigate("/admin/products");
+      handleBack();
     } catch (error) {
 
       toast.error(error.response?.data?.message || "Failed to add product");
@@ -140,12 +152,14 @@ const AddProduct = () => {
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-4">
-        <Link
-          to="/admin/products"
+        <button
+          type="button"
+          onClick={handleBack}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+          title="Back to Collection"
         >
           <ArrowLeft size={20} />
-        </Link>
+        </button>
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Add New Piece</h1>
           <p className="text-slate-500">Create a new collection item in your catalog.</p>
@@ -366,7 +380,7 @@ const AddProduct = () => {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/admin/products')}
+              onClick={handleBack}
               className="w-full rounded-xl border border-slate-200 bg-white py-3 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
             >
               Cancel

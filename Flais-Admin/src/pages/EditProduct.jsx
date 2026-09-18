@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import axios from 'axios'; // Import axios
 import { ArrowLeft, Upload, X, Save, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -8,7 +8,18 @@ import { getImageUrl } from '../utils/api';
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const API = import.meta.env.VITE_BACKEND_URL; // Get API URL
+
+  const handleBack = () => {
+    if (location.state?.from) {
+      navigate(`/admin/products${location.state.from}`);
+    } else if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/admin/products');
+    }
+  };
 
   const [formData, setFormData] = useState({
     title: '',
@@ -82,13 +93,13 @@ const EditProduct = () => {
         }
       } catch (error) {
         toast.error("Product not found");
-        navigate('/admin/products');
+        handleBack();
       } finally {
         setIsLoading(false);
       }
     };
     fetchProduct();
-  }, [id, API, navigate]);
+  }, [id, API]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -166,7 +177,7 @@ const EditProduct = () => {
       
       if (response.data.success) {
         toast.success('Piece updated successfully!');
-        navigate('/admin/products');
+        handleBack();
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Update failed");
@@ -183,12 +194,14 @@ const EditProduct = () => {
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-4">
-        <Link 
-          to="/admin/products" 
+        <button 
+          type="button"
+          onClick={handleBack}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+          title="Go Back to Collection"
         >
           <ArrowLeft size={20} />
-        </Link>
+        </button>
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Edit Piece</h1>
           <p className="text-slate-500">Update piece details and inventory settings.</p>

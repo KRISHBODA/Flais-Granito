@@ -53,7 +53,7 @@ async function claimNextJob() {
       $set: { status: "processing", lockedAt: new Date(), error: "" },
       $inc: { attempts: 1 },
     },
-    { sort: { createdAt: 1 }, new: true }
+    { sort: { createdAt: 1 }, returnDocument: 'after' }
   );
 }
 
