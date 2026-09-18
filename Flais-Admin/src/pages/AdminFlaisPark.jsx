@@ -243,7 +243,7 @@ const AdminFlaisPark = () => {
                               <span className="font-bold text-slate-900">{dealer.name}</span>
                               <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
                                 dealer.type === 'Company Outlet'
-                                  ? 'bg-amber-100 text-amber-900 border border-amber-300/70 font-semibold'
+                                  ? 'bg-[#5D4037]/10 text-[#5D4037] border border-[#5D4037]/25 font-semibold'
                                   : dealer.type === 'Exclusive Showroom'
                                     ? 'bg-blue-50 text-[#0145F2] border border-blue-200/60 font-semibold'
                                     : dealer.type === 'Authorized Dealer'

@@ -28,13 +28,25 @@ const WhereToBuy = () => {
   const getMapQuery = (dealer) => {
     if (!dealer) return '';
     const latLngPattern = /^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/;
-    if (dealer.coordinates && latLngPattern.test(dealer.coordinates.trim())) {
-      return dealer.coordinates.trim();
+    const coords = (dealer.coordinates || '').trim();
+    if (coords && latLngPattern.test(coords)) {
+      return coords;
     }
-    if (dealer.coordinates && !dealer.coordinates.startsWith('http') && dealer.coordinates.length < 100) {
-      return `${dealer.coordinates}, ${dealer.city}, ${dealer.state}`;
+    if (coords && !coords.startsWith('http') && coords.length < 100) {
+      return coords;
     }
-    return `${dealer.name}, ${dealer.address}, ${dealer.city}, ${dealer.state}`;
+    const cleanName = formatDealerName(dealer.name);
+    return [cleanName, dealer.address, dealer.city, dealer.state].filter(Boolean).join(', ');
+  };
+
+  const getDirectionsUrl = (dealer) => {
+    if (!dealer) return '#';
+    const coords = (dealer.coordinates || '').trim();
+    if (coords.startsWith('http://') || coords.startsWith('https://')) {
+      return coords;
+    }
+    const destination = getMapQuery(dealer);
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
   };
 
   const [pageSettings, setPageSettings] = useState({
@@ -326,12 +338,7 @@ const WhereToBuy = () => {
                             className="p-3 hover:bg-beige-50 cursor-pointer flex items-center justify-between transition-colors"
                             onClick={() => { setSelectedType(type); setIsTypeOpen(false); }}
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="text-zinc-700">{type}</span>
-                              {type === 'Company Outlet' && (
-                                <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">New</span>
-                              )}
-                            </div>
+                            <span className="text-zinc-700">{type}</span>
                             {selectedType === type && <Check size={16} className="text-[#5D4037]" />}
                           </div>
                         ))}
@@ -362,14 +369,10 @@ const WhereToBuy = () => {
                   key={type}
                   type="button"
                   onClick={() => setSelectedType(selectedType === type ? '' : type)}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
                     selectedType === type
-                      ? type === 'Company Outlet'
-                        ? 'bg-amber-500 text-white shadow-sm font-semibold'
-                        : 'bg-[#5D4037] text-white shadow-sm'
-                      : type === 'Company Outlet'
-                        ? 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
-                        : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                      ? 'bg-[#5D4037] text-white shadow-sm'
+                      : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                   }`}
                 >
                   {type}
@@ -419,13 +422,9 @@ const WhereToBuy = () => {
                         </h4>
                         {dealer.type && (
                           <span className={`shrink-0 whitespace-nowrap text-[9px] sm:text-[10px] uppercase font-bold tracking-wider py-1 px-2.5 rounded-full transition-colors ${
-                            dealer.type === 'Company Outlet'
-                              ? isSelected
-                                ? 'bg-amber-500 text-white font-extrabold shadow-sm'
-                                : 'bg-amber-100 text-amber-900 border border-amber-300/80 font-bold'
-                              : isSelected 
-                                ? 'bg-[#5D4037] text-white' 
-                                : 'bg-[#5D4037]/10 text-[#5D4037]'
+                            isSelected 
+                              ? 'bg-[#5D4037] text-white' 
+                              : 'bg-[#5D4037]/10 text-[#5D4037]'
                           }`}>
                             {dealer.type}
                           </span>
@@ -457,21 +456,23 @@ const WhereToBuy = () => {
                         )}
                       </div>
 
-                      {dealer.coordinates && (
-                        <a 
-                          href={dealer.coordinates.startsWith('http') ? dealer.coordinates : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dealer.coordinates)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className={`mt-5 w-full py-2.5 font-semibold text-sm rounded-lg flex items-center justify-center gap-2 transition-colors ${
-                            isSelected 
-                              ? 'bg-[#5D4037] text-white hover:bg-[#4E342E]' 
-                              : 'bg-zinc-50 text-zinc-700 hover:bg-[#5D4037] hover:text-white'
-                          }`}
-                        >
-                          <Navigation size={14} /> Get Directions
-                        </a>
-                      )}
+                      {/* Get Directions Button - Available for all locations */}
+                      <a 
+                        href={getDirectionsUrl(dealer)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDealer(dealer);
+                        }}
+                        className={`mt-5 w-full py-2.5 font-semibold text-sm rounded-lg flex items-center justify-center gap-2 transition-colors ${
+                          isSelected 
+                            ? 'bg-[#5D4037] text-white hover:bg-[#4E342E]' 
+                            : 'bg-zinc-50 text-zinc-700 hover:bg-[#5D4037] hover:text-white'
+                        }`}
+                      >
+                        <Navigation size={14} /> Get Directions
+                      </a>
                     </div>
                   );
                 })}
@@ -489,15 +490,29 @@ const WhereToBuy = () => {
             {/* Map Area */}
             <div className="lg:col-span-3 bg-zinc-100 rounded-2xl overflow-hidden relative border border-zinc-200 min-h-[300px] lg:min-h-0">
               {selectedDealer ? (
-                <iframe
-                  title="Dealer Location Map"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                    getMapQuery(selectedDealer)
-                  )}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
-                  className="w-full h-full border-0 absolute inset-0"
-                  allowFullScreen=""
-                  loading="lazy"
-                ></iframe>
+                <>
+                  <iframe
+                    title="Dealer Location Map"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                      getMapQuery(selectedDealer)
+                    )}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                    className="w-full h-full border-0 absolute inset-0"
+                    allowFullScreen=""
+                    loading="lazy"
+                  ></iframe>
+                  {/* Floating Directions Shortcut over Map */}
+                  <div className="absolute top-4 right-4 z-10">
+                    <a
+                      href={getDirectionsUrl(selectedDealer)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-white/95 hover:bg-white text-[#5D4037] hover:text-[#4E342E] shadow-md border border-zinc-200/80 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all backdrop-blur-sm"
+                    >
+                      <Navigation size={13} className="text-[#5D4037]" />
+                      Get Directions
+                    </a>
+                  </div>
+                </>
               ) : (
                 <>
                   <div className="absolute inset-0 bg-[#E8EAED]">
