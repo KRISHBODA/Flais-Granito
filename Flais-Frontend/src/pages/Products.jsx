@@ -116,12 +116,29 @@ const Products = () => {
   }, []);
 
   const resolveCategoryFromParam = useCallback((catParam) => {
-    if (!catParam) return { name: 'all', slug: 'all' };
+    if (!catParam || catParam === 'all') return { name: 'all', slug: 'all' };
+
+    // Check DB collections / categories
     const match = categories.find(
-      (cat) => cat.slug === catParam || cat.name.toLowerCase() === catParam.toLowerCase()
+      (cat) => (cat.slug && cat.slug.toLowerCase() === catParam.toLowerCase()) || 
+               (cat.name && cat.name.toLowerCase() === catParam.toLowerCase())
     );
     if (match) return { name: match.name, slug: match.slug };
-    return { name: catParam, slug: catParam };
+
+    // Check body types (from footer, home page, or external links)
+    const norm = catParam.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (norm.includes('gvt') || norm.includes('pgvt') || norm === 'slab') {
+      return { name: 'GVT/PGVT Tiles', slug: 'gvt-pgvt' };
+    }
+    if (norm.includes('colorbody') || norm.includes('digitalfullbody') || norm.includes('colourbody')) {
+      return { name: 'Color Body Tiles', slug: 'color-body' };
+    }
+    if (norm.includes('fullbody')) {
+      return { name: 'Full Body Tiles', slug: 'full-body' };
+    }
+
+    // Graceful fallback for any unknown slug: show all products
+    return { name: 'all', slug: 'all' };
   }, [categories]);
 
   const updateQueryParams = useCallback((newValues) => {
@@ -186,9 +203,35 @@ const Products = () => {
   // Matching helper functions
   const productMatchesCategory = useCallback((product, targetCat) => {
     if (!targetCat || targetCat === 'all') return true;
-    if (!product || !product.category) return false;
-    const pCat = product.category.trim().toLowerCase();
+    if (!product) return false;
+
     const tCat = targetCat.trim().toLowerCase();
+    const norm = tCat.replace(/[^a-z0-9]/g, '');
+
+    // Body type matching (GVT/PGVT, Color Body, Full Body)
+    if (norm.includes('gvt') || norm.includes('pgvt') || norm === 'slab') {
+      const color = (product.color || '').trim().toUpperCase();
+      if (color.includes('GVT') || color.includes('PGVT')) return true;
+      return color !== 'WHITE' && color !== 'IVORY' && color !== 'GREY' && color !== 'BLACK' && (product.category || '') !== 'Extra Max Collection';
+    }
+
+    if (norm.includes('colorbody') || norm.includes('digitalfullbody') || norm.includes('colourbody')) {
+      const color = (product.color || '').trim().toUpperCase();
+      if (['WHITE', 'IVORY', 'GREY', 'BLACK'].includes(color)) return true;
+      const cat = (product.category || '').toLowerCase();
+      return cat.includes('extra max');
+    }
+
+    if (norm.includes('fullbody')) {
+      const color = (product.color || '').trim().toUpperCase();
+      if (['WHITE', 'IVORY', 'GREY', 'BLACK'].includes(color)) return true;
+      const cat = (product.category || '').toLowerCase();
+      return cat.includes('extra max');
+    }
+
+    // Standard Category matching
+    if (!product.category) return false;
+    const pCat = product.category.trim().toLowerCase();
     if (pCat === tCat) return true;
     const catObj = categories.find(c => (c.slug && c.slug.toLowerCase() === tCat) || (c.name && c.name.toLowerCase() === tCat));
     if (catObj && catObj.name.toLowerCase() === pCat) return true;
@@ -841,6 +884,37 @@ const Products = () => {
               </div>
             ) : (
               <>
+                {/* Active Filter Header */}
+                <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-100 flex-wrap gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-sm font-semibold text-zinc-900">
+                      {filteredProducts.length} {filteredProducts.length === 1 ? 'Tile' : 'Tiles'} Found
+                    </span>
+                    {filter !== 'all' && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#5D4037]/10 text-[#5D4037] border border-[#5D4037]/20">
+                        {selectedCategoryName || filter}
+                        <button
+                          type="button"
+                          onClick={() => handleFilterChange('all', 'all')}
+                          className="hover:text-black ml-1 text-xs font-bold leading-none cursor-pointer"
+                          title="Clear filter"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                  {filter !== 'all' && (
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange('all', 'all')}
+                      className="text-xs font-semibold text-[#5D4037] hover:underline cursor-pointer"
+                    >
+                      Show All Collections ({products.length})
+                    </button>
+                  )}
+                </div>
+
                 <motion.div 
                   layout
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
