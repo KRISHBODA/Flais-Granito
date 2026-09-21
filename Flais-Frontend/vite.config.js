@@ -28,6 +28,12 @@ export default defineConfig({
     // Serve WASM with correct MIME type
     mimetype: {
       wasm: 'application/wasm'
+    },
+    proxy: {
+      '^/.*\\.(pdf|jpg|jpeg|png|gif|mp4|zip|rar|csv|xlsx|docx)$': {
+        target: process.env.VITE_BACKEND_URL || 'http://localhost:8000',
+        changeOrigin: true
+      }
     }
   },
   build: {
