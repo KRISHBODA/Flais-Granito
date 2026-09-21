@@ -280,8 +280,8 @@ const WebsiteFileManager = () => {
   };
 
   const handleShare = (node) => {
-    // Use the backend API URL to ensure direct file access, bypassing frontend SPA routing
-    const baseUrl = API.endsWith('/') ? API.slice(0, -1) : API;
+    // Generate clean link using the frontend domain
+    const baseUrl = window.location.origin;
     const relativePath = node.relativePath.startsWith('/') ? node.relativePath.slice(1) : node.relativePath;
     const shareUrl = `${baseUrl}/${relativePath}`;
     
