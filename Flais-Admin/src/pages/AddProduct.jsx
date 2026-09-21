@@ -7,7 +7,10 @@ import {
   X,
   Save,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Layers,
+  Image as ImageIcon,
+  Sparkles,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -43,8 +46,15 @@ const AddProduct = () => {
     collection: '',
     tagReview: '',
   });
-  const [images, setImages] = useState([]);
-  const [previews, setPreviews] = useState([]);
+  // 2 Distinct Image Upload Sections:
+  // Section 1: 3D Preview (#1 Photo on collection page)
+  const [preview3dFiles, setPreview3dFiles] = useState([]);
+  const [preview3dPreviews, setPreview3dPreviews] = useState([]);
+
+  // Section 2: Simple Tile Photos (JPG / Tile Faces / Randoms)
+  const [jpgFiles, setJpgFiles] = useState([]);
+  const [jpgPreviews, setJpgPreviews] = useState([]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState([]);
   const [appOptions, setAppOptions] = useState([]);
@@ -70,32 +80,56 @@ const AddProduct = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
+  const handlePreview3dChange = (e) => {
     const files = Array.from(e.target.files);
-    const newFiles = [...images, ...files];
-    setImages(newFiles);
+    if (!files.length) return;
+    const newFiles = [...preview3dFiles, ...files];
+    setPreview3dFiles(newFiles);
 
-    const newPreviews = [];
-    let loadedCount = 0;
-
+    const newPrevList = [];
+    let loaded = 0;
     newFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        newPreviews.push(reader.result);
-        loadedCount++;
-        if (loadedCount === newFiles.length) {
-          setPreviews(newPreviews);
+        newPrevList.push(reader.result);
+        loaded++;
+        if (loaded === newFiles.length) {
+          setPreview3dPreviews(newPrevList);
         }
       };
       reader.readAsDataURL(file);
     });
   };
 
-  const removeImage = (index) => {
-    const newImages = images.filter((_, i) => i !== index);
-    const newPreviews = previews.filter((_, i) => i !== index);
-    setImages(newImages);
-    setPreviews(newPreviews);
+  const removePreview3d = (index) => {
+    setPreview3dFiles(prev => prev.filter((_, i) => i !== index));
+    setPreview3dPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleJpgChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const newFiles = [...jpgFiles, ...files];
+    setJpgFiles(newFiles);
+
+    const newPrevList = [];
+    let loaded = 0;
+    newFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newPrevList.push(reader.result);
+        loaded++;
+        if (loaded === newFiles.length) {
+          setJpgPreviews(newPrevList);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeJpg = (index) => {
+    setJpgFiles(prev => prev.filter((_, i) => i !== index));
+    setJpgPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -121,8 +155,25 @@ const AddProduct = () => {
       data.append("collection", formData.collection);
       data.append("tagReview", formData.tagReview);
 
-      if (images && images.length > 0) {
-        images.forEach((img) => {
+      if (preview3dFiles.length === 0 && jpgFiles.length === 0) {
+        toast.error("Please upload at least one photo (3D preview or JPG)");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const has3d = preview3dFiles.length > 0;
+      data.append("has3dPreview", has3d ? "true" : "false");
+
+      // 1. 3D Preview Photos ALWAYS go first as previewImages (#1 photo)
+      if (preview3dFiles.length > 0) {
+        preview3dFiles.forEach((img) => {
+          data.append("previewImages", img);
+        });
+      }
+
+      // 2. Simple Tile Photos (JPG) follow after
+      if (jpgFiles.length > 0) {
+        jpgFiles.forEach((img) => {
           data.append("images", img);
         });
       }
@@ -281,39 +332,106 @@ const AddProduct = () => {
 
         </div>
 
-        {/* Right: Media & Category */}
+        {/* Right: 2 Distinct Media Upload Sections & Category */}
         <div className="space-y-6">
-          {/* Media Card */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="mb-6 text-lg font-bold text-slate-900">Piece Media</h3>
-            <div className="relative">
-              <div className="space-y-4">
-                {previews.length > 0 && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {previews.map((prev, idx) => (
-                      <div key={idx} className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200 group">
-                        <img loading="lazy" src={prev} alt={`Preview ${idx + 1}`} className="h-full w-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(idx)}
-                          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
-                        >
-                          <X size={15} />
-                        </button>
-                        <div className="absolute bottom-2 left-2 px-1.5 py-0.5 text-[10px] font-bold text-white bg-black/60 rounded">
-                          #{idx + 1}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <label className="flex aspect-[2/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-[#0145F2] hover:bg-blue-50/30">
-                  <Upload className="mb-2 text-slate-400" size={24} />
-                  <span className="text-xs font-semibold text-slate-600">Upload Images</span>
-                  <span className="mt-0.5 text-[10px] text-slate-400">PNG, JPG, WebP up to 10MB</span>
-                  <input type="file" multiple className="hidden" accept="image/*" onChange={handleImageChange} />
-                </label>
+          {/* Section 1: 3D Preview Photo (#1 Photo on Collection Page) */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-blue-100/80">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-[#0145F2]">
+                  <Layers size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">1. 3D Preview Photo</h3>
+                  <p className="text-[11px] text-slate-400">#1 photo shown on collection page</p>
+                </div>
               </div>
+              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-[#0145F2] border border-blue-200/60">
+                Cover / #1 Photo
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {preview3dPreviews.length > 0 ? (
+                <div className="grid grid-cols-1 gap-3">
+                  {preview3dPreviews.map((prev, idx) => (
+                    <div key={idx} className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-100 border-2 border-blue-500/30 group shadow-sm">
+                      <img loading="lazy" src={prev} alt={`3D Preview ${idx + 1}`} className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removePreview3d(idx)}
+                        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+                        title="Remove 3D preview photo"
+                      >
+                        <X size={15} />
+                      </button>
+                      <div className="absolute bottom-2 left-2 px-2 py-0.5 text-[10px] font-extrabold text-white bg-[#0145F2] rounded-md shadow-sm">
+                        #1 3D Preview Photo
+                      </div>
+                    </div>
+                  ))}
+                  <label className="flex aspect-[3/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-blue-300 bg-blue-50/30 transition-colors hover:bg-blue-50/60">
+                    <Upload className="mb-1 text-[#0145F2]" size={16} />
+                    <span className="text-xs font-semibold text-blue-700">Change 3D Preview</span>
+                    <input type="file" className="hidden" accept="image/*" onChange={handlePreview3dChange} />
+                  </label>
+                </div>
+              ) : (
+                <label className="flex aspect-[2/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/20 transition-colors hover:border-[#0145F2] hover:bg-blue-50/50">
+                  <Upload className="mb-2 text-[#0145F2]" size={24} />
+                  <span className="text-xs font-bold text-slate-700">Upload 3D Preview Photo</span>
+                  <span className="mt-0.5 text-[10px] text-slate-400">Mockup, room scene, or 3D render (#1 photo)</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={handlePreview3dChange} />
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Section 2: Simple Tile Photos (JPG / Faces / Randoms) */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-emerald-100/80">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                  <ImageIcon size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">2. Simple Tile Photos (JPG)</h3>
+                  <p className="text-[11px] text-slate-400">Flat tile faces shown on swipe</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200/60">
+                Swipe / Faces
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {jpgPreviews.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  {jpgPreviews.map((prev, idx) => (
+                    <div key={idx} className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200 group shadow-2xs">
+                      <img loading="lazy" src={prev} alt={`Tile Face ${idx + 1}`} className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeJpg(idx)}
+                        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+                        title="Remove this tile photo"
+                      >
+                        <X size={15} />
+                      </button>
+                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 text-[10px] font-bold text-white bg-emerald-700/80 rounded">
+                        JPG #{idx + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <label className="flex aspect-[3/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-emerald-500 hover:bg-emerald-50/20">
+                <Upload className="mb-1 text-slate-400" size={20} />
+                <span className="text-xs font-semibold text-slate-600">Upload Simple Tile Photos (JPG)</span>
+                <span className="text-[10px] text-slate-400">Add multiple plain tile faces & randoms</span>
+                <input type="file" multiple className="hidden" accept="image/*" onChange={handleJpgChange} />
+              </label>
             </div>
           </div>
 

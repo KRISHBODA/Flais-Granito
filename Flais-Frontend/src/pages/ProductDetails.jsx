@@ -131,7 +131,10 @@ const ProductDetails = () => {
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
-  const minSwipeDistance = 50;
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [mouseStartX, setMouseStartX] = useState(0);
+
+  const minSwipeDistance = 40;
   const onTouchStart = (e) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
@@ -149,6 +152,24 @@ const ProductDetails = () => {
     } else if (isRightSwipe) {
       prevImage();
     }
+  };
+
+  const handleMouseDown = (e) => {
+    setIsMouseDown(true);
+    setMouseStartX(e.clientX);
+  };
+  const handleMouseUp = (e) => {
+    if (!isMouseDown) return;
+    setIsMouseDown(false);
+    const distance = mouseStartX - e.clientX;
+    if (distance > minSwipeDistance) {
+      nextImage();
+    } else if (distance < -minSwipeDistance) {
+      prevImage();
+    }
+  };
+  const handleMouseLeave = () => {
+    setIsMouseDown(false);
   };
 
   const productSchema = {
@@ -193,56 +214,119 @@ const ProductDetails = () => {
         </div>
 
         <div className="grid lg:grid-cols-[1.3fr_0.7fr] gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-stretch">
-          {/* Left: Image Carousel */}
-          <div className="relative aspect-[4/3] md:aspect-[1.1] lg:aspect-auto lg:h-full w-full rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100 shadow-md group">
-            <div className={`w-full h-full lg:absolute lg:inset-0 flex items-center justify-center ${currentImageIndex === 0 ? 'p-0' : 'p-6'}`}>
-              {allImages.length > 0 ? (
-                <img 
-                  src={allImages[currentImageIndex]} 
-                  alt={product.title || product.name} 
-                  loading="lazy" 
-                  className={`${currentImageIndex === 0 ? 'w-full h-full object-cover' : 'max-w-full max-h-full object-contain'} transition-all duration-500 select-none cursor-grab active:cursor-grabbing`} 
-                  onTouchStart={onTouchStart}
-                  onTouchMove={onTouchMove}
-                  onTouchEnd={onTouchEnd}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-center px-6 bg-zinc-50 text-zinc-400">
-                  <div>
-                    <p className="font-semibold text-zinc-600">No product image available</p>
-                    <p className="mt-1 text-sm">This product has not been assigned any images yet.</p>
-                  </div>
+          {/* Left: Image Carousel & Thumbnails */}
+          <div className="flex flex-col">
+            <div
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              className="relative aspect-[4/3] md:aspect-[1.1] lg:aspect-auto lg:h-[540px] w-full rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100 shadow-md group select-none"
+            >
+              {/* Badge: 3D Preview (#1) vs Simple Tile JPG */}
+              {allImages.length > 0 && (
+                <div className="absolute top-4 left-4 z-20 pointer-events-none">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide shadow-md backdrop-blur-md transition-all ${
+                    product.has3dPreview !== false && currentImageIndex === 0
+                      ? 'bg-blue-600/90 text-white border border-blue-400/40'
+                      : 'bg-emerald-700/90 text-white border border-emerald-400/40'
+                  }`}>
+                    {product.has3dPreview !== false && currentImageIndex === 0
+                      ? '✨ 3D Room Preview (#1)'
+                      : product.has3dPreview !== false
+                      ? `Tile Face (JPG) • ${currentImageIndex} of ${allImages.length - 1}`
+                      : `Tile Face (JPG) • ${currentImageIndex + 1} of ${allImages.length}`}
+                  </span>
                 </div>
               )}
+
+              {/* Swipe Hint */}
               {allImages.length > 1 && (
-                <>
-                  <button 
-                    onClick={prevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-zinc-700 hover:bg-white hover:scale-105 transition-all active:scale-95 z-10"
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
-                  <button 
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-zinc-700 hover:bg-white hover:scale-105 transition-all active:scale-95 z-10"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                  {/* Carousel Indicator Dots */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                    {allImages.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentImageIndex(i)}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          currentImageIndex === i ? 'bg-[#5D4037] w-4' : 'bg-white/60'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </>
+                <div className="absolute top-4 right-4 z-20 pointer-events-none">
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-[11px] font-medium shadow-sm">
+                    Swipe or Drag ↔
+                  </span>
+                </div>
               )}
+
+              <div className={`w-full h-full flex items-center justify-center ${currentImageIndex === 0 ? 'p-0' : 'p-6'}`}>
+                {allImages.length > 0 ? (
+                  <img 
+                    src={allImages[currentImageIndex]} 
+                    alt={product.title || product.name} 
+                    loading="lazy" 
+                    className={`${currentImageIndex === 0 ? 'w-full h-full object-cover' : 'max-w-full max-h-full object-contain'} transition-all duration-500 select-none cursor-grab active:cursor-grabbing`} 
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-center px-6 bg-zinc-50 text-zinc-400">
+                    <div>
+                      <p className="font-semibold text-zinc-600">No product image available</p>
+                      <p className="mt-1 text-sm">This product has not been assigned any images yet.</p>
+                    </div>
+                  </div>
+                )}
+                {allImages.length > 1 && (
+                  <>
+                    <button 
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-zinc-700 hover:bg-white hover:scale-105 transition-all active:scale-95 z-10"
+                      title="Previous Image"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button 
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center text-zinc-700 hover:bg-white hover:scale-105 transition-all active:scale-95 z-10"
+                      title="Next Image"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                    {/* Carousel Indicator Dots */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                      {allImages.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setCurrentImageIndex(i)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            currentImageIndex === i ? 'bg-[#5D4037] w-4' : 'bg-white/60'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
+
+            {/* Thumbnail Strip: 3D Preview First (#1), then Simple Tile Photos (JPGs) */}
+            {allImages.length > 1 && (
+              <div className="mt-4 flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+                {allImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setCurrentImageIndex(idx)}
+                    className={`relative h-16 w-20 sm:h-20 sm:w-24 shrink-0 rounded-xl overflow-hidden transition-all ${
+                      currentImageIndex === idx
+                        ? (product.has3dPreview !== false && idx === 0)
+                          ? 'ring-2 ring-[#0145F2] ring-offset-2 scale-102 shadow-md'
+                          : 'ring-2 ring-emerald-600 ring-offset-2 scale-102 shadow-md'
+                        : 'opacity-60 hover:opacity-100 border border-zinc-200'
+                    }`}
+                    title={product.has3dPreview !== false && idx === 0 ? '3D Preview (#1)' : `Tile Photo (JPG Face ${product.has3dPreview !== false ? idx : idx + 1})`}
+                  >
+                    <img src={img} alt={`Thumb ${idx + 1}`} className="h-full w-full object-cover" />
+                    <span className={`absolute bottom-0 inset-x-0 text-[9px] font-bold py-0.5 text-center text-white ${
+                      product.has3dPreview !== false && idx === 0 ? 'bg-[#0145F2]/90' : 'bg-emerald-700/90'
+                    }`}>
+                      {product.has3dPreview !== false && idx === 0 ? '3D Preview' : `JPG Face ${product.has3dPreview !== false ? idx : idx + 1}`}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right: Premium Information Panel */}

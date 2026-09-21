@@ -70,6 +70,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    has3dPreview: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

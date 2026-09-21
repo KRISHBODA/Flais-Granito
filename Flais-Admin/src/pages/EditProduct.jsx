@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import axios from 'axios'; // Import axios
-import { ArrowLeft, Upload, X, Save, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Upload, X, Save, RotateCcw, Layers, Image as ImageIcon, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getImageUrl } from '../utils/api';
 
@@ -37,9 +37,17 @@ const EditProduct = () => {
     collection: '',
     tagReview: '',
   });
-  const [existingImages, setExistingImages] = useState([]);
-  const [newImageFiles, setNewImageFiles] = useState([]);
-  const [newPreviews, setNewPreviews] = useState([]);
+  // 2 Distinct Image Upload Sections:
+  // Section 1: 3D Preview (#1 Photo on collection page)
+  const [existingPreviewImages, setExistingPreviewImages] = useState([]);
+  const [newPreviewFiles, setNewPreviewFiles] = useState([]);
+  const [newPreviewPreviews, setNewPreviewPreviews] = useState([]);
+
+  // Section 2: Simple Tile Photos (JPG / Tile Faces / Randoms)
+  const [existingJpgImages, setExistingJpgImages] = useState([]);
+  const [newJpgFiles, setNewJpgFiles] = useState([]);
+  const [newJpgPreviews, setNewJpgPreviews] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -89,7 +97,17 @@ const EditProduct = () => {
             collection: data.product.productCollection || '',
             tagReview: data.product.tagReview || '',
           });
-          setExistingImages(data.product.images || []);
+          const allImgs = data.product.images || [];
+          if (data.product.has3dPreview === false) {
+            setExistingPreviewImages([]);
+            setExistingJpgImages(allImgs);
+          } else if (allImgs.length > 0) {
+            setExistingPreviewImages([allImgs[0]]);
+            setExistingJpgImages(allImgs.slice(1));
+          } else {
+            setExistingPreviewImages([]);
+            setExistingJpgImages([]);
+          }
         }
       } catch (error) {
         toast.error("Product not found");
@@ -106,36 +124,60 @@ const EditProduct = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
+  const handleNewPreviewChange = (e) => {
     const files = Array.from(e.target.files);
-    const updatedFiles = [...newImageFiles, ...files];
-    setNewImageFiles(updatedFiles);
+    if (!files.length) return;
+    const updated = [...newPreviewFiles, ...files];
+    setNewPreviewFiles(updated);
 
-    const newPreviewsArray = [];
-    let loadedCount = 0;
-
-    updatedFiles.forEach((file) => {
+    const prevList = [];
+    let loaded = 0;
+    updated.forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        newPreviewsArray.push(reader.result);
-        loadedCount++;
-        if (loadedCount === updatedFiles.length) {
-          setNewPreviews(newPreviewsArray);
-        }
+        prevList.push(reader.result);
+        loaded++;
+        if (loaded === updated.length) setNewPreviewPreviews(prevList);
       };
       reader.readAsDataURL(file);
     });
   };
 
-  const removeExistingImage = (idx) => {
-    setExistingImages(existingImages.filter((_, i) => i !== idx));
+  const removeExistingPreview = (idx) => {
+    setExistingPreviewImages(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const removeNewImage = (idx) => {
-    const updatedFiles = newImageFiles.filter((_, i) => i !== idx);
-    const updatedPreviews = newPreviews.filter((_, i) => i !== idx);
-    setNewImageFiles(updatedFiles);
-    setNewPreviews(updatedPreviews);
+  const removeNewPreview = (idx) => {
+    setNewPreviewFiles(prev => prev.filter((_, i) => i !== idx));
+    setNewPreviewPreviews(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleNewJpgChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const updated = [...newJpgFiles, ...files];
+    setNewJpgFiles(updated);
+
+    const prevList = [];
+    let loaded = 0;
+    updated.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        prevList.push(reader.result);
+        loaded++;
+        if (loaded === updated.length) setNewJpgPreviews(prevList);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeExistingJpg = (idx) => {
+    setExistingJpgImages(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeNewJpg = (idx) => {
+    setNewJpgFiles(prev => prev.filter((_, i) => i !== idx));
+    setNewJpgPreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
   // 2. Submit Changes to Backend
@@ -161,9 +203,27 @@ const EditProduct = () => {
       data.append("collection", formData.collection);
       data.append("tagReview", formData.tagReview);
 
-      data.append("existingImages", JSON.stringify(existingImages));
-      if (newImageFiles && newImageFiles.length > 0) {
-        newImageFiles.forEach((file) => {
+      const totalAllImages = existingPreviewImages.length + newPreviewFiles.length + existingJpgImages.length + newJpgFiles.length;
+      if (totalAllImages === 0) {
+        toast.error("Please keep or upload at least one photo");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const has3d = (existingPreviewImages.length + newPreviewFiles.length) > 0;
+      data.append("has3dPreview", has3d ? "true" : "false");
+      data.append("existingPreviewImages", JSON.stringify(existingPreviewImages));
+      data.append("existingJpgImages", JSON.stringify(existingJpgImages));
+      data.append("existingImages", JSON.stringify([...existingPreviewImages, ...existingJpgImages]));
+
+      if (newPreviewFiles.length > 0) {
+        newPreviewFiles.forEach((file) => {
+          data.append("previewImages", file);
+        });
+      }
+
+      if (newJpgFiles.length > 0) {
+        newJpgFiles.forEach((file) => {
           data.append("images", file);
         });
       }
@@ -322,55 +382,142 @@ const EditProduct = () => {
         </div>
 
         {/* Right: Media & Category */}
+        {/* Right: 2 Distinct Media Upload Sections & Category */}
         <div className="space-y-6">
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="mb-6 text-lg font-bold text-slate-900">Piece Media</h3>
-            <div className="space-y-4">
-              {(existingImages.length > 0 || newPreviews.length > 0) && (
+          {/* Section 1: 3D Preview Photo (#1 Photo on Collection Page) */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-blue-100/80">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-[#0145F2]">
+                  <Layers size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">1. 3D Preview Photo</h3>
+                  <p className="text-[11px] text-slate-400">#1 photo shown on collection page</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-[#0145F2] border border-blue-200/60">
+                Cover / #1 Photo
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {/* Existing 3D Preview */}
+              {existingPreviewImages.map((img, idx) => (
+                <div key={`exist-prev-${idx}`} className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-100 border-2 border-blue-500/30 group shadow-sm">
+                  <img loading="lazy" src={getImageUrl(img)} alt={`3D Preview ${idx + 1}`} className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeExistingPreview(idx)}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+                    title="Remove 3D preview photo"
+                  >
+                    <X size={15} />
+                  </button>
+                  <div className="absolute bottom-2 left-2 px-2 py-0.5 text-[10px] font-extrabold text-white bg-[#0145F2] rounded-md shadow-sm">
+                    #1 Active 3D Preview
+                  </div>
+                </div>
+              ))}
+
+              {/* Newly Uploaded 3D Preview */}
+              {newPreviewPreviews.map((prev, idx) => (
+                <div key={`new-prev-${idx}`} className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-100 border-2 border-indigo-500/30 group shadow-sm">
+                  <img loading="lazy" src={prev} alt={`New 3D Preview ${idx + 1}`} className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeNewPreview(idx)}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+                    title="Remove new 3D preview"
+                  >
+                    <X size={15} />
+                  </button>
+                  <div className="absolute bottom-2 left-2 px-2 py-0.5 text-[10px] font-extrabold text-white bg-indigo-600 rounded-md shadow-sm">
+                    #1 New 3D Preview
+                  </div>
+                </div>
+              ))}
+
+              {existingPreviewImages.length === 0 && newPreviewPreviews.length === 0 ? (
+                <label className="flex aspect-[2/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/20 transition-colors hover:border-[#0145F2] hover:bg-blue-50/50">
+                  <Upload className="mb-2 text-[#0145F2]" size={24} />
+                  <span className="text-xs font-bold text-slate-700">Upload 3D Preview Photo</span>
+                  <span className="mt-0.5 text-[10px] text-slate-400">Mockup, room scene, or 3D render (#1 photo)</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={handleNewPreviewChange} />
+                </label>
+              ) : (
+                <label className="flex aspect-[3/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-blue-300 bg-blue-50/30 transition-colors hover:bg-blue-50/60">
+                  <Upload className="mb-1 text-[#0145F2]" size={16} />
+                  <span className="text-xs font-semibold text-blue-700">Change / Replace 3D Preview</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={handleNewPreviewChange} />
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Section 2: Simple Tile Photos (JPG / Faces / Randoms) */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-emerald-100/80">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                  <ImageIcon size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">2. Simple Tile Photos (JPG)</h3>
+                  <p className="text-[11px] text-slate-400">Flat tile faces shown on swipe</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200/60">
+                Swipe / Faces
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {(existingJpgImages.length > 0 || newJpgPreviews.length > 0) && (
                 <div className="grid grid-cols-2 gap-3">
-                  {/* Existing Images */}
-                  {existingImages.map((img, idx) => (
-                    <div key={`exist-${idx}`} className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200 group">
-                      <img loading="lazy" src={getImageUrl(img)} alt={`Existing ${idx + 1}`} className="h-full w-full object-cover" />
+                  {/* Existing JPGs */}
+                  {existingJpgImages.map((img, idx) => (
+                    <div key={`exist-jpg-${idx}`} className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200 group shadow-2xs">
+                      <img loading="lazy" src={getImageUrl(img)} alt={`JPG Face ${idx + 1}`} className="h-full w-full object-cover" />
                       <button
                         type="button"
-                        onClick={() => removeExistingImage(idx)}
+                        onClick={() => removeExistingJpg(idx)}
                         className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+                        title="Remove this tile photo"
                       >
                         <X size={15} />
                       </button>
-                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 text-[10px] font-bold text-white bg-blue-600/80 rounded">
-                        Active
+                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 text-[10px] font-bold text-white bg-emerald-700/80 rounded">
+                        Active JPG #{idx + 1}
                       </div>
                     </div>
                   ))}
 
-                  {/* New Previews */}
-                  {newPreviews.map((prev, idx) => (
-                    <div key={`new-${idx}`} className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200 group">
-                      <img loading="lazy" src={prev} alt={`New Preview ${idx + 1}`} className="h-full w-full object-cover" />
+                  {/* New JPGs */}
+                  {newJpgPreviews.map((prev, idx) => (
+                    <div key={`new-jpg-${idx}`} className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-100 border border-slate-200 group shadow-2xs">
+                      <img loading="lazy" src={prev} alt={`New JPG ${idx + 1}`} className="h-full w-full object-cover" />
                       <button
                         type="button"
-                        onClick={() => removeNewImage(idx)}
+                        onClick={() => removeNewJpg(idx)}
                         className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+                        title="Remove new tile photo"
                       >
                         <X size={15} />
                       </button>
-                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 text-[10px] font-bold text-white bg-green-600/80 rounded">
-                        New
+                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 text-[10px] font-bold text-white bg-green-600/90 rounded">
+                        New JPG #{idx + 1}
                       </div>
                     </div>
                   ))}
                 </div>
               )}
 
-              <label className="flex aspect-[2/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-[#0145F2] hover:bg-blue-50/30">
-                <Upload className="mb-2 text-slate-400" size={24} />
-                <span className="text-xs font-semibold text-slate-600">
-                  Upload Images
-                </span>
-                <span className="mt-0.5 text-[10px] text-slate-400">PNG, JPG, WebP up to 10MB</span>
-                <input type="file" multiple className="hidden" accept="image/*" onChange={handleImageChange} />
+              <label className="flex aspect-[3/1] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-emerald-500 hover:bg-emerald-50/20">
+                <Upload className="mb-1 text-slate-400" size={20} />
+                <span className="text-xs font-semibold text-slate-600">Upload Simple Tile Photos (JPG)</span>
+                <span className="text-[10px] text-slate-400">Add multiple plain tile faces & randoms</span>
+                <input type="file" multiple className="hidden" accept="image/*" onChange={handleNewJpgChange} />
               </label>
             </div>
           </div>

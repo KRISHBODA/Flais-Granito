@@ -12,12 +12,30 @@ exports.createProduct = async (req, res) => {
   try {
     const { title, slug, description, price, category, stock, featured, size, color, thickness, finishes, application, link360, randoms, collection: productCollection, tagReview } = req.body;
 
-    let imageUrls = [];
+    let previewImageUrls = [];
+    let jpgImageUrls = [];
+
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         const uploadResult = await uploadService.upload(file, "products");
-        imageUrls.push(uploadResult.path);
+        if (
+          file.fieldname === "previewImages" ||
+          file.fieldname === "previewImage" ||
+          file.fieldname === "preview3d"
+        ) {
+          previewImageUrls.push(uploadResult.path);
+        } else {
+          jpgImageUrls.push(uploadResult.path);
+        }
       }
+    }
+
+    // 3D Preview ALWAYS goes first (#1 photo on collection page), followed by JPG simple tile photos
+    const imageUrls = [...previewImageUrls, ...jpgImageUrls];
+
+    let is3d = previewImageUrls.length > 0;
+    if (req.body.has3dPreview !== undefined) {
+      is3d = req.body.has3dPreview === "true" || req.body.has3dPreview === true;
     }
 
     const product = await Product.create({
@@ -29,6 +47,7 @@ exports.createProduct = async (req, res) => {
       stock: Number(stock),
       featured: featured === "true" || featured === true,
       images: imageUrls,
+      has3dPreview: is3d,
       size,
       color,
       thickness,
@@ -55,7 +74,13 @@ exports.createProduct = async (req, res) => {
 // @access  Public
 exports.getProducts = async (req, res) => {
   try {
-    const { search = "", category = "All", limit: queryLimit } = req.query;
+    const { 
+      search = "", 
+      category = "All", 
+      limit: queryLimit,
+      filter360 = "all",
+      filter3d = "all"
+    } = req.query;
 
     const page = Math.max(1, Number(req.query.page) || 1);
 
@@ -68,18 +93,56 @@ exports.getProducts = async (req, res) => {
     }
     const skip = (page - 1) * limit;
 
-    let query = {};
+    const andConditions = [];
 
     if (search) {
       const term = String(search).slice(0, MAX_SEARCH_LENGTH);
-      query.title = { $regex: escapeRegExp(term), $options: "i" };
+      andConditions.push({ title: { $regex: escapeRegExp(term), $options: "i" } });
     }
 
     if (category && category !== "All" && category !== "All Categories") {
-      query.category = category;
+      andConditions.push({ category });
     }
 
-    const totalProducts = await Product.countDocuments(query);
+    // 360 Link filter: uploaded vs missing
+    if (filter360 === "uploaded" || filter360 === "true") {
+      andConditions.push({
+        link360: { $exists: true, $nin: ["", null, "null", "undefined"] }
+      });
+    } else if (filter360 === "missing" || filter360 === "false") {
+      andConditions.push({
+        $or: [
+          { link360: { $exists: false } },
+          { link360: { $in: ["", null, "null", "undefined"] } }
+        ]
+      });
+    }
+
+    // 3D Preview (#1 photo on collection page): uploaded vs missing
+    if (filter3d === "uploaded" || filter3d === "true") {
+      andConditions.push({
+        has3dPreview: { $ne: false },
+        "images.0": { $exists: true, $nin: ["", null] }
+      });
+    } else if (filter3d === "missing" || filter3d === "false") {
+      andConditions.push({
+        $or: [
+          { has3dPreview: false },
+          { images: { $exists: false } },
+          { images: { $size: 0 } },
+          { "images.0": { $in: ["", null] } }
+        ]
+      });
+    }
+
+    const query = andConditions.length > 0 ? { $and: andConditions } : {};
+
+    const [totalProducts, total360Uploaded, total3dUploaded, totalAll] = await Promise.all([
+      Product.countDocuments(query),
+      Product.countDocuments({ link360: { $exists: true, $nin: ["", null, "null", "undefined"] } }),
+      Product.countDocuments({ has3dPreview: { $ne: false }, "images.0": { $exists: true, $nin: ["", null] } }),
+      Product.countDocuments({}),
+    ]);
     
     let dbQuery = Product.find(query).sort({ createdAt: -1 });
     if (limit > 0) {
@@ -87,12 +150,21 @@ exports.getProducts = async (req, res) => {
     }
     const products = await dbQuery;
 
+    const mediaStats = {
+      total: totalAll,
+      has360Count: total360Uploaded,
+      missing360Count: Math.max(0, totalAll - total360Uploaded),
+      has3dCount: total3dUploaded,
+      missing3dCount: Math.max(0, totalAll - total3dUploaded),
+    };
+
     res.status(200).json({
       success: true,
       products,
       totalProducts,
       totalPages: limit > 0 ? Math.ceil(totalProducts / limit) : 1,
       currentPage: Number(page),
+      mediaStats,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error", error: error.message });
@@ -150,8 +222,35 @@ exports.updateProduct = async (req, res) => {
       tagReview: tagReview !== undefined ? tagReview : product.tagReview,
     };
 
+    let existingPreviewImages = [];
+    let existingJpgImages = [];
+
+    if (req.body.existingPreviewImages !== undefined) {
+      try {
+        existingPreviewImages = JSON.parse(req.body.existingPreviewImages);
+      } catch (e) {
+        existingPreviewImages = Array.isArray(req.body.existingPreviewImages)
+          ? req.body.existingPreviewImages
+          : (req.body.existingPreviewImages ? [req.body.existingPreviewImages] : []);
+      }
+    }
+
+    if (req.body.existingJpgImages !== undefined) {
+      try {
+        existingJpgImages = JSON.parse(req.body.existingJpgImages);
+      } catch (e) {
+        existingJpgImages = Array.isArray(req.body.existingJpgImages)
+          ? req.body.existingJpgImages
+          : (req.body.existingJpgImages ? [req.body.existingJpgImages] : []);
+      }
+    }
+
     let remainingImages = [];
-    if (req.body.existingImages) {
+    const hasSplitFields = req.body.existingPreviewImages !== undefined || req.body.existingJpgImages !== undefined;
+
+    if (hasSplitFields) {
+      remainingImages = [...existingPreviewImages, ...existingJpgImages];
+    } else if (req.body.existingImages) {
       try {
         remainingImages = JSON.parse(req.body.existingImages);
       } catch (e) {
@@ -173,14 +272,39 @@ exports.updateProduct = async (req, res) => {
       await uploadService.delete(imgPath);
     }
 
-    let newImages = [];
+    let uploadedPreviewUrls = [];
+    let uploadedJpgUrls = [];
+
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         const uploadResult = await uploadService.upload(file, "products");
-        newImages.push(uploadResult.path);
+        if (
+          file.fieldname === "previewImages" ||
+          file.fieldname === "previewImage" ||
+          file.fieldname === "preview3d"
+        ) {
+          uploadedPreviewUrls.push(uploadResult.path);
+        } else {
+          uploadedJpgUrls.push(uploadResult.path);
+        }
       }
     }
-    updateData.images = [...remainingImages, ...newImages];
+
+    // 3D Preview ALWAYS goes first (#1 photo), followed by JPG simple tile photos
+    if (hasSplitFields || uploadedPreviewUrls.length > 0) {
+      updateData.images = [
+        ...existingPreviewImages,
+        ...uploadedPreviewUrls,
+        ...existingJpgImages,
+        ...uploadedJpgUrls,
+      ];
+      updateData.has3dPreview = (existingPreviewImages.length + uploadedPreviewUrls.length) > 0;
+    } else {
+      updateData.images = [...remainingImages, ...uploadedPreviewUrls, ...uploadedJpgUrls];
+      if (req.body.has3dPreview !== undefined) {
+        updateData.has3dPreview = req.body.has3dPreview === "true" || req.body.has3dPreview === true;
+      }
+    }
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,

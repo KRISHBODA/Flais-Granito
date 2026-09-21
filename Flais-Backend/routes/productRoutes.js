@@ -17,9 +17,9 @@ router.get("/scan/:code", scanProduct);
 router.get("/:id", getProductById);
 
 // Protected Routes (Admin)
-// No explicit file-count cap for product images
-router.post("/", protect, upload.array("images"), createProduct);
-router.put("/:id", protect, upload.array("images"), updateProduct);
+// Accepts any file fields (e.g. previewImages for 3D preview, images for JPGs)
+router.post("/", protect, upload.any(), createProduct);
+router.put("/:id", protect, upload.any(), updateProduct);
 router.delete("/:id", protect, deleteProduct);
 
 module.exports = router;

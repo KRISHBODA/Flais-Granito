@@ -20,17 +20,25 @@ const ProductSkeleton = () => (
   </div>
 );
 
-const ProductImage = ({ src, alt }) => {
+const ProductImage = ({ src, alt, hoverSrc }) => {
   const [loaded, setLoaded] = useState(false);
   return (
-    <div className={`w-full h-full transition-all duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}>
+    <div className={`relative w-full h-full transition-all duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}>
       <img
         src={src}
         alt={alt}
         loading="lazy"
         onLoad={() => setLoaded(true)}
-        className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        className={`w-full h-full object-cover transition-all duration-700 ${hoverSrc ? 'group-hover/card:opacity-0 group-hover/card:scale-105' : 'group-hover/card:scale-105'} ${loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
       />
+      {hoverSrc && (
+        <img
+          src={hoverSrc}
+          alt={`${alt} tile face`}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-contain p-4 opacity-0 transition-all duration-500 group-hover/card:opacity-100 group-hover/card:scale-102 bg-[#FAF8F5]/95 pointer-events-none"
+        />
+      )}
     </div>
   );
 };
@@ -935,12 +943,36 @@ const Products = () => {
                         key={product._id}
                         className="p-4 pb-8 rounded-tl-[3.5rem] rounded-br-[3.5rem] rounded-tr-[1.25rem] rounded-bl-[1.25rem] bg-[#FAF8F5] border border-[#D2C9B1]/30 group flex flex-col h-full hover:shadow-xl hover:border-[#5D4037]/30"
                       >
-                        <Link to={`/products/${product.slug}`} onClick={savePageState} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 transform-gpu">
+                        <Link to={`/products/${product.slug}`} onClick={savePageState} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 transform-gpu group/card">
                           <ProductImage
                             src={getOptimizedImageUrl(product.images && product.images.length > 0 ? product.images[0] : (product.image || 'https://via.placeholder.com/400x400?text=No+Image'), 600)}
+                            hoverSrc={product.images && product.images.length > 1 ? getOptimizedImageUrl(product.images[1], 600) : null}
                             alt={product.title || product.name}
                           />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                          <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors duration-300 pointer-events-none" />
+                          
+                          {/* Badge: 3D Preview / Tile Face on hover */}
+                          <div className="absolute top-3 left-3 z-10 pointer-events-none">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-black/60 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-semibold text-white shadow-sm transition-all group-hover/card:bg-[#5D4037]/90">
+                              {product.has3dPreview === false ? (
+                                <span>Tile Face</span>
+                              ) : (
+                                <>
+                                  <span className="inline group-hover/card:hidden">3D Preview</span>
+                                  <span className="hidden group-hover/card:inline">Tile Face</span>
+                                </>
+                              )}
+                            </span>
+                          </div>
+
+                          {/* Multiple photos counter */}
+                          {product.images && product.images.length > 1 && (
+                            <div className="absolute bottom-3 right-3 z-10 pointer-events-none">
+                              <span className="rounded-full bg-white/90 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-zinc-700 shadow-2xs">
+                                +{product.images.length - 1} photos
+                              </span>
+                            </div>
+                          )}
                         </Link>
                         <div className="pt-6 px-2 flex flex-col flex-1">
                           <div className="mb-2 flex items-center gap-2">
