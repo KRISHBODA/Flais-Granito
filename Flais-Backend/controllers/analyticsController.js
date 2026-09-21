@@ -160,6 +160,56 @@ exports.getAnalyticsSummary = async (req, res) => {
         visitorId: event.visitorId
       }));
 
+    // Aggregate collection photo counts and product breakdown
+    const Product = require("../models/Product");
+    let collectionStats = {
+      totalPhotos: 0,
+      totalProducts: 0,
+      collectionsCount: 0,
+      collections: []
+    };
+
+    try {
+      const agg = await Product.aggregate([
+        {
+          $group: {
+            _id: "$category",
+            productCount: { $sum: 1 },
+            photoCount: { $sum: { $size: { $ifNull: ["$images", []] } } },
+            sampleImages: { $push: { $slice: ["$images", 3] } }
+          }
+        },
+        { $sort: { photoCount: -1 } }
+      ]);
+
+      const totalPhotos = agg.reduce((sum, item) => sum + (item.photoCount || 0), 0);
+      const totalProducts = agg.reduce((sum, item) => sum + (item.productCount || 0), 0);
+
+      const collections = agg.map((item) => {
+        const previewImages = (item.sampleImages || []).flat().filter(Boolean).slice(0, 4);
+        return {
+          collectionName: item._id || "Uncategorized",
+          productCount: item.productCount || 0,
+          tilesUploaded: item.productCount || 0, // 1 per unique tile design uploaded
+          photoCount: item.photoCount || 0,     // Total photos across all tile designs
+          percentageOfProducts: totalProducts > 0 ? Number(((item.productCount / totalProducts) * 100).toFixed(1)) : 0,
+          percentageOfPhotos: totalPhotos > 0 ? Number(((item.photoCount / totalPhotos) * 100).toFixed(1)) : 0,
+          avgPhotosPerProduct: item.productCount > 0 ? Number((item.photoCount / item.productCount).toFixed(1)) : 0,
+          previewImages
+        };
+      });
+
+      collectionStats = {
+        totalPhotos,
+        totalProducts,
+        totalTilesUploaded: totalProducts,
+        collectionsCount: collections.length,
+        collections
+      };
+    } catch (err) {
+      console.warn("[analyticsController] Product collection photos lookup failed:", err.message);
+    }
+
     res.status(200).json({
       success: true,
       summary: {
@@ -173,11 +223,60 @@ exports.getAnalyticsSummary = async (req, res) => {
         topPages,
         topPdfs,
         dailySeries,
-        recentEvents
+        recentEvents,
+        collectionPhotos: collectionStats
       }
     });
   } catch (error) {
     console.error("[analyticsController] getAnalyticsSummary error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getCollectionPhotosSummary = async (req, res) => {
+  try {
+    const Product = require("../models/Product");
+    const agg = await Product.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          productCount: { $sum: 1 },
+          photoCount: { $sum: { $size: { $ifNull: ["$images", []] } } },
+          sampleImages: { $push: { $slice: ["$images", 3] } }
+        }
+      },
+      { $sort: { photoCount: -1 } }
+    ]);
+
+    const totalPhotos = agg.reduce((sum, item) => sum + (item.photoCount || 0), 0);
+    const totalProducts = agg.reduce((sum, item) => sum + (item.productCount || 0), 0);
+
+    const collections = agg.map((item) => {
+      const previewImages = (item.sampleImages || []).flat().filter(Boolean).slice(0, 4);
+      return {
+        collectionName: item._id || "Uncategorized",
+        productCount: item.productCount || 0,
+        tilesUploaded: item.productCount || 0,
+        photoCount: item.photoCount || 0,
+        percentageOfProducts: totalProducts > 0 ? Number(((item.productCount / totalProducts) * 100).toFixed(1)) : 0,
+        percentageOfPhotos: totalPhotos > 0 ? Number(((item.photoCount / totalPhotos) * 100).toFixed(1)) : 0,
+        avgPhotosPerProduct: item.productCount > 0 ? Number((item.photoCount / item.productCount).toFixed(1)) : 0,
+        previewImages
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalPhotos,
+        totalProducts,
+        totalTilesUploaded: totalProducts,
+        collectionsCount: collections.length,
+        collections
+      }
+    });
+  } catch (error) {
+    console.error("[analyticsController] getCollectionPhotosSummary error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
