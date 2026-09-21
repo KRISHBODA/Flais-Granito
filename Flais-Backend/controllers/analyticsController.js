@@ -165,7 +165,11 @@ exports.getAnalyticsSummary = async (req, res) => {
     let collectionStats = {
       totalPhotos: 0,
       totalProducts: 0,
+      totalTilesUploaded: 0,
+      total360Links: 0,
       collectionsCount: 0,
+      collectionsWith360Count: 0,
+      percentage360Coverage: 0,
       collections: []
     };
 
@@ -176,6 +180,21 @@ exports.getAnalyticsSummary = async (req, res) => {
             _id: "$category",
             productCount: { $sum: 1 },
             photoCount: { $sum: { $size: { $ifNull: ["$images", []] } } },
+            link360Count: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      { $gt: [{ $strLenCP: { $trim: { input: { $ifNull: ["$link360", ""] } } } }, 0] },
+                      { $ne: [{ $toLower: { $ifNull: ["$link360", ""] } }, "null"] },
+                      { $ne: [{ $toLower: { $ifNull: ["$link360", ""] } }, "undefined"] }
+                    ]
+                  },
+                  1,
+                  0
+                ]
+              }
+            },
             sampleImages: { $push: { $slice: ["$images", 3] } }
           }
         },
@@ -184,26 +203,37 @@ exports.getAnalyticsSummary = async (req, res) => {
 
       const totalPhotos = agg.reduce((sum, item) => sum + (item.photoCount || 0), 0);
       const totalProducts = agg.reduce((sum, item) => sum + (item.productCount || 0), 0);
+      const total360Links = agg.reduce((sum, item) => sum + (item.link360Count || 0), 0);
 
       const collections = agg.map((item) => {
         const previewImages = (item.sampleImages || []).flat().filter(Boolean).slice(0, 4);
+        const link360Count = item.link360Count || 0;
         return {
           collectionName: item._id || "Uncategorized",
           productCount: item.productCount || 0,
           tilesUploaded: item.productCount || 0, // 1 per unique tile design uploaded
           photoCount: item.photoCount || 0,     // Total photos across all tile designs
+          link360Count,                         // Count of 360 photo links in this collection
+          has360: link360Count > 0,
           percentageOfProducts: totalProducts > 0 ? Number(((item.productCount / totalProducts) * 100).toFixed(1)) : 0,
           percentageOfPhotos: totalPhotos > 0 ? Number(((item.photoCount / totalPhotos) * 100).toFixed(1)) : 0,
+          percentageOf360: total360Links > 0 ? Number(((link360Count / total360Links) * 100).toFixed(1)) : 0,
+          percentage360Coverage: item.productCount > 0 ? Number(((link360Count / item.productCount) * 100).toFixed(1)) : 0,
           avgPhotosPerProduct: item.productCount > 0 ? Number((item.photoCount / item.productCount).toFixed(1)) : 0,
           previewImages
         };
       });
 
+      const collectionsWith360Count = collections.filter((c) => c.has360).length;
+
       collectionStats = {
         totalPhotos,
         totalProducts,
         totalTilesUploaded: totalProducts,
+        total360Links,
         collectionsCount: collections.length,
+        collectionsWith360Count,
+        percentage360Coverage: totalProducts > 0 ? Number(((total360Links / totalProducts) * 100).toFixed(1)) : 0,
         collections
       };
     } catch (err) {
@@ -242,6 +272,21 @@ exports.getCollectionPhotosSummary = async (req, res) => {
           _id: "$category",
           productCount: { $sum: 1 },
           photoCount: { $sum: { $size: { $ifNull: ["$images", []] } } },
+          link360Count: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gt: [{ $strLenCP: { $trim: { input: { $ifNull: ["$link360", ""] } } } }, 0] },
+                    { $ne: [{ $toLower: { $ifNull: ["$link360", ""] } }, "null"] },
+                    { $ne: [{ $toLower: { $ifNull: ["$link360", ""] } }, "undefined"] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
           sampleImages: { $push: { $slice: ["$images", 3] } }
         }
       },
@@ -250,20 +295,28 @@ exports.getCollectionPhotosSummary = async (req, res) => {
 
     const totalPhotos = agg.reduce((sum, item) => sum + (item.photoCount || 0), 0);
     const totalProducts = agg.reduce((sum, item) => sum + (item.productCount || 0), 0);
+    const total360Links = agg.reduce((sum, item) => sum + (item.link360Count || 0), 0);
 
     const collections = agg.map((item) => {
       const previewImages = (item.sampleImages || []).flat().filter(Boolean).slice(0, 4);
+      const link360Count = item.link360Count || 0;
       return {
         collectionName: item._id || "Uncategorized",
         productCount: item.productCount || 0,
         tilesUploaded: item.productCount || 0,
         photoCount: item.photoCount || 0,
+        link360Count,
+        has360: link360Count > 0,
         percentageOfProducts: totalProducts > 0 ? Number(((item.productCount / totalProducts) * 100).toFixed(1)) : 0,
         percentageOfPhotos: totalPhotos > 0 ? Number(((item.photoCount / totalPhotos) * 100).toFixed(1)) : 0,
+        percentageOf360: total360Links > 0 ? Number(((link360Count / total360Links) * 100).toFixed(1)) : 0,
+        percentage360Coverage: item.productCount > 0 ? Number(((link360Count / item.productCount) * 100).toFixed(1)) : 0,
         avgPhotosPerProduct: item.productCount > 0 ? Number((item.photoCount / item.productCount).toFixed(1)) : 0,
         previewImages
       };
     });
+
+    const collectionsWith360Count = collections.filter((c) => c.has360).length;
 
     res.status(200).json({
       success: true,
@@ -271,7 +324,10 @@ exports.getCollectionPhotosSummary = async (req, res) => {
         totalPhotos,
         totalProducts,
         totalTilesUploaded: totalProducts,
+        total360Links,
         collectionsCount: collections.length,
+        collectionsWith360Count,
+        percentage360Coverage: totalProducts > 0 ? Number(((total360Links / totalProducts) * 100).toFixed(1)) : 0,
         collections
       }
     });

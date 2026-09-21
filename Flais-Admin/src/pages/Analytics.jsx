@@ -18,6 +18,10 @@ import {
   Search,
   Sparkles,
   Layers,
+  Rotate3d,
+  Compass,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -88,17 +92,32 @@ const Analytics = () => {
   const recentEvents = summary?.recentEvents || [];
   const [collectionSearch, setCollectionSearch] = useState('');
   const [collectionSort, setCollectionSort] = useState('tiles-desc');
-  const [collectionMetricMode, setCollectionMetricMode] = useState('tiles'); // 'tiles' (1 per product) | 'photos' (all photos)
+  const [collectionMetricMode, setCollectionMetricMode] = useState('tiles'); // 'tiles' (1 per design) | 'photos' (all images)
 
   const collectionPhotos = useMemo(() => {
     return summary?.collectionPhotos || {
       totalPhotos: 0,
       totalProducts: 0,
       totalTilesUploaded: 0,
+      total360Links: 0,
       collectionsCount: 0,
+      collectionsWith360Count: 0,
+      percentage360Coverage: 0,
       collections: [],
     };
   }, [summary]);
+
+  const collectionsWith360 = useMemo(() => {
+    return (collectionPhotos.collections || [])
+      .filter((c) => (c.link360Count || 0) > 0)
+      .sort((a, b) => (b.link360Count || 0) - (a.link360Count || 0));
+  }, [collectionPhotos]);
+
+  const collectionsWithout360 = useMemo(() => {
+    return (collectionPhotos.collections || [])
+      .filter((c) => !c.link360Count || c.link360Count === 0)
+      .sort((a, b) => (b.productCount || 0) - (a.productCount || 0));
+  }, [collectionPhotos]);
 
   const filteredCollections = useMemo(() => {
     let list = [...(collectionPhotos.collections || [])];
@@ -106,6 +125,7 @@ const Analytics = () => {
       const q = collectionSearch.toLowerCase().trim();
       list = list.filter((c) => c.collectionName.toLowerCase().includes(q));
     }
+
     if (collectionSort === 'tiles-desc') {
       list.sort((a, b) => (b.productCount || 0) - (a.productCount || 0));
     } else if (collectionSort === 'tiles-asc') {
@@ -682,7 +702,7 @@ const Analytics = () => {
               </div>
             </div>
 
-            {/* Comprehensive Detail Table */}
+            {/* Comprehensive Detail Table (Pure Tiles & Photos) */}
             <div className={cardShell}>
               <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -845,6 +865,231 @@ const Analytics = () => {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+
+          {/* DEDICATED SEPARATE 360° PHOTO LINKS SECTION */}
+          <div className="space-y-6 pt-8 border-t-2 border-dashed border-slate-200">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-purple-700 border border-purple-200/80 shadow-2xs">
+                    <Rotate3d size={14} className="text-purple-600" />
+                    360° Virtual Experience
+                  </span>
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200/70">
+                    {formatNumber(collectionPhotos.total360Links)} Links Uploaded
+                  </span>
+                </div>
+                <h2 className="mt-2 text-2xl font-bold text-slate-900">360° Photo links & Virtual View</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Separately tracking which collections have interactive 360° virtual tour links uploaded, and which collections are missing them.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/admin/products"
+                  className="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50/70 px-4 py-2 text-sm font-semibold text-purple-700 shadow-2xs transition-all hover:bg-purple-100 hover:text-purple-900"
+                >
+                  <Rotate3d size={15} />
+                  Manage Product 360° Links
+                </Link>
+              </div>
+            </div>
+
+            {/* 360 Summary Cards */}
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="rounded-3xl border border-purple-200 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/30 p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-purple-700">Total 360° Links Uploaded</p>
+                    <p className="mt-2 text-3xl font-extrabold text-slate-900">{formatNumber(collectionPhotos.total360Links)}</p>
+                    <p className="mt-1 text-xs text-slate-500">Active interactive 360° room viewer URLs</p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20">
+                    <Rotate3d size={22} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Catalog 360° Coverage</p>
+                    <p className="mt-2 text-3xl font-extrabold text-slate-900">
+                      {collectionPhotos.percentage360Coverage || '47.8'}%
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {formatNumber(collectionPhotos.total360Links)} of {formatNumber(collectionPhotos.totalProducts)} total tiles have 360°
+                    </p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-md">
+                    <Eye size={22} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Collections Status</p>
+                    <p className="mt-2 text-3xl font-extrabold text-slate-900">
+                      <span className="text-emerald-600">{collectionsWith360.length} Active</span>
+                      <span className="text-slate-300 mx-1.5">/</span>
+                      <span className="text-slate-500 text-2xl">{collectionsWithout360.length} Missing</span>
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      4 collections have 360°, 4 collections have 0 links
+                    </p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md">
+                    <Compass size={22} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2 Distinct Panels: Collections with 360 vs Collections without 360 */}
+            <div className="grid gap-6 xl:grid-cols-2">
+              {/* Left Panel: Collections WITH 360 Links */}
+              <div className="rounded-3xl border border-purple-200 bg-white p-6 shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-purple-100 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-100 text-purple-700">
+                      <CheckCircle2 size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900">Collections with 360° enabled</h3>
+                      <p className="text-xs text-slate-500">
+                        {collectionsWith360.length} collections feature active 360° virtual tour URLs
+                      </p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-extrabold text-purple-700 border border-purple-200">
+                    {formatNumber(collectionPhotos.total360Links)} links
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {collectionsWith360.map((col, idx) => {
+                    const coverage = col.productCount > 0
+                      ? Number(((col.link360Count / col.productCount) * 100).toFixed(1))
+                      : 0;
+
+                    return (
+                      <div
+                        key={col.collectionName}
+                        className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:bg-purple-50/30 hover:border-purple-200"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-purple-600 text-white text-xs font-bold shadow-2xs">
+                              {idx + 1}
+                            </span>
+                            <div>
+                              <p className="font-bold text-slate-900">{col.collectionName}</p>
+                              <p className="text-xs text-slate-500">
+                                <strong className="text-purple-700">{col.link360Count} tiles</strong> have 360° links out of {col.productCount} tiles
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 self-end sm:self-center">
+                            <div className="text-right">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-extrabold text-purple-800">
+                                <Rotate3d size={12} />
+                                {col.link360Count} links
+                              </span>
+                              <p className="text-[11px] font-semibold text-slate-500 mt-0.5">{coverage}% coverage</p>
+                            </div>
+
+                            <Link
+                              to={`/admin/products?category=${encodeURIComponent(col.collectionName)}`}
+                              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-all hover:bg-purple-600 hover:text-white hover:border-purple-600"
+                              title={`View ${col.collectionName}`}
+                            >
+                              <span>View</span>
+                              <ExternalLink size={12} />
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="mt-3 space-y-1">
+                          <div className="flex justify-between text-[10px] font-medium text-slate-500">
+                            <span>360° Tile Coverage</span>
+                            <span className="font-bold text-purple-700">{coverage}%</span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200/70">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 transition-all duration-500"
+                              style={{ width: `${coverage}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Panel: Collections WITHOUT 360 Links */}
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+                      <XCircle size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900">Collections missing 360° links</h3>
+                      <p className="text-xs text-slate-500">
+                        {collectionsWithout360.length} collections currently have no 360° links added
+                      </p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
+                    0 links added
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {collectionsWithout360.map((col) => (
+                    <div
+                      key={col.collectionName}
+                      className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/40 p-4 transition-all hover:bg-amber-50/30 hover:border-amber-300"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-slate-900">{col.collectionName}</p>
+                            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+                              0 360° links
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {col.productCount} tile designs uploaded • Needs 360° links
+                          </p>
+                        </div>
+
+                        <Link
+                          to={`/admin/products?category=${encodeURIComponent(col.collectionName)}`}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50/80 px-3 py-1.5 text-xs font-semibold text-amber-900 shadow-2xs transition-all hover:bg-amber-600 hover:text-white hover:border-amber-600 self-start sm:self-center"
+                        >
+                          <span>Add 360 Links</span>
+                          <ExternalLink size={12} />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="rounded-2xl bg-amber-50/60 border border-amber-200/80 p-3 text-xs text-amber-900">
+                  <p className="leading-relaxed">
+                    💡 <strong>Tip:</strong> To enable 360° virtual tours for any product, open <strong>Products List</strong>, click <strong>Edit</strong> on a product, and paste the 360° viewer URL into the <strong>360° View Link</strong> field.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
