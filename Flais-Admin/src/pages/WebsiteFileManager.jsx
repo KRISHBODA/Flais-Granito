@@ -280,7 +280,8 @@ const WebsiteFileManager = () => {
   };
 
   const handleShare = (node) => {
-    const baseUrl = API.endsWith('/') ? API.slice(0, -1) : API;
+    // The admin is hosted on the same main domain, so we use the current origin
+    const baseUrl = window.location.origin;
     const relativePath = node.relativePath.startsWith('/') ? node.relativePath.slice(1) : node.relativePath;
     const shareUrl = `${baseUrl}/${relativePath}`;
     

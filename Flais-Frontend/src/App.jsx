@@ -53,6 +53,8 @@ import ComingSoon from './pages/ComingSoon';
 
 const appStatus = import.meta.env.VITE_APP_STATUS || "LIVE";
 
+import NotFound from './pages/NotFound';
+
 function App() {
   React.useEffect(() => {
     sessionStorage.removeItem('chunk-load-has-reloaded');
@@ -99,6 +101,7 @@ function App() {
                 <Route path="/scan" element={<Scan />} />
                 <Route path="/box-countertop-15mm-english" element={<CountertopSmartpage />} />
                 <Route path="/box-countertop-15mm" element={<CountertopSmartpage />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </Layout>
