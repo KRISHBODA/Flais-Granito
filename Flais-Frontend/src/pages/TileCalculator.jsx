@@ -21,7 +21,8 @@ const Counter = ({ value, duration = 1500, isFloat = false }) => {
   useEffect(() => {
     let startTime;
     const startValue = count;
-    const endValue = value;
+    const parsedVal = typeof value === 'number' ? value : parseFloat(value);
+    const endValue = !isNaN(parsedVal) && isFinite(parsedVal) ? Math.max(0, parsedVal) : 0;
     const step = (timestamp) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
@@ -37,64 +38,107 @@ const Counter = ({ value, duration = 1500, isFloat = false }) => {
 };
 
 const TilePreview = ({ room }) => {
+  const rawTileW = room.tileId === 'custom' 
+    ? (parseFloat(room.customTileW) / 1000 || 0.6) 
+    : (parseFloat(room.tileId?.split('x')[0]) / 1000 || 0.6);
+  const rawTileH = room.tileId === 'custom' 
+    ? (parseFloat(room.customTileH) / 1000 || 0.6) 
+    : (parseFloat(room.tileId?.split('x')[1]) / 1000 || 0.6);
+  const rawGrout = parseFloat(room.groutJoint) / 1000 || 0.003;
+
+  // Ensure safe positive numbers (min 60mm tile, min 1mm grout)
+  const tileW = Math.max(0.06, Math.min(rawTileW || 0.6, 3));
+  const tileH = Math.max(0.06, Math.min(rawTileH || 0.6, 3));
+  const grout = Math.max(0.001, Math.min(rawGrout || 0.003, 0.03));
+
   const { w_m, l_m, label } = useMemo(() => {
-    let wVal_m = 3;
-    let lVal_m = 3;
-    let labelText = 'Pattern preview (3m × 3m reference)';
-    const unit = room.unit || 'm';
+    const unit = room.unit || 'ft';
+    let rawW_m = 3.86;
+    let rawL_m = 2.89;
+    let labelText = 'Pattern preview';
+    let isScaled = false;
 
     if (room.inputMode === 'direct') {
-      const area = parseFloat(room.area) || 9;
+      const parsedArea = parseFloat(room.area);
+      const hasValidArea = !isNaN(parsedArea) && parsedArea > 0;
+      const defaultArea = unit === 'ft' ? 120 : 12;
+      const area = hasValidArea ? parsedArea : defaultArea;
       const factor = unit === 'ft' ? 0.09290304 : 1;
-      const areaSqm = area * factor;
-      // Assume 4:3 aspect ratio: w * l = areaSqm where l = w * 0.75 => w^2 * 0.75 = areaSqm
-      const calculatedW = Math.sqrt(areaSqm / 0.75) || 3;
+      const areaSqm = Math.max(0.1, area * factor);
+
+      // Natural 4:3 room aspect ratio
+      const calculatedW = Math.sqrt(areaSqm / 0.75);
       const calculatedL = calculatedW * 0.75;
-      wVal_m = calculatedW;
-      lVal_m = calculatedL;
-      
+      rawW_m = calculatedW;
+      rawL_m = calculatedL;
+
       const wVal_unit = unit === 'ft' ? calculatedW / 0.3048 : calculatedW;
       const lVal_unit = unit === 'ft' ? calculatedL / 0.3048 : calculatedL;
-      labelText = `Pattern preview (~${wVal_unit.toFixed(1)}${unit} × ${lVal_unit.toFixed(1)}${unit})`;
+
+      if (hasValidArea) {
+        labelText = `Pattern preview (~${wVal_unit.toFixed(1)}${unit} × ${lVal_unit.toFixed(1)}${unit})`;
+      } else {
+        labelText = `Pattern preview (Enter an area to preview)`;
+      }
     } else {
-      const wVal = parseFloat(room.roomWidth) || 3;
-      const lVal = parseFloat(room.roomLength) || 3;
-      wVal_m = unit === 'ft' ? wVal * 0.3048 : wVal;
-      lVal_m = unit === 'ft' ? lVal * 0.3048 : lVal;
-      labelText = `Pattern preview (${wVal}${unit} × ${lVal}${unit})`;
+      const parsedW = parseFloat(room.roomWidth);
+      const parsedL = parseFloat(room.roomLength);
+      const hasValidDims = !isNaN(parsedW) && parsedW > 0 && !isNaN(parsedL) && parsedL > 0;
+      const wVal = hasValidDims ? parsedW : (unit === 'ft' ? 10 : 3);
+      const lVal = hasValidDims ? parsedL : (unit === 'ft' ? 12 : 4);
+      rawW_m = unit === 'ft' ? wVal * 0.3048 : wVal;
+      rawL_m = unit === 'ft' ? lVal * 0.3048 : lVal;
+
+      if (hasValidDims) {
+        labelText = `Pattern preview (${wVal}${unit} × ${lVal}${unit})`;
+      } else {
+        labelText = `Pattern preview (Enter dimensions to preview)`;
+      }
+    }
+
+    // Dynamic tile-based scaling:
+    // When estimated tiles <= 360, render 1:1 true scale so room density dynamically changes with input.
+    // When estimated tiles > 360 (large areas e.g. 5,000+ sq ft), smoothly scale down to cap tile density at 360,
+    // preserving exact room aspect ratio without causing browser lag or freeze.
+    const tileArea = Math.max(0.01, tileW * tileH);
+    const estimatedTiles = (rawW_m * rawL_m) / tileArea;
+    const MAX_TARGET_TILES = 360;
+    const MIN_TARGET_TILES = 4;
+
+    let scale = 1;
+    if (estimatedTiles > MAX_TARGET_TILES) {
+      scale = Math.sqrt(MAX_TARGET_TILES / estimatedTiles);
+      isScaled = true;
+    } else if (estimatedTiles < MIN_TARGET_TILES && estimatedTiles > 0) {
+      scale = Math.sqrt(MIN_TARGET_TILES / estimatedTiles);
+    }
+
+    const wVal_m = rawW_m * scale;
+    const lVal_m = rawL_m * scale;
+
+    if (isScaled) {
+      labelText += ' • Scaled preview';
     }
 
     return { w_m: wVal_m, l_m: lVal_m, label: labelText };
-  }, [room.unit, room.inputMode, room.area, room.roomWidth, room.roomLength]);
+  }, [room.unit, room.inputMode, room.area, room.roomWidth, room.roomLength, tileW, tileH]);
 
   const pts = useMemo(() => {
     return [[0, 0], [w_m, 0], [w_m, l_m], [0, l_m]];
   }, [w_m, l_m]);
 
-  const tileW = room.tileId === 'custom' ? (parseFloat(room.customTileW)/1000 || 0.6) : (parseFloat(room.tileId.split('x')[0])/1000 || 0.6);
-  const tileH = room.tileId === 'custom' ? (parseFloat(room.customTileH)/1000 || 0.6) : (parseFloat(room.tileId.split('x')[1])/1000 || 0.6);
-  const grout = parseFloat(room.groutJoint)/1000 || 0.003;
-
   const renderTilesDirect = () => {
     const p = room.pattern;
     const rects = [];
-    const D = Math.max(w_m, l_m);
-    const margin = D * 1.5;
-
-    const minX = -margin;
-    const maxX = w_m + margin;
-    const minY = -margin;
-    const maxY = l_m + margin;
-
     let keyCounter = 0;
+    const MAX_TILES = 750;
+    const strokeW = Math.max(grout, Math.max(w_m, l_m) * 0.0025);
 
-    if (p === 'straight' || p === 'diagonal') {
-      const stepX = tileW + grout;
-      const stepY = tileH + grout;
-      const startX = Math.floor(minX / stepX) * stepX;
-      const startY = Math.floor(minY / stepY) * stepY;
-      for (let x = startX; x < maxX; x += stepX) {
-        for (let y = startY; y < maxY; y += stepY) {
+    if (p === 'straight') {
+      const stepX = Math.max(0.05, tileW + grout);
+      const stepY = Math.max(0.05, tileH + grout);
+      for (let x = 0; x < w_m && rects.length < MAX_TILES; x += stepX) {
+        for (let y = 0; y < l_m && rects.length < MAX_TILES; y += stepY) {
           rects.push(
             <rect
               key={keyCounter++}
@@ -104,21 +148,18 @@ const TilePreview = ({ room }) => {
               height={tileH}
               fill="#d4c9b8"
               stroke="#8a7f72"
-              strokeWidth={grout}
+              strokeWidth={strokeW}
             />
           );
         }
       }
     } else if (p === 'brick') {
-      const stepX = tileW + grout;
-      const stepY = tileH + grout;
-      const startY = Math.floor(minY / stepY) * stepY;
-      let y = startY;
-      let rowIndex = Math.round(startY / stepY);
-      while (y < maxY) {
-        const shiftX = (Math.abs(rowIndex) % 2) * (stepX / 2);
-        const startX = Math.floor((minX - shiftX) / stepX) * stepX + shiftX;
-        for (let x = startX; x < maxX; x += stepX) {
+      const stepX = Math.max(0.05, tileW + grout);
+      const stepY = Math.max(0.05, tileH + grout);
+      let rowIndex = 0;
+      for (let y = 0; y < l_m && rects.length < MAX_TILES; y += stepY) {
+        const shiftX = (rowIndex % 2 === 1) ? stepX / 2 : 0;
+        for (let x = -shiftX; x < w_m && rects.length < MAX_TILES; x += stepX) {
           rects.push(
             <rect
               key={keyCounter++}
@@ -126,59 +167,68 @@ const TilePreview = ({ room }) => {
               y={y}
               width={tileW}
               height={tileH}
-              fill={Math.abs(rowIndex) % 2 === 0 ? "#d4c9b8" : "#cdc2b0"}
+              fill={rowIndex % 2 === 0 ? "#d4c9b8" : "#cdc2b0"}
               stroke="#8a7f72"
-              strokeWidth={grout}
+              strokeWidth={strokeW}
             />
           );
         }
-        y += stepY;
         rowIndex++;
       }
-    } else if (p === 'herringbone') {
-      const colW_V = tileW + grout;
-      const colW_H = tileH + grout;
-      
-      // Right/center columns
-      let x = minX;
-      let colIndex = 0;
-      while (x < maxX) {
-        const isVCol = colIndex % 2 === 0;
-        const currentColWidth = isVCol ? colW_V : colW_H;
-        const stepY = isVCol ? (tileH + grout) : (tileW + grout);
-        const colShift = Math.floor(colIndex / 2) * (tileW + grout);
-        const startY = minY - (colShift % stepY) - stepY;
-        
-        for (let y = startY; y < maxY + stepY; y += stepY) {
+    } else if (p === 'diagonal') {
+      const xc = w_m / 2;
+      const yc = l_m / 2;
+      const R = Math.hypot(w_m, l_m) / 2;
+      const stepX = Math.max(0.05, tileW + grout);
+      const stepY = Math.max(0.05, tileH + grout);
+      const startX = Math.floor((xc - R - tileW) / stepX) * stepX;
+      const startY = Math.floor((yc - R - tileH) / stepY) * stepY;
+      const endX = xc + R + tileW;
+      const endY = yc + R + tileH;
+      for (let x = startX; x < endX && rects.length < MAX_TILES; x += stepX) {
+        for (let y = startY; y < endY && rects.length < MAX_TILES; y += stepY) {
           rects.push(
             <rect
               key={keyCounter++}
               x={x}
               y={y}
-              width={isVCol ? tileW : tileH}
-              height={isVCol ? tileH : tileW}
-              fill={isVCol ? "#d4c9b8" : "#cdc2b0"}
+              width={tileW}
+              height={tileH}
+              fill="#d4c9b8"
               stroke="#8a7f72"
-              strokeWidth={grout}
+              strokeWidth={strokeW}
             />
           );
         }
-        x += currentColWidth;
-        colIndex++;
       }
-      
-      // Left columns
-      x = minX;
-      colIndex = -1;
-      while (x > minX - margin) {
+    } else if (p === 'herringbone') {
+      const xc = w_m / 2;
+      const yc = l_m / 2;
+      const R = Math.hypot(w_m, l_m) / 2;
+      const maxT = Math.max(tileW, tileH);
+      const minX = xc - R - maxT;
+      const maxX = xc + R + maxT;
+      const minY = yc - R - maxT;
+      const maxY = yc + R + maxT;
+      const colW_V = Math.max(0.05, tileW + grout);
+      const colW_H = Math.max(0.05, tileH + grout);
+      const pairW = colW_V + colW_H;
+
+      const numPairsBeforeCenter = Math.ceil((xc - minX) / pairW);
+      const startX = xc - numPairsBeforeCenter * pairW;
+      const startColIndex = -numPairsBeforeCenter * 2;
+
+      let x = startX;
+      let colIndex = startColIndex;
+      while (x < maxX && rects.length < MAX_TILES) {
         const isVCol = Math.abs(colIndex) % 2 === 0;
-        const currentColWidth = isVCol ? colW_V : colW_H;
-        x -= currentColWidth;
-        const stepY = isVCol ? (tileH + grout) : (tileW + grout);
+        const currentW = isVCol ? colW_V : colW_H;
+        const stepY = Math.max(0.05, isVCol ? (tileH + grout) : (tileW + grout));
         const colShift = Math.floor(colIndex / 2) * (tileW + grout);
-        const startY = minY - (colShift % stepY) - stepY;
-        
-        for (let y = startY; y < maxY + stepY; y += stepY) {
+        const rawOffset = ((minY - colShift) % stepY + stepY) % stepY;
+        const startY = minY - rawOffset - stepY;
+
+        for (let y = startY; y < maxY + stepY && rects.length < MAX_TILES; y += stepY) {
           rects.push(
             <rect
               key={keyCounter++}
@@ -188,95 +238,41 @@ const TilePreview = ({ room }) => {
               height={isVCol ? tileH : tileW}
               fill={isVCol ? "#d4c9b8" : "#cdc2b0"}
               stroke="#8a7f72"
-              strokeWidth={grout}
+              strokeWidth={strokeW}
             />
           );
         }
-        colIndex--;
+        x += currentW;
+        colIndex++;
       }
     } else if (p === 'double-herringbone') {
-      const colW_V = 2 * tileW + 2 * grout;
-      const colW_H = tileH + grout;
-      
-      // Right/center columns
-      let x = minX;
-      let colIndex = 0;
-      while (x < maxX) {
-        const isVCol = colIndex % 2 === 0;
-        const currentColWidth = isVCol ? colW_V : colW_H;
-        const stepY = isVCol ? (tileH + grout) : 2 * (tileW + grout);
-        const colShift = Math.floor(colIndex / 2) * 2 * (tileW + grout);
-        const startY = minY - (colShift % stepY) - stepY;
-        
-        for (let y = startY; y < maxY + stepY; y += stepY) {
-          if (isVCol) {
-            rects.push(
-              <rect
-                key={keyCounter++}
-                x={x}
-                y={y}
-                width={tileW}
-                height={tileH}
-                fill="#d4c9b8"
-                stroke="#8a7f72"
-                strokeWidth={grout}
-              />
-            );
-            rects.push(
-              <rect
-                key={keyCounter++}
-                x={x + tileW + grout}
-                y={y}
-                width={tileW}
-                height={tileH}
-                fill="#d4c9b8"
-                stroke="#8a7f72"
-                strokeWidth={grout}
-              />
-            );
-          } else {
-            rects.push(
-              <rect
-                key={keyCounter++}
-                x={x}
-                y={y}
-                width={tileH}
-                height={tileW}
-                fill="#cdc2b0"
-                stroke="#8a7f72"
-                strokeWidth={grout}
-              />
-            );
-            rects.push(
-              <rect
-                key={keyCounter++}
-                x={x}
-                y={y + tileW + grout}
-                width={tileH}
-                height={tileW}
-                fill="#cdc2b0"
-                stroke="#8a7f72"
-                strokeWidth={grout}
-              />
-            );
-          }
-        }
-        x += currentColWidth;
-        colIndex++;
-      }
-      
-      // Left columns
-      x = minX;
-      colIndex = -1;
-      while (x > minX - margin) {
+      const xc = w_m / 2;
+      const yc = l_m / 2;
+      const R = Math.hypot(w_m, l_m) / 2;
+      const maxT = Math.max(tileW, tileH);
+      const minX = xc - R - maxT * 2;
+      const maxX = xc + R + maxT * 2;
+      const minY = yc - R - maxT * 2;
+      const maxY = yc + R + maxT * 2;
+      const colW_V = Math.max(0.05, 2 * tileW + 2 * grout);
+      const colW_H = Math.max(0.05, tileH + grout);
+      const pairW = colW_V + colW_H;
+
+      const numPairsBeforeCenter = Math.ceil((xc - minX) / pairW);
+      const startX = xc - numPairsBeforeCenter * pairW;
+      const startColIndex = -numPairsBeforeCenter * 2;
+
+      let x = startX;
+      let colIndex = startColIndex;
+      while (x < maxX && rects.length < MAX_TILES) {
         const isVCol = Math.abs(colIndex) % 2 === 0;
-        const currentColWidth = isVCol ? colW_V : colW_H;
-        x -= currentColWidth;
-        const stepY = isVCol ? (tileH + grout) : 2 * (tileW + grout);
+        const currentW = isVCol ? colW_V : colW_H;
+        const stepY = Math.max(0.05, isVCol ? (tileH + grout) : 2 * (tileW + grout));
         const colShift = Math.floor(colIndex / 2) * 2 * (tileW + grout);
-        const startY = minY - (colShift % stepY) - stepY;
-        
-        for (let y = startY; y < maxY + stepY; y += stepY) {
+        const rawOffset = ((minY - colShift) % stepY + stepY) % stepY;
+        const startY = minY - rawOffset - stepY;
+
+        for (let y = startY; y < maxY + stepY && rects.length < MAX_TILES; y += stepY) {
           if (isVCol) {
             rects.push(
               <rect
@@ -287,7 +283,7 @@ const TilePreview = ({ room }) => {
                 height={tileH}
                 fill="#d4c9b8"
                 stroke="#8a7f72"
-                strokeWidth={grout}
+                strokeWidth={strokeW}
               />
             );
             rects.push(
@@ -299,7 +295,7 @@ const TilePreview = ({ room }) => {
                 height={tileH}
                 fill="#d4c9b8"
                 stroke="#8a7f72"
-                strokeWidth={grout}
+                strokeWidth={strokeW}
               />
             );
           } else {
@@ -312,7 +308,7 @@ const TilePreview = ({ room }) => {
                 height={tileW}
                 fill="#cdc2b0"
                 stroke="#8a7f72"
-                strokeWidth={grout}
+                strokeWidth={strokeW}
               />
             );
             rects.push(
@@ -324,25 +320,26 @@ const TilePreview = ({ room }) => {
                 height={tileW}
                 fill="#cdc2b0"
                 stroke="#8a7f72"
-                strokeWidth={grout}
+                strokeWidth={strokeW}
               />
             );
           }
         }
-        colIndex--;
+        x += currentW;
+        colIndex++;
       }
     }
 
     return rects;
   };
 
-  const padding = Math.max(w_m, l_m) * 0.15;
+  const padding = Math.max(w_m, l_m) * 0.12;
   const vBox = `${-padding} ${-padding} ${w_m + padding * 2} ${l_m + padding * 2}`;
   const rotation = (room.pattern === 'diagonal' || room.pattern === 'herringbone' || room.pattern === 'double-herringbone') ? 45 : 0;
 
   return (
     <div className="w-full bg-[#faf8f5] rounded-xl overflow-hidden border border-zinc-200 no-print">
-      <svg width="100%" height="280" viewBox={vBox}>
+      <svg width="100%" height="280" viewBox={vBox} className="select-none">
         <defs>
           <clipPath id={`clip-${room.id}`}>
             <polygon points={pts.map(p => `${p[0]},${p[1]}`).join(' ')} />
@@ -354,9 +351,15 @@ const TilePreview = ({ room }) => {
             {renderTilesDirect()}
           </g>
         </g>
-        <polygon points={pts.map(p => `${p[0]},${p[1]}`).join(' ')} fill="none" stroke="#8a7f72" strokeWidth={0.045} />
+        <polygon 
+          points={pts.map(p => `${p[0]},${p[1]}`).join(' ')} 
+          fill="none" 
+          stroke="#6b5e51" 
+          strokeWidth="2" 
+          vectorEffect="non-scaling-stroke" 
+        />
       </svg>
-      <p className="text-center text-[10px] text-zinc-400 pb-3 -mt-1">{label}</p>
+      <p className="text-center text-[10px] text-zinc-400 pb-3 -mt-1 font-medium">{label}</p>
     </div>
   );
 };
@@ -887,7 +890,7 @@ const TileCalculator = () => {
                   <div>
                     <span className="text-xs text-zinc-500 font-medium block">Total Area to Tile</span>
                     <span className="text-2xl font-bold font-display text-zinc-800">
-                      {parseFloat(activeRoom.area) || 0}
+                      {Number(parseFloat(activeRoom.area) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                       <span className="text-sm font-normal text-zinc-500 ml-1">
                         sq {activeRoom.unit === 'ft' ? 'ft' : 'm'}
                       </span>
@@ -896,9 +899,9 @@ const TileCalculator = () => {
                   <div className="text-right">
                     <span className="text-[10px] text-zinc-400 block uppercase tracking-wider">Equivalent</span>
                     <span className="text-sm font-semibold text-[#886d5e]">
-                      {activeRoom.unit === 'ft'
-                        ? ((parseFloat(activeRoom.area) || 0) * 0.09290304).toFixed(2)
-                        : ((parseFloat(activeRoom.area) || 0) * 10.76391).toFixed(2)}
+                      {Number(
+                        (parseFloat(activeRoom.area) || 0) * (activeRoom.unit === 'ft' ? 0.09290304 : 10.76391)
+                      ).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       <span className="text-xs font-normal text-zinc-500 ml-1">
                         sq {activeRoom.unit === 'ft' ? 'm' : 'ft'}
                       </span>
