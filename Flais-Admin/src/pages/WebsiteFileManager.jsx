@@ -280,8 +280,8 @@ const WebsiteFileManager = () => {
   };
 
   const handleShare = (node) => {
-    // The admin is hosted on the same main domain, so we use the current origin
-    const baseUrl = window.location.origin;
+    // Use the backend API URL to ensure direct file access, bypassing frontend SPA routing
+    const baseUrl = API.endsWith('/') ? API.slice(0, -1) : API;
     const relativePath = node.relativePath.startsWith('/') ? node.relativePath.slice(1) : node.relativePath;
     const shareUrl = `${baseUrl}/${relativePath}`;
     
