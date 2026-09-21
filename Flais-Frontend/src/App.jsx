@@ -48,12 +48,11 @@ const InstallationGuide = lazyWithRetry(() => import('./pages/InstallationGuide'
 const TileCalculator = lazyWithRetry(() => import('./pages/TileCalculator'));
 const Scan = lazyWithRetry(() => import('./pages/Scan'));
 const CountertopSmartpage = lazyWithRetry(() => import('./pages/CountertopSmartpage'));
+const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
 import ComingSoon from './pages/ComingSoon';
 
 const appStatus = import.meta.env.VITE_APP_STATUS || "LIVE";
-
-import NotFound from './pages/NotFound';
 
 function App() {
   React.useEffect(() => {
