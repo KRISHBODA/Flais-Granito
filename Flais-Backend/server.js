@@ -105,6 +105,7 @@ const staticOptions = {
 
 app.use("/media", express.static(path.join(__dirname, "uploads"), staticOptions));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), staticOptions));
+app.use("/", express.static(path.join(__dirname, "website-content"), staticOptions));
 
 // Routes
 app.use("/api/admin", require("./routes/adminRoutes"));

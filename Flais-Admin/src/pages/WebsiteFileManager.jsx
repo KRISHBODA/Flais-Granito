@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { 
   Folder, File, ChevronRight, ChevronDown, Plus, Upload, 
-  MoreVertical, Edit, Trash2, Home, Download, CornerDownRight, RefreshCw, AlertCircle
+  MoreVertical, Edit, Trash2, Home, Download, CornerDownRight, RefreshCw, AlertCircle, Link
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -279,6 +279,16 @@ const WebsiteFileManager = () => {
     window.open(`${API}/api/admin/website-nodes/${node._id}/download?token=${localStorage.getItem('adminToken')}`, '_blank');
   };
 
+  const handleShare = (node) => {
+    const baseUrl = API.endsWith('/') ? API.slice(0, -1) : API;
+    const relativePath = node.relativePath.startsWith('/') ? node.relativePath.slice(1) : node.relativePath;
+    const shareUrl = `${baseUrl}/${relativePath}`;
+    
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => toast.success('Link copied to clipboard!'))
+      .catch(() => toast.error('Failed to copy link'));
+  };
+
   const handlePreviewSync = async () => {
     try {
       setSyncing(true);
@@ -449,6 +459,15 @@ const WebsiteFileManager = () => {
                       </td>
                       <td className="px-6 py-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {node.type === 'file' && (
+                            <button 
+                              onClick={() => handleShare(node)}
+                              className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors"
+                              title="Copy Link"
+                            >
+                              <Link size={16} />
+                            </button>
+                          )}
                           {node.type === 'file' && (
                             <button 
                               onClick={() => handleDownload(node)}
