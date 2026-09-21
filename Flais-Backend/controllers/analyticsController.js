@@ -213,6 +213,8 @@ exports.getAnalyticsSummary = async (req, res) => {
           productCount: item.productCount || 0,
           tilesUploaded: item.productCount || 0, // 1 per unique tile design uploaded
           photoCount: item.photoCount || 0,     // Total photos across all tile designs
+          preview3DCount: item.productCount || 0, // 3D preview photo (#1 photo on collection page)
+          simpleTileJpgCount: Math.max(0, (item.photoCount || 0) - (item.productCount || 0)), // Simple tile photo (remaining photos)
           link360Count,                         // Count of 360 photo links in this collection
           has360: link360Count > 0,
           percentageOfProducts: totalProducts > 0 ? Number(((item.productCount / totalProducts) * 100).toFixed(1)) : 0,
@@ -230,6 +232,8 @@ exports.getAnalyticsSummary = async (req, res) => {
         totalPhotos,
         totalProducts,
         totalTilesUploaded: totalProducts,
+        total3DPreviews: totalProducts,
+        totalSimpleTileJpg: Math.max(0, totalPhotos - totalProducts),
         total360Links,
         collectionsCount: collections.length,
         collectionsWith360Count,
@@ -305,6 +309,8 @@ exports.getCollectionPhotosSummary = async (req, res) => {
         productCount: item.productCount || 0,
         tilesUploaded: item.productCount || 0,
         photoCount: item.photoCount || 0,
+        preview3DCount: item.productCount || 0, // 3D preview photo (#1 photo on collection page)
+        simpleTileJpgCount: Math.max(0, (item.photoCount || 0) - (item.productCount || 0)), // Simple tile photo (remaining photos)
         link360Count,
         has360: link360Count > 0,
         percentageOfProducts: totalProducts > 0 ? Number(((item.productCount / totalProducts) * 100).toFixed(1)) : 0,
@@ -324,6 +330,8 @@ exports.getCollectionPhotosSummary = async (req, res) => {
         totalPhotos,
         totalProducts,
         totalTilesUploaded: totalProducts,
+        total3DPreviews: totalProducts,
+        totalSimpleTileJpg: Math.max(0, totalPhotos - totalProducts),
         total360Links,
         collectionsCount: collections.length,
         collectionsWith360Count,

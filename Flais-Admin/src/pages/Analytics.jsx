@@ -92,13 +92,15 @@ const Analytics = () => {
   const recentEvents = summary?.recentEvents || [];
   const [collectionSearch, setCollectionSearch] = useState('');
   const [collectionSort, setCollectionSort] = useState('tiles-desc');
-  const [collectionMetricMode, setCollectionMetricMode] = useState('tiles'); // 'tiles' (1 per design) | 'photos' (all images)
+  const [collectionMetricMode, setCollectionMetricMode] = useState('tiles'); // 'tiles' (3D Preview #1 photo) | 'jpg' (Simple Tile JPGs) | 'photos' (All photos)
 
   const collectionPhotos = useMemo(() => {
     return summary?.collectionPhotos || {
       totalPhotos: 0,
       totalProducts: 0,
       totalTilesUploaded: 0,
+      total3DPreviews: 0,
+      totalSimpleTileJpg: 0,
       total360Links: 0,
       collectionsCount: 0,
       collectionsWith360Count: 0,
@@ -106,6 +108,11 @@ const Analytics = () => {
       collections: [],
     };
   }, [summary]);
+
+  const total3DPreviews = collectionPhotos.total3DPreviews || collectionPhotos.totalProducts || 0;
+  const totalSimpleTileJpg = collectionPhotos.totalSimpleTileJpg !== undefined
+    ? collectionPhotos.totalSimpleTileJpg
+    : Math.max(0, (collectionPhotos.totalPhotos || 0) - (collectionPhotos.totalProducts || 0));
 
   const collectionsWith360 = useMemo(() => {
     return (collectionPhotos.collections || [])
@@ -130,6 +137,12 @@ const Analytics = () => {
       list.sort((a, b) => (b.productCount || 0) - (a.productCount || 0));
     } else if (collectionSort === 'tiles-asc') {
       list.sort((a, b) => (a.productCount || 0) - (b.productCount || 0));
+    } else if (collectionSort === 'jpg-desc') {
+      list.sort((a, b) => {
+        const aJpg = a.simpleTileJpgCount ?? Math.max(0, (a.photoCount || 0) - (a.productCount || 0));
+        const bJpg = b.simpleTileJpgCount ?? Math.max(0, (b.photoCount || 0) - (b.productCount || 0));
+        return bJpg - aJpg;
+      });
     } else if (collectionSort === 'photos-desc') {
       list.sort((a, b) => (b.photoCount || 0) - (a.photoCount || 0));
     } else if (collectionSort === 'photos-asc') {
@@ -141,22 +154,33 @@ const Analytics = () => {
   }, [collectionPhotos, collectionSearch, collectionSort]);
 
   const collectionChartData = useMemo(() => {
-    const isTilesMode = collectionMetricMode === 'tiles';
     return (collectionPhotos.collections || []).map((item) => {
-      const percentage = isTilesMode
-        ? (item.percentageOfProducts || (collectionPhotos.totalProducts > 0 ? Number(((item.productCount / collectionPhotos.totalProducts) * 100).toFixed(1)) : 0))
-        : item.percentageOfPhotos;
+      const preview3D = item.preview3DCount ?? item.productCount ?? 0;
+      const simpleJpg = item.simpleTileJpgCount ?? Math.max(0, (item.photoCount || 0) - (item.productCount || 0));
+      const totalPhotos = item.photoCount || 0;
+
+      let value = preview3D;
+      let percentage = item.percentageOfProducts || (collectionPhotos.totalProducts > 0 ? Number(((preview3D / collectionPhotos.totalProducts) * 100).toFixed(1)) : 0);
+
+      if (collectionMetricMode === 'photos') {
+        value = totalPhotos;
+        percentage = item.percentageOfPhotos || (collectionPhotos.totalPhotos > 0 ? Number(((totalPhotos / collectionPhotos.totalPhotos) * 100).toFixed(1)) : 0);
+      } else if (collectionMetricMode === 'jpg') {
+        value = simpleJpg;
+        percentage = totalSimpleTileJpg > 0 ? Number(((simpleJpg / totalSimpleTileJpg) * 100).toFixed(1)) : 0;
+      }
 
       return {
         name: item.collectionName.replace(/\s+Collection$/i, ''),
         fullName: item.collectionName,
-        value: isTilesMode ? item.productCount : item.photoCount,
-        tiles: item.productCount,
-        photos: item.photoCount,
+        value,
+        tiles: preview3D,
+        jpgs: simpleJpg,
+        photos: totalPhotos,
         percentage,
       };
     }).sort((a, b) => b.value - a.value);
-  }, [collectionPhotos, collectionMetricMode]);
+  }, [collectionPhotos, collectionMetricMode, totalSimpleTileJpg]);
 
   const metricCards = [
     { label: 'Total events', value: summary?.totalEvents, icon: MousePointer2, tone: 'from-blue-500 to-cyan-500' },
@@ -470,32 +494,46 @@ const Analytics = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                {/* View Mode Toggle: Tiles Uploaded (1 per design) vs. Total Photos */}
+                {/* View Mode Toggle: 3D Preview (#1 Photo) vs. Simple Tile Photos (JPG) vs. Total Photos */}
                 <div className="inline-flex rounded-2xl bg-slate-100 p-1 border border-slate-200/80 shadow-2xs">
                   <button
                     onClick={() => setCollectionMetricMode('tiles')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
                       collectionMetricMode === 'tiles'
                         ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     <Package size={14} className={collectionMetricMode === 'tiles' ? 'text-[#0145F2]' : 'text-slate-400'} />
-                    <span>Tiles Uploaded (1 per design)</span>
+                    <span>3D Preview (#1 Photo)</span>
                     <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] text-[#0145F2] font-extrabold">
-                      {formatNumber(collectionPhotos.totalProducts)}
+                      {formatNumber(total3DPreviews)}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setCollectionMetricMode('jpg')}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                      collectionMetricMode === 'jpg'
+                        ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <ImageIcon size={14} className={collectionMetricMode === 'jpg' ? 'text-emerald-600' : 'text-slate-400'} />
+                    <span>Simple Tile Photos (JPG)</span>
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] text-emerald-700 font-extrabold">
+                      {formatNumber(totalSimpleTileJpg)}
                     </span>
                   </button>
                   <button
                     onClick={() => setCollectionMetricMode('photos')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
                       collectionMetricMode === 'photos'
                         ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     <Camera size={14} className={collectionMetricMode === 'photos' ? 'text-amber-600' : 'text-slate-400'} />
-                    <span>Total Photos (All images)</span>
+                    <span>Total Photos</span>
                     <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700 font-extrabold">
                       {formatNumber(collectionPhotos.totalPhotos)}
                     </span>
@@ -516,9 +554,11 @@ const Analytics = () => {
             <div className="flex items-start gap-3 rounded-2xl bg-blue-50/70 border border-blue-200/80 p-4 text-xs text-blue-950 shadow-2xs">
               <Sparkles size={18} className="shrink-0 text-[#0145F2] mt-0.5" />
               <div className="space-y-0.5">
-                <span className="font-bold text-slate-900">Understanding Tile Uploads vs. Total Photos:</span>
+                <span className="font-bold text-slate-900">Understanding 3D Preview Photos vs. Simple Tile Photos (JPG):</span>
                 <p className="text-slate-600 leading-relaxed">
-                  When you add a tile to a collection (for example, in <strong>Extra Max Collection</strong> or <strong>Marvel Collection</strong>), each tile counts as <strong>1 unique design upload</strong> (e.g. <strong>47 tile designs uploaded</strong> in Extra Max). Because each tile design has multiple gallery photos (different angles, textures, and room scenes), the total photos count reaches <strong>193 photos</strong>. You can switch between viewing <strong>Tiles Uploaded (1 per design)</strong> and <strong>Total Photos</strong> using the toggle buttons above.
+                  • <strong>3D Preview (#1 Photo)</strong>: The primary room-scene mockup image (first photo <code className="bg-blue-100/60 px-1 py-0.5 rounded text-[#0145F2] font-semibold">images[0]</code>) displayed on the collection page for each tile product. There is exactly <strong>1 3D preview per tile product</strong> (Total: <strong>{formatNumber(total3DPreviews)} previews</strong> across catalog).<br />
+                  • <strong>Simple Tile Photos (JPG)</strong>: The flat tile faces, random patterns, and detail photos uploaded for each tile product (Total: <strong>{formatNumber(totalSimpleTileJpg)} simple tile photos</strong>).<br />
+                  • <strong>Total Photos</strong>: The sum of the 3D preview photo plus all simple tile photos (Total: <strong>{formatNumber(collectionPhotos.totalPhotos)} photos</strong>).
                 </p>
               </div>
             </div>
@@ -531,16 +571,36 @@ const Analytics = () => {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Tiles Uploaded</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">3D Preview (#1 Photo)</p>
                       {collectionMetricMode === 'tiles' && (
                         <span className="rounded-full bg-blue-100 px-1.5 py-0.2 text-[9px] font-bold text-[#0145F2]">Active</span>
                       )}
                     </div>
-                    <p className="mt-2 text-3xl font-extrabold text-slate-900">{formatNumber(collectionPhotos.totalProducts)}</p>
-                    <p className="mt-1 text-xs text-slate-400">1 count per unique tile design</p>
+                    <p className="mt-2 text-3xl font-extrabold text-slate-900">{formatNumber(total3DPreviews)}</p>
+                    <p className="mt-1 text-xs text-slate-400">1st photo on collection page</p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md">
                     <Package size={22} />
+                  </div>
+                </div>
+              </div>
+
+              <div className={`rounded-3xl border bg-white p-5 shadow-sm transition-all ${
+                collectionMetricMode === 'jpg' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200'
+              }`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Simple Tile Photos (JPG)</p>
+                      {collectionMetricMode === 'jpg' && (
+                        <span className="rounded-full bg-emerald-100 px-1.5 py-0.2 text-[9px] font-bold text-emerald-800">Active</span>
+                      )}
+                    </div>
+                    <p className="mt-2 text-3xl font-extrabold text-slate-900">{formatNumber(totalSimpleTileJpg)}</p>
+                    <p className="mt-1 text-xs text-slate-400">Plain tile faces & texture shots</p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md">
+                    <ImageIcon size={22} />
                   </div>
                 </div>
               </div>
@@ -557,7 +617,7 @@ const Analytics = () => {
                       )}
                     </div>
                     <p className="mt-2 text-3xl font-extrabold text-slate-900">{formatNumber(collectionPhotos.totalPhotos)}</p>
-                    <p className="mt-1 text-xs text-slate-400">All photos across all tiles</p>
+                    <p className="mt-1 text-xs text-slate-400">All 3D previews + simple photos</p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md">
                     <Camera size={22} />
@@ -568,29 +628,16 @@ const Analytics = () => {
               <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Collections</p>
-                    <p className="mt-2 text-3xl font-extrabold text-slate-900">{formatNumber(collectionPhotos.collectionsCount)}</p>
-                    <p className="mt-1 text-xs text-slate-400">Distinct catalog series</p>
-                  </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white shadow-md">
-                    <FolderOpen size={22} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Avg Photos / Tile</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Avg Simple Photos / Tile</p>
                     <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                      {collectionPhotos.totalProducts > 0
-                        ? (collectionPhotos.totalPhotos / collectionPhotos.totalProducts).toFixed(1)
+                      {total3DPreviews > 0
+                        ? (totalSimpleTileJpg / total3DPreviews).toFixed(1)
                         : '0.0'}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">Average images per tile design</p>
+                    <p className="mt-1 text-xs text-slate-400">Simple tile photos per tile design</p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md">
-                    <ImageIcon size={22} />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white shadow-md">
+                    <Layers size={22} />
                   </div>
                 </div>
               </div>
@@ -602,12 +649,18 @@ const Analytics = () => {
                 <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">
-                      {collectionMetricMode === 'tiles' ? 'Tiles uploaded by collection (1 per design)' : 'Total photos uploaded by collection'}
+                      {collectionMetricMode === 'tiles'
+                        ? '3D previews uploaded by collection (#1 photo)'
+                        : collectionMetricMode === 'jpg'
+                        ? 'Simple tile photos (JPG) by collection'
+                        : 'Total photos uploaded by collection'}
                     </h3>
                     <p className="text-sm text-slate-500">
                       {collectionMetricMode === 'tiles'
-                        ? 'Number of unique tile designs uploaded in each collection.'
-                        : 'Total volume of uploaded gallery photos per tile collection.'}
+                        ? 'Number of primary 3D preview photos shown on collection pages (1 per tile).'
+                        : collectionMetricMode === 'jpg'
+                        ? 'Number of simple flat tile face & texture photos uploaded.'
+                        : 'Total volume of all uploaded gallery photos combined.'}
                     </p>
                   </div>
                   <BarChart3 className="text-[#0145F2]" size={20} />
@@ -629,9 +682,11 @@ const Analytics = () => {
                         <Tooltip
                           formatter={(value, name, props) => [
                             collectionMetricMode === 'tiles'
-                              ? `${formatNumber(value)} tiles (${props.payload.percentage}% of catalog)`
+                              ? `${formatNumber(value)} 3D previews (${props.payload.percentage}% of previews)`
+                              : collectionMetricMode === 'jpg'
+                              ? `${formatNumber(value)} JPGs (${props.payload.percentage}% of JPGs)`
                               : `${formatNumber(value)} photos (${props.payload.percentage}% of photos)`,
-                            collectionMetricMode === 'tiles' ? 'Tiles Uploaded' : 'Photos Uploaded'
+                            collectionMetricMode === 'tiles' ? '3D Previews (#1 Photo)' : collectionMetricMode === 'jpg' ? 'Simple Tile JPGs' : 'Total Photos'
                           ]}
                           labelFormatter={(label, payload) => payload?.[0]?.payload?.fullName || label}
                         />
@@ -650,11 +705,13 @@ const Analytics = () => {
                 <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">
-                      Collection share ({collectionMetricMode === 'tiles' ? 'By Tiles' : 'By Photos'})
+                      Collection share ({collectionMetricMode === 'tiles' ? 'By 3D Previews' : collectionMetricMode === 'jpg' ? 'By Simple JPGs' : 'By Total Photos'})
                     </h3>
                     <p className="text-sm text-slate-500">
                       {collectionMetricMode === 'tiles'
-                        ? 'Share of total unique tile designs uploaded.'
+                        ? 'Share of total 3D preview photos (#1 photo on collection page).'
+                        : collectionMetricMode === 'jpg'
+                        ? 'Share of total simple flat tile face photos.'
                         : 'Share of total uploaded gallery photos.'}
                     </p>
                   </div>
@@ -662,8 +719,8 @@ const Analytics = () => {
                 </div>
                 <div className="p-5 space-y-3.5 max-h-[360px] overflow-y-auto">
                   {collectionChartData.map((col, idx) => {
-                    const displayCount = collectionMetricMode === 'tiles' ? col.tiles : col.photos;
-                    const unit = collectionMetricMode === 'tiles' ? 'tiles' : 'photos';
+                    const displayCount = collectionMetricMode === 'tiles' ? col.tiles : collectionMetricMode === 'jpg' ? col.jpgs : col.photos;
+                    const unit = collectionMetricMode === 'tiles' ? 'previews' : collectionMetricMode === 'jpg' ? 'JPGs' : 'photos';
 
                     return (
                       <div key={col.fullName} className="space-y-1.5">
@@ -727,10 +784,11 @@ const Analytics = () => {
                     onChange={(e) => setCollectionSort(e.target.value)}
                     className="rounded-full border border-slate-200 bg-slate-50/80 px-3.5 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-[#0145F2] focus:bg-white transition-all shadow-2xs"
                   >
-                    <option value="tiles-desc">Most tiles uploaded (1 per design)</option>
-                    <option value="tiles-asc">Least tiles uploaded</option>
-                    <option value="photos-desc">Most total photos</option>
-                    <option value="photos-asc">Least total photos</option>
+                    <option value="tiles-desc">Most 3D Previews (#1 photo)</option>
+                    <option value="jpg-desc">Most Simple Tile Photos (JPG)</option>
+                    <option value="photos-desc">Most Total Photos</option>
+                    <option value="tiles-asc">Least 3D Previews</option>
+                    <option value="photos-asc">Least Total Photos</option>
                     <option value="name-asc">Collection name A-Z</option>
                   </select>
                 </div>
@@ -745,7 +803,12 @@ const Analytics = () => {
                       <th className={`px-5 py-3.5 text-right transition-colors ${
                         collectionMetricMode === 'tiles' ? 'text-[#0145F2] font-bold bg-blue-50/50' : ''
                       }`}>
-                        Tiles Uploaded (1 per design)
+                        3D Preview (#1 Photo)
+                      </th>
+                      <th className={`px-5 py-3.5 text-right transition-colors ${
+                        collectionMetricMode === 'jpg' ? 'text-emerald-700 font-bold bg-emerald-50/50' : ''
+                      }`}>
+                        Simple Tile Photos (JPG)
                       </th>
                       <th className={`px-5 py-3.5 text-right transition-colors ${
                         collectionMetricMode === 'photos' ? 'text-amber-700 font-bold bg-amber-50/50' : ''
@@ -753,8 +816,8 @@ const Analytics = () => {
                         Total Photos
                       </th>
                       <th className="px-5 py-3.5 text-right">Avg / Tile</th>
-                      <th className="px-5 py-3.5 w-44">
-                        Share ({collectionMetricMode === 'tiles' ? 'Tiles' : 'Photos'})
+                      <th className="px-5 py-3.5 w-40">
+                        Share ({collectionMetricMode === 'tiles' ? '3D Previews' : collectionMetricMode === 'jpg' ? 'JPGs' : 'Photos'})
                       </th>
                       <th className="px-5 py-3.5 text-center">Action</th>
                     </tr>
@@ -762,11 +825,33 @@ const Analytics = () => {
                   <tbody className="divide-y divide-slate-100 text-sm">
                     {filteredCollections.length > 0 ? (
                       filteredCollections.map((col, idx) => {
+                        const preview3D = col.preview3DCount ?? col.productCount ?? 0;
+                        const simpleJpg = col.simpleTileJpgCount ?? Math.max(0, (col.photoCount || 0) - (col.productCount || 0));
+                        const totalPhotos = col.photoCount || 0;
+
                         const tileShare = col.percentageOfProducts || (collectionPhotos.totalProducts > 0
-                          ? Number(((col.productCount / collectionPhotos.totalProducts) * 100).toFixed(1))
+                          ? Number(((preview3D / collectionPhotos.totalProducts) * 100).toFixed(1))
                           : 0);
-                        const photoShare = col.percentageOfPhotos || 0;
-                        const activeShare = collectionMetricMode === 'tiles' ? tileShare : photoShare;
+                        const jpgShare = totalSimpleTileJpg > 0
+                          ? Number(((simpleJpg / totalSimpleTileJpg) * 100).toFixed(1))
+                          : 0;
+                        const photoShare = col.percentageOfPhotos || (collectionPhotos.totalPhotos > 0
+                          ? Number(((totalPhotos / collectionPhotos.totalPhotos) * 100).toFixed(1))
+                          : 0);
+
+                        let activeShare = tileShare;
+                        let activeModeLabel = '3D previews';
+                        let activeBarColor = 'bg-[#0145F2]';
+
+                        if (collectionMetricMode === 'jpg') {
+                          activeShare = jpgShare;
+                          activeModeLabel = 'JPGs';
+                          activeBarColor = 'bg-emerald-600';
+                        } else if (collectionMetricMode === 'photos') {
+                          activeShare = photoShare;
+                          activeModeLabel = 'photos';
+                          activeBarColor = 'bg-amber-500';
+                        }
 
                         return (
                           <tr key={col.collectionName} className="transition-colors hover:bg-slate-50/70">
@@ -777,7 +862,7 @@ const Analytics = () => {
                                 </div>
                                 <div>
                                   <p className="font-bold text-slate-900">{col.collectionName}</p>
-                                  <p className="text-xs text-slate-400">{col.productCount} tile designs uploaded</p>
+                                  <p className="text-xs text-slate-400">{preview3D} tile designs</p>
                                 </div>
                               </div>
                             </td>
@@ -796,29 +881,38 @@ const Analytics = () => {
                                 ) : (
                                   <span className="text-xs text-slate-400 italic">No previews</span>
                                 )}
-                                {col.photoCount > 4 && (
+                                {totalPhotos > 4 && (
                                   <span className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-600 shadow-2xs">
-                                    +{col.photoCount - 4}
+                                    +{totalPhotos - 4}
                                   </span>
                                 )}
                               </div>
                             </td>
-                            {/* Tiles Uploaded: 1 count per unique design (e.g. 47 tiles) */}
+                            {/* 3D Preview: 1 count per product (#1 photo on collection page) */}
                             <td className={`px-5 py-4 text-right transition-colors ${
                               collectionMetricMode === 'tiles' ? 'bg-blue-50/30' : ''
                             }`}>
                               <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 font-bold text-xs text-[#0145F2] border border-blue-200/70">
                                 <Package size={13} />
-                                {formatNumber(col.productCount)} tiles
+                                {formatNumber(preview3D)} previews
                               </span>
                             </td>
-                            {/* Total Photos: all photos combined (e.g. 193 photos) */}
+                            {/* Simple Tile Photos (JPG): remaining tile face photos */}
+                            <td className={`px-5 py-4 text-right transition-colors ${
+                              collectionMetricMode === 'jpg' ? 'bg-emerald-50/30' : ''
+                            }`}>
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 font-bold text-xs text-emerald-800 border border-emerald-200/70">
+                                <ImageIcon size={13} />
+                                {formatNumber(simpleJpg)} JPGs
+                              </span>
+                            </td>
+                            {/* Total Photos: all photos combined */}
                             <td className={`px-5 py-4 text-right transition-colors ${
                               collectionMetricMode === 'photos' ? 'bg-amber-50/30' : ''
                             }`}>
                               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 font-semibold text-xs text-amber-800 border border-amber-200/70">
                                 <Camera size={13} />
-                                {formatNumber(col.photoCount)} photos
+                                {formatNumber(totalPhotos)} photos
                               </span>
                             </td>
                             <td className="px-5 py-4 text-right text-slate-600">
@@ -830,14 +924,12 @@ const Analytics = () => {
                                 <div className="flex justify-between text-xs">
                                   <span className="font-bold text-slate-700">{activeShare}%</span>
                                   <span className="text-[10px] text-slate-400">
-                                    of {collectionMetricMode === 'tiles' ? 'tiles' : 'photos'}
+                                    of {activeModeLabel}
                                   </span>
                                 </div>
                                 <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                   <div
-                                    className={`h-full rounded-full transition-all duration-500 ${
-                                      collectionMetricMode === 'tiles' ? 'bg-[#0145F2]' : 'bg-amber-500'
-                                    }`}
+                                    className={`h-full rounded-full transition-all duration-500 ${activeBarColor}`}
                                     style={{ width: `${activeShare}%` }}
                                   />
                                 </div>
