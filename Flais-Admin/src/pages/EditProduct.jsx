@@ -354,15 +354,56 @@ const EditProduct = () => {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Tag/Review</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-semibold text-slate-700">Tag/Review</label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, tagReview: 'Best Selling' }))}
+                        className={`px-2 py-0.5 rounded text-[11px] font-semibold border transition-all ${
+                          formData.tagReview === 'Best Selling'
+                            ? 'bg-amber-100 text-amber-900 border-amber-300 shadow-xs'
+                            : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50 hover:text-amber-800'
+                        }`}
+                      >
+                        🔥 Best Selling
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, tagReview: 'New Arrival' }))}
+                        className={`px-2 py-0.5 rounded text-[11px] font-semibold border transition-all ${
+                          formData.tagReview === 'New Arrival'
+                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300 shadow-xs'
+                            : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-emerald-50 hover:text-emerald-800'
+                        }`}
+                      >
+                        ✨ New Arrival
+                      </button>
+                      {formData.tagReview && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, tagReview: '' }))}
+                          className="px-1.5 py-0.5 rounded text-[11px] font-medium text-slate-400 hover:text-rose-600"
+                          title="Clear tag"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   <input
                     type="text"
                     name="tagReview"
+                    list="tagReviewSuggestions"
                     value={formData.tagReview}
                     onChange={handleInputChange}
-                    placeholder="e.g. Premium / 5 Star"
+                    placeholder="e.g. Best Selling, New Arrival"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm transition-all focus:border-[#0145F2] focus:outline-none focus:ring-1 focus:ring-[#0145F2]"
                   />
+                  <datalist id="tagReviewSuggestions">
+                    <option value="Best Selling" />
+                    <option value="New Arrival" />
+                  </datalist>
                 </div>
                 <div className="col-span-2">
                   <label className="mb-2 block text-sm font-semibold text-slate-700">360° View Link</label>

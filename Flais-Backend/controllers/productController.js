@@ -79,7 +79,8 @@ exports.getProducts = async (req, res) => {
       category = "All", 
       limit: queryLimit,
       filter360 = "all",
-      filter3d = "all"
+      filter3d = "all",
+      filterTag = "all"
     } = req.query;
 
     const page = Math.max(1, Number(req.query.page) || 1);
@@ -135,12 +136,54 @@ exports.getProducts = async (req, res) => {
       });
     }
 
+    // Tag/Review filter: uploaded/has vs missing vs Best Selling vs New Arrival vs specific tag
+    if (filterTag && filterTag !== "all") {
+      const normalizedTag = String(filterTag).trim().toLowerCase();
+      if (normalizedTag === "uploaded" || normalizedTag === "has" || normalizedTag === "true") {
+        andConditions.push({
+          tagReview: { $exists: true, $nin: ["", null, "null", "undefined"] }
+        });
+      } else if (normalizedTag === "missing" || normalizedTag === "false") {
+        andConditions.push({
+          $or: [
+            { tagReview: { $exists: false } },
+            { tagReview: { $in: ["", null, "null", "undefined"] } }
+          ]
+        });
+      } else if (normalizedTag === "best selling" || normalizedTag === "best-selling" || normalizedTag === "best_selling" || normalizedTag === "bestselling") {
+        andConditions.push({
+          tagReview: { $regex: /best\s*selling/i }
+        });
+      } else if (normalizedTag === "new arrival" || normalizedTag === "new-arrival" || normalizedTag === "new_arrival" || normalizedTag === "newarrival") {
+        andConditions.push({
+          tagReview: { $regex: /new\s*arrival/i }
+        });
+      } else {
+        andConditions.push({
+          tagReview: { $regex: `^${escapeRegExp(String(filterTag).trim())}$`, $options: "i" }
+        });
+      }
+    }
+
     const query = andConditions.length > 0 ? { $and: andConditions } : {};
 
-    const [totalProducts, total360Uploaded, total3dUploaded, totalAll] = await Promise.all([
+    const [
+      totalProducts, 
+      total360Uploaded, 
+      total3dUploaded, 
+      totalTagUploaded, 
+      bestSellingCount,
+      newArrivalCount,
+      distinctTags, 
+      totalAll
+    ] = await Promise.all([
       Product.countDocuments(query),
       Product.countDocuments({ link360: { $exists: true, $nin: ["", null, "null", "undefined"] } }),
       Product.countDocuments({ has3dPreview: { $ne: false }, "images.0": { $exists: true, $nin: ["", null] } }),
+      Product.countDocuments({ tagReview: { $exists: true, $nin: ["", null, "null", "undefined"] } }),
+      Product.countDocuments({ tagReview: { $regex: /best\s*selling/i } }),
+      Product.countDocuments({ tagReview: { $regex: /new\s*arrival/i } }),
+      Product.distinct("tagReview", { tagReview: { $exists: true, $nin: ["", null, "null", "undefined"] } }),
       Product.countDocuments({}),
     ]);
     
@@ -156,6 +199,11 @@ exports.getProducts = async (req, res) => {
       missing360Count: Math.max(0, totalAll - total360Uploaded),
       has3dCount: total3dUploaded,
       missing3dCount: Math.max(0, totalAll - total3dUploaded),
+      hasTagCount: totalTagUploaded,
+      missingTagCount: Math.max(0, totalAll - totalTagUploaded),
+      bestSellingCount,
+      newArrivalCount,
+      distinctTags: (distinctTags || []).filter(Boolean),
     };
 
     res.status(200).json({

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
   Plus, Search, Filter, MoreVertical, Edit, Trash2, ChevronLeft, ChevronRight, 
   Layers, FileText, Package, Save, X, Compass, Sparkles, Images, AlertCircle, 
-  ExternalLink, CheckCircle2 
+  ExternalLink, CheckCircle2, Tag 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CatalogFilters from './CatalogFilters.jsx';
@@ -57,6 +57,7 @@ const ProductsList = () => {
     const urlTab = searchParams.get('tab');
     const urlFilter360 = searchParams.get('filter360');
     const urlFilter3d = searchParams.get('filter3d');
+    const urlFilterTag = searchParams.get('filterTag');
 
     if (
       urlCategory !== null || 
@@ -64,7 +65,8 @@ const ProductsList = () => {
       urlPage !== null || 
       urlTab !== null || 
       urlFilter360 !== null || 
-      urlFilter3d !== null
+      urlFilter3d !== null ||
+      urlFilterTag !== null
     ) {
       return {
         category: urlCategory || 'All',
@@ -72,7 +74,8 @@ const ProductsList = () => {
         page: urlPage ? parseInt(urlPage, 10) || 1 : 1,
         tab: urlTab || 'inventory',
         filter360: urlFilter360 || 'all',
-        filter3d: urlFilter3d || 'all'
+        filter3d: urlFilter3d || 'all',
+        filterTag: urlFilterTag || 'all'
       };
     }
 
@@ -86,7 +89,8 @@ const ProductsList = () => {
           page: parsed.page || 1,
           tab: parsed.tab || 'inventory',
           filter360: parsed.filter360 || 'all',
-          filter3d: parsed.filter3d || 'all'
+          filter3d: parsed.filter3d || 'all',
+          filterTag: parsed.filterTag || 'all'
         };
       }
     } catch (e) {}
@@ -97,7 +101,8 @@ const ProductsList = () => {
       page: 1, 
       tab: 'inventory', 
       filter360: 'all', 
-      filter3d: 'all' 
+      filter3d: 'all',
+      filterTag: 'all'
     };
   };
 
@@ -109,6 +114,7 @@ const ProductsList = () => {
   const [selectedCategory, setSelectedCategory] = useState(initialFilters.category);
   const [filter360, setFilter360] = useState(initialFilters.filter360);
   const [filter3d, setFilter3d] = useState(initialFilters.filter3d);
+  const [filterTag, setFilterTag] = useState(initialFilters.filterTag);
   const [currentPage, setCurrentPage] = useState(initialFilters.page);
   const [paginationData, setPaginationData] = useState({
     totalProducts: 0,
@@ -123,6 +129,7 @@ const ProductsList = () => {
     if (searchTerm) params.set('search', searchTerm);
     if (filter360 && filter360 !== 'all') params.set('filter360', filter360);
     if (filter3d && filter3d !== 'all') params.set('filter3d', filter3d);
+    if (filterTag && filterTag !== 'all') params.set('filterTag', filterTag);
     if (currentPage > 1) params.set('page', currentPage.toString());
 
     if (params.toString() !== searchParams.toString()) {
@@ -136,10 +143,11 @@ const ProductsList = () => {
         page: currentPage,
         tab: activeTab,
         filter360,
-        filter3d
+        filter3d,
+        filterTag
       }));
     } catch (e) {}
-  }, [activeTab, selectedCategory, searchTerm, currentPage, filter360, filter3d]);
+  }, [activeTab, selectedCategory, searchTerm, currentPage, filter360, filter3d, filterTag]);
 
   // Handle browser Back / Forward history navigation
   useEffect(() => {
@@ -149,6 +157,7 @@ const ProductsList = () => {
     const urlTab = searchParams.get('tab') || 'inventory';
     const urlFilter360 = searchParams.get('filter360') || 'all';
     const urlFilter3d = searchParams.get('filter3d') || 'all';
+    const urlFilterTag = searchParams.get('filterTag') || 'all';
 
     setSelectedCategory(prev => prev !== urlCategory ? urlCategory : prev);
     setSearchTerm(prev => prev !== urlSearch ? urlSearch : prev);
@@ -156,20 +165,23 @@ const ProductsList = () => {
     setActiveTab(prev => prev !== urlTab ? urlTab : prev);
     setFilter360(prev => prev !== urlFilter360 ? urlFilter360 : prev);
     setFilter3d(prev => prev !== urlFilter3d ? urlFilter3d : prev);
+    setFilterTag(prev => prev !== urlFilterTag ? urlFilterTag : prev);
   }, [searchParams]);
 
   const isFiltered = (
     selectedCategory !== 'All' || 
     Boolean(searchTerm) || 
     filter360 !== 'all' || 
-    filter3d !== 'all'
+    filter3d !== 'all' ||
+    filterTag !== 'all'
   );
 
   const activeFilterCount = [
     selectedCategory !== 'All',
     Boolean(searchTerm),
     filter360 !== 'all',
-    filter3d !== 'all'
+    filter3d !== 'all',
+    filterTag !== 'all'
   ].filter(Boolean).length;
 
   const handleClearFilters = () => {
@@ -177,6 +189,7 @@ const ProductsList = () => {
     setSearchTerm('');
     setFilter360('all');
     setFilter3d('all');
+    setFilterTag('all');
     setCurrentPage(1);
     const params = new URLSearchParams();
     if (activeTab !== 'inventory') params.set('tab', activeTab);
@@ -213,7 +226,8 @@ const ProductsList = () => {
           search: searchTerm,
           category: selectedCategory,
           filter360,
-          filter3d
+          filter3d,
+          filterTag
         }
       });
       
@@ -239,7 +253,7 @@ const ProductsList = () => {
     }, 400); // 400ms debounce for search
 
     return () => clearTimeout(delayDebounceFn);
-  }, [currentPage, selectedCategory, searchTerm, filter360, filter3d]);
+  }, [currentPage, selectedCategory, searchTerm, filter360, filter3d, filterTag]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -391,6 +405,51 @@ const ProductsList = () => {
                 </select>
               </div>
 
+              {/* Tag/Review Filter Dropdown */}
+              <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors shrink-0 ${
+                filterTag !== 'all' 
+                  ? /best\s*selling/i.test(filterTag)
+                    ? 'border-amber-300 bg-amber-50 text-amber-900'
+                    : /new\s*arrival/i.test(filterTag)
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                    : filterTag === 'missing'
+                    ? 'border-rose-300 bg-rose-50 text-rose-800'
+                    : 'border-purple-300 bg-purple-50 text-purple-800'
+                  : 'border-slate-200 bg-slate-50 text-slate-700'
+              }`}>
+                <Tag size={16} className={
+                  filterTag !== 'all' 
+                    ? /best\s*selling/i.test(filterTag)
+                      ? 'text-amber-600'
+                      : /new\s*arrival/i.test(filterTag)
+                      ? 'text-emerald-600'
+                      : filterTag === 'missing'
+                      ? 'text-rose-600'
+                      : 'text-purple-600'
+                    : 'text-slate-400'
+                } />
+                <select
+                  value={filterTag}
+                  onChange={(e) => { setFilterTag(e.target.value); setCurrentPage(1); }}
+                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-2"
+                >
+                  <option value="all">Tag/Review: All</option>
+                  <option value="Best Selling">🔥 Best Selling ({mediaStats?.bestSellingCount ?? 0})</option>
+                  <option value="New Arrival">✨ New Arrival ({mediaStats?.newArrivalCount ?? 0})</option>
+                  <option value="uploaded">🏷️ Any Tag ({mediaStats?.hasTagCount ?? 0})</option>
+                  <option value="missing">⚠️ Missing Tag ({mediaStats?.missingTagCount ?? 0})</option>
+                  {mediaStats?.distinctTags && mediaStats.distinctTags.filter(t => !/^(best\s*selling|new\s*arrival)$/i.test(t)).length > 0 && (
+                    <optgroup label="Other Specific Tags">
+                      {mediaStats.distinctTags
+                        .filter(t => !/^(best\s*selling|new\s*arrival)$/i.test(t))
+                        .map((tag) => (
+                          <option key={tag} value={tag}>Tag: &quot;{tag}&quot;</option>
+                        ))}
+                    </optgroup>
+                  )}
+                </select>
+              </div>
+
               {/* Clear All Filters */}
               {isFiltered && (
                 <button
@@ -480,7 +539,30 @@ const ProductsList = () => {
                                 )}
                               </div>
                               <div>
-                                <h4 className="font-bold text-slate-900">{product.title || product.name}</h4>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-bold text-slate-900">{product.title || product.name}</h4>
+                                  {product.tagReview && String(product.tagReview).trim() !== '' && (
+                                    <span 
+                                      className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold border ${
+                                        /best\s*selling/i.test(product.tagReview)
+                                          ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                          : /new\s*arrival/i.test(product.tagReview)
+                                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                          : 'bg-purple-50 text-purple-700 border-purple-200'
+                                      }`}
+                                      title={`Tag/Review: ${product.tagReview}`}
+                                    >
+                                      <Tag size={11} className={
+                                        /best\s*selling/i.test(product.tagReview)
+                                          ? 'text-amber-600 shrink-0'
+                                          : /new\s*arrival/i.test(product.tagReview)
+                                          ? 'text-emerald-600 shrink-0'
+                                          : 'text-purple-600 shrink-0'
+                                      } />
+                                      {product.tagReview}
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-xs text-slate-400 font-mono">ID: {product._id.slice(-6).toUpperCase()}</p>
                                 <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-1 text-[10px] text-slate-500 font-semibold uppercase">
                                   <span>Size: {product.size || '-'}</span>

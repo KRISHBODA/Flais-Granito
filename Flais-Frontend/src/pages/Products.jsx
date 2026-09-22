@@ -951,32 +951,23 @@ const Products = () => {
                           />
                           <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors duration-300 pointer-events-none" />
                           
-                          {/* Badge: 3D Preview / Tile Face on hover */}
-                          <div className="absolute top-3 left-3 z-10 pointer-events-none">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-black/60 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-semibold text-white shadow-sm transition-all group-hover/card:bg-[#5D4037]/90">
-                              {product.has3dPreview === false ? (
-                                <span>Tile Face</span>
-                              ) : (
-                                <>
-                                  <span className="inline group-hover/card:hidden">3D Preview</span>
-                                  <span className="hidden group-hover/card:inline">Tile Face</span>
-                                </>
-                              )}
-                            </span>
-                          </div>
 
-                          {/* Multiple photos counter */}
-                          {product.images && product.images.length > 1 && (
-                            <div className="absolute bottom-3 right-3 z-10 pointer-events-none">
-                              <span className="rounded-full bg-white/90 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-zinc-700 shadow-2xs">
-                                +{product.images.length - 1} photos
-                              </span>
-                            </div>
-                          )}
                         </Link>
                         <div className="pt-6 px-2 flex flex-col flex-1">
-                          <div className="mb-2 flex items-center gap-2">
+                          <div className="mb-2 flex items-center gap-2 flex-wrap">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-[#5D4037] bg-[#5D4037]/5 px-2.5 py-0.5 rounded border border-[#5D4037]/10">{product.category || 'Standard'}</span>
+                            {product.tagReview && String(product.tagReview).trim() !== '' && (
+                              <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border ${
+                                /best\s*selling/i.test(product.tagReview)
+                                  ? 'bg-amber-500/10 text-amber-900 border-amber-500/30'
+                                  : /new\s*arrival/i.test(product.tagReview)
+                                  ? 'bg-emerald-500/10 text-emerald-900 border-emerald-500/30'
+                                  : 'bg-[#5D4037]/10 text-[#5D4037] border-[#5D4037]/20'
+                              }`}>
+                                {/best\s*selling/i.test(product.tagReview) ? '🔥 ' : /new\s*arrival/i.test(product.tagReview) ? '✨ ' : ''}
+                                {product.tagReview}
+                              </span>
+                            )}
                           </div>
                           <h3 className="font-sans font-bold text-2xl text-zinc-900 mb-6">
                             {product.title || product.name}

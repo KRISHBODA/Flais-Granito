@@ -72,6 +72,9 @@ const ProductDetails = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [mouseStartX, setMouseStartX] = useState(0);
+
   // Dynamic spec extraction from title / description
   const getProductSpecs = () => {
     if (!product) {
@@ -130,9 +133,6 @@ const ProductDetails = () => {
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
-
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const [mouseStartX, setMouseStartX] = useState(0);
 
   const minSwipeDistance = 40;
   const onTouchStart = (e) => {
@@ -222,23 +222,6 @@ const ProductDetails = () => {
               onMouseLeave={handleMouseLeave}
               className="relative aspect-[4/3] md:aspect-[1.1] lg:aspect-auto lg:h-[540px] w-full rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100 shadow-md group select-none"
             >
-              {/* Badge: 3D Preview (#1) vs Simple Tile JPG */}
-              {allImages.length > 0 && (
-                <div className="absolute top-4 left-4 z-20 pointer-events-none">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide shadow-md backdrop-blur-md transition-all ${
-                    product.has3dPreview !== false && currentImageIndex === 0
-                      ? 'bg-blue-600/90 text-white border border-blue-400/40'
-                      : 'bg-emerald-700/90 text-white border border-emerald-400/40'
-                  }`}>
-                    {product.has3dPreview !== false && currentImageIndex === 0
-                      ? '✨ 3D Room Preview (#1)'
-                      : product.has3dPreview !== false
-                      ? `Tile Face (JPG) • ${currentImageIndex} of ${allImages.length - 1}`
-                      : `Tile Face (JPG) • ${currentImageIndex + 1} of ${allImages.length}`}
-                  </span>
-                </div>
-              )}
-
               {/* Swipe Hint */}
               {allImages.length > 1 && (
                 <div className="absolute top-4 right-4 z-20 pointer-events-none">
@@ -300,7 +283,7 @@ const ProductDetails = () => {
               </div>
             </div>
 
-            {/* Thumbnail Strip: 3D Preview First (#1), then Simple Tile Photos (JPGs) */}
+            {/* Thumbnail Strip */}
             {allImages.length > 1 && (
               <div className="mt-4 flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
                 {allImages.map((img, idx) => (
@@ -310,19 +293,12 @@ const ProductDetails = () => {
                     onClick={() => setCurrentImageIndex(idx)}
                     className={`relative h-16 w-20 sm:h-20 sm:w-24 shrink-0 rounded-xl overflow-hidden transition-all ${
                       currentImageIndex === idx
-                        ? (product.has3dPreview !== false && idx === 0)
-                          ? 'ring-2 ring-[#0145F2] ring-offset-2 scale-102 shadow-md'
-                          : 'ring-2 ring-emerald-600 ring-offset-2 scale-102 shadow-md'
+                        ? 'ring-2 ring-[#5D4037] ring-offset-2 scale-102 shadow-md'
                         : 'opacity-60 hover:opacity-100 border border-zinc-200'
                     }`}
-                    title={product.has3dPreview !== false && idx === 0 ? '3D Preview (#1)' : `Tile Photo (JPG Face ${product.has3dPreview !== false ? idx : idx + 1})`}
+                    title={`Photo ${idx + 1}`}
                   >
                     <img src={img} alt={`Thumb ${idx + 1}`} className="h-full w-full object-cover" />
-                    <span className={`absolute bottom-0 inset-x-0 text-[9px] font-bold py-0.5 text-center text-white ${
-                      product.has3dPreview !== false && idx === 0 ? 'bg-[#0145F2]/90' : 'bg-emerald-700/90'
-                    }`}>
-                      {product.has3dPreview !== false && idx === 0 ? '3D Preview' : `JPG Face ${product.has3dPreview !== false ? idx : idx + 1}`}
-                    </span>
                   </button>
                 ))}
               </div>
