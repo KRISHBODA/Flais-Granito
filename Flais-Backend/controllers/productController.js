@@ -5,6 +5,92 @@ const MAX_PAGE_SIZE = 1000;
 const MAX_SEARCH_LENGTH = 100;
 const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+const SURFACES_BY_SIZE = {
+  "600x1200": ["Glossy", "High Glossy", "Carving", "Matt", "Satin Matt"],
+  "800x1600": ["Ligh Glass", "Dark Glass", "Glossy", "High Glossy", "Matt", "Carving"],
+  "1200x1800": [
+    "Light Polished", 
+    "Dark Polished", 
+    "Full Dark Polished", 
+    "Polished", 
+    "Liso", 
+    "Liso+Carving", 
+    "Marble Gloss", 
+    "Matt", 
+    "Carving"
+  ],
+  "1200x2400": [
+    "Light Polished", 
+    "Liso", 
+    "Liso+Carving",
+    "Glossy"
+  ],
+  "800x2400_Fullbody": [
+    "Polished",
+    "Matt",
+    "Liso",
+    "Carving"
+  ],
+  "800x2400_Colorbody": [
+    "Polished",
+    "Matt",
+    "Liso",
+    "Liso+Carving",
+    "Marble Gloss"
+  ]
+};
+
+const getSurfaceRegex = (token) => {
+  const clean = String(token).trim();
+  if (/liso\s*\+?\s*carving/i.test(clean) || /liso\s*\+\s*cr/i.test(clean)) {
+    return /(^|\s*\/\s*)(LISO\s*\+\s*(CARVING|CR))(\s*\/\s*|$)/i;
+  }
+  if (/ligh(t)?\s*polished/i.test(clean)) {
+    return /(^|\s*\/\s*)LIGHT\s*POLISHED(\s*\/\s*|$)/i;
+  }
+  if (/ligh(t)?\s*glass/i.test(clean)) {
+    return /(^|\s*\/\s*)LIGH(T)?\s*GLASS(\s*\/\s*|$)/i;
+  }
+  return new RegExp(`(^|\\s*\\/\\s*)${escapeRegExp(clean)}(\\s*\\/\\s*|$)`, "i");
+};
+
+const matchProductSize = (product, sizeKey) => {
+  if (!product || !product.size) return false;
+  const pSize = String(product.size).trim();
+  const target = String(sizeKey).trim();
+
+  // If sizeKey is 800x2400_Fullbody
+  if (/800.*2400.*full\s*body/i.test(target)) {
+    if (/800\s*x\s*2400[-_\s]*full\s*body/i.test(pSize)) return true;
+    if (/800\s*x\s*2400/i.test(pSize)) {
+      if (/full\s*body/i.test(product.color || "") || 
+          /full\s*body/i.test(product.category || "") ||
+          /full\s*body/i.test(product.title || "")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // If sizeKey is 800x2400_Colorbody
+  if (/800.*2400.*color\s*body/i.test(target)) {
+    if (/800\s*x\s*2400[-_\s]*color\s*body/i.test(pSize)) return true;
+    if (/800\s*x\s*2400/i.test(pSize)) {
+      if (/color\s*body/i.test(product.color || "") || 
+          /color\s*body/i.test(product.category || "") ||
+          /color\s*body/i.test(product.title || "")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // General sizes: 600x1200, 800x1600, 1200x1800, 1200x2400
+  const normP = pSize.toLowerCase().replace(/[-_\s]/g, "");
+  const normT = target.toLowerCase().replace(/[-_\s]/g, "");
+  return normP === normT;
+};
+
 // @desc    Create a product
 // @route   POST /api/products
 // @access  Private/Admin
@@ -81,7 +167,9 @@ exports.getProducts = async (req, res) => {
       filter360 = "all",
       filter3d = "all",
       filterTag = "all",
-      size = "All"
+      size = "All",
+      surface = "All",
+      finish = "All"
     } = req.query;
 
     const page = Math.max(1, Number(req.query.page) || 1);
@@ -108,8 +196,40 @@ exports.getProducts = async (req, res) => {
 
     // Size filter
     if (size && size !== "All" && size !== "all") {
+      const clean = String(size).trim();
+      if (/800.*2400.*full\s*body/i.test(clean)) {
+        andConditions.push({
+          $or: [
+            { size: { $regex: /^800\s*x\s*2400[-_\s]*full\s*body$/i } },
+            { size: { $regex: /^800\s*x\s*2400/i }, color: { $regex: /full\s*body/i } },
+            { size: { $regex: /^800\s*x\s*2400/i }, category: { $regex: /full\s*body/i } },
+            { size: { $regex: /^800\s*x\s*2400/i }, title: { $regex: /full\s*body/i } }
+          ]
+        });
+      } else if (/800.*2400.*color\s*body/i.test(clean)) {
+        andConditions.push({
+          $or: [
+            { size: { $regex: /^800\s*x\s*2400[-_\s]*color\s*body$/i } },
+            { size: { $regex: /^800\s*x\s*2400/i }, color: { $regex: /color\s*body/i } },
+            { size: { $regex: /^800\s*x\s*2400/i }, category: { $regex: /color\s*body/i } },
+            { size: { $regex: /^800\s*x\s*2400/i }, title: { $regex: /color\s*body/i } }
+          ]
+        });
+      } else {
+        andConditions.push({
+          size: { $regex: new RegExp(`^${escapeRegExp(clean).replace(/_/g, "[-_\\s]?")}$`, "i") }
+        });
+      }
+    }
+
+    // Surface / Finish filter
+    const chosenSurface = (surface && surface !== "All" && surface !== "all")
+      ? surface
+      : (finish && finish !== "All" && finish !== "all" ? finish : null);
+
+    if (chosenSurface) {
       andConditions.push({
-        size: { $regex: new RegExp(`^${escapeRegExp(String(size).trim())}$`, "i") }
+        finishes: { $regex: getSurfaceRegex(chosenSurface) }
       });
     }
 
@@ -185,7 +305,8 @@ exports.getProducts = async (req, res) => {
       distinctTags, 
       totalAll,
       distinctSizes,
-      sizeAgg
+      sizeAgg,
+      allProductsFinishes
     ] = await Promise.all([
       Product.countDocuments(query),
       Product.countDocuments({ link360: { $exists: true, $nin: ["", null, "null", "undefined"] } }),
@@ -199,13 +320,57 @@ exports.getProducts = async (req, res) => {
       Product.aggregate([
         { $match: { size: { $exists: true, $nin: ["", null] } } },
         { $group: { _id: "$size", count: { $sum: 1 } } }
-      ])
+      ]),
+      Product.find({}, { size: 1, finishes: 1, color: 1, category: 1, title: 1 })
     ]);
+
+    const KNOWN_SIZE_KEYS = Object.keys(SURFACES_BY_SIZE);
+    const combinedSizes = [...KNOWN_SIZE_KEYS];
+    for (const s of (distinctSizes || []).filter(Boolean)) {
+      if (!combinedSizes.some(cs => cs.toLowerCase() === s.toLowerCase())) {
+        combinedSizes.push(s);
+      }
+    }
+    combinedSizes.sort();
 
     const sizeCounts = (sizeAgg || []).reduce((acc, item) => {
       if (item._id) acc[item._id] = item.count;
       return acc;
     }, {});
+
+    for (const k of KNOWN_SIZE_KEYS) {
+      if (sizeCounts[k] === undefined) {
+        const existingKey = Object.keys(sizeCounts).find(ek => ek.toLowerCase() === k.toLowerCase());
+        if (existingKey) {
+          sizeCounts[k] = sizeCounts[existingKey];
+        } else {
+          sizeCounts[k] = 0;
+        }
+      }
+    }
+
+    const surfaceCounts = {
+      overall: {}
+    };
+
+    for (const sizeKey of KNOWN_SIZE_KEYS) {
+      surfaceCounts[sizeKey] = {};
+    }
+
+    for (const [sizeKey, surfaceList] of Object.entries(SURFACES_BY_SIZE)) {
+      for (const surf of surfaceList) {
+        const reg = getSurfaceRegex(surf);
+        const countForSize = (allProductsFinishes || []).filter(p => {
+          return matchProductSize(p, sizeKey) && reg.test(p.finishes || "");
+        }).length;
+        surfaceCounts[sizeKey][surf] = countForSize;
+
+        if (surfaceCounts.overall[surf] === undefined) {
+          const totalCount = (allProductsFinishes || []).filter(p => reg.test(p.finishes || "")).length;
+          surfaceCounts.overall[surf] = totalCount;
+        }
+      }
+    }
     
     let dbQuery = Product.find(query).sort({ createdAt: -1 });
     if (limit > 0) {
@@ -224,8 +389,10 @@ exports.getProducts = async (req, res) => {
       bestSellingCount,
       newArrivalCount,
       distinctTags: (distinctTags || []).filter(Boolean),
-      distinctSizes: (distinctSizes || []).filter(Boolean).sort(),
+      distinctSizes: combinedSizes,
       sizeCounts,
+      surfaceCounts,
+      surfacesBySize: SURFACES_BY_SIZE,
     };
 
     res.status(200).json({
@@ -235,7 +402,9 @@ exports.getProducts = async (req, res) => {
       totalPages: limit > 0 ? Math.ceil(totalProducts / limit) : 1,
       currentPage: Number(page),
       mediaStats,
-      sizes: (distinctSizes || []).filter(Boolean).sort(),
+      sizes: combinedSizes,
+      surfacesBySize: SURFACES_BY_SIZE,
+      surfaceCounts,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error", error: error.message });

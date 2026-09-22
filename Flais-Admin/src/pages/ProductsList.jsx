@@ -10,6 +10,68 @@ import toast from 'react-hot-toast';
 import CatalogFilters from './CatalogFilters.jsx';
 import { getImageUrl } from '../utils/api';
 
+const SURFACES_BY_SIZE = {
+  "1200x2400": [
+    "Light Polished", 
+    "Liso", 
+    "Liso+Carving",
+    "Glossy"
+  ],
+  "800x2400_Fullbody": [
+    "Polished",
+    "Matt",
+    "Liso",
+    "Carving"
+  ],
+  "800x2400_Colorbody": [
+    "Polished",
+    "Matt",
+    "Liso",
+    "Liso+Carving",
+    "Marble Gloss"
+  ],
+  "1200x1800": [
+    "Light Polished", 
+    "Dark Polished", 
+    "Full Dark Polished", 
+    "Polished", 
+    "Liso", 
+    "Liso+Carving", 
+    "Marble Gloss", 
+    "Matt", 
+    "Carving"
+  ],
+  "800x1600": ["Ligh Glass", "Dark Glass", "Glossy", "High Glossy", "Matt", "Carving"],
+  "600x1200": ["Glossy", "High Glossy", "Carving", "Matt", "Satin Matt"]
+};
+
+const normalizeSizeKey = (s) => {
+  if (!s) return '';
+  return String(s).toLowerCase().replace(/[-_\s]+/g, '_');
+};
+
+const getSurfacesForSize = (sizeStr) => {
+  if (!sizeStr || sizeStr === 'All') return [];
+  const norm = normalizeSizeKey(sizeStr);
+  if (SURFACES_BY_SIZE[norm]) return SURFACES_BY_SIZE[norm];
+  for (const [key, list] of Object.entries(SURFACES_BY_SIZE)) {
+    if (normalizeSizeKey(key) === norm) return list;
+  }
+  if (/800.*2400.*full.*body/i.test(sizeStr)) {
+    return SURFACES_BY_SIZE["800x2400_Fullbody"] || [];
+  }
+  if (/800.*2400.*color.*body/i.test(sizeStr)) {
+    return SURFACES_BY_SIZE["800x2400_Colorbody"] || [];
+  }
+  const cleanNum = sizeStr.toLowerCase().replace(/[^0-9x]/g, '');
+  for (const [key, list] of Object.entries(SURFACES_BY_SIZE)) {
+    if (key.toLowerCase().replace(/[^0-9x]/g, '') === cleanNum && !key.includes('_')) {
+      return list;
+    }
+  }
+  return [];
+};
+
 const ProductsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
@@ -53,6 +115,7 @@ const ProductsList = () => {
   const getInitialFilters = () => {
     const urlCategory = searchParams.get('category');
     const urlSize = searchParams.get('size');
+    const urlSurface = searchParams.get('surface') || searchParams.get('finish');
     const urlSearch = searchParams.get('search');
     const urlPage = searchParams.get('page');
     const urlTab = searchParams.get('tab');
@@ -63,6 +126,7 @@ const ProductsList = () => {
     if (
       urlCategory !== null || 
       urlSize !== null ||
+      urlSurface !== null ||
       urlSearch !== null || 
       urlPage !== null || 
       urlTab !== null || 
@@ -73,6 +137,7 @@ const ProductsList = () => {
       return {
         category: urlCategory || 'All',
         size: urlSize || 'All',
+        surface: urlSurface || 'All',
         search: urlSearch || '',
         page: urlPage ? parseInt(urlPage, 10) || 1 : 1,
         tab: urlTab || 'inventory',
@@ -89,6 +154,7 @@ const ProductsList = () => {
         return {
           category: parsed.category || 'All',
           size: parsed.size || 'All',
+          surface: parsed.surface || 'All',
           search: parsed.search || '',
           page: parsed.page || 1,
           tab: parsed.tab || 'inventory',
@@ -102,6 +168,7 @@ const ProductsList = () => {
     return { 
       category: 'All', 
       size: 'All',
+      surface: 'All',
       search: '', 
       page: 1, 
       tab: 'inventory', 
@@ -118,6 +185,7 @@ const ProductsList = () => {
   const [searchTerm, setSearchTerm] = useState(initialFilters.search);
   const [selectedCategory, setSelectedCategory] = useState(initialFilters.category);
   const [selectedSize, setSelectedSize] = useState(initialFilters.size);
+  const [selectedSurface, setSelectedSurface] = useState(initialFilters.surface);
   const [filter360, setFilter360] = useState(initialFilters.filter360);
   const [filter3d, setFilter3d] = useState(initialFilters.filter3d);
   const [filterTag, setFilterTag] = useState(initialFilters.filterTag);
@@ -127,12 +195,86 @@ const ProductsList = () => {
     totalPages: 1
   });
 
+  // When size changes, reset surface if the previously selected surface does not exist in the new size
+  const handleSizeChange = (newSize) => {
+    setSelectedSize(newSize);
+    setCurrentPage(1);
+    if (newSize !== 'All' && selectedSurface !== 'All') {
+      const allowed = getSurfacesForSize(newSize);
+      if (!allowed.includes(selectedSurface)) {
+        setSelectedSurface('All');
+      }
+    }
+  };
+
+  const allUniqueSurfaces = useMemo(() => {
+    const list = [
+      "Light Polished",
+      "Liso",
+      "Liso+Carving",
+      "Polished",
+      "Matt",
+      "Carving",
+      "Marble Gloss",
+      "Glossy",
+      "High Glossy",
+      "Satin Matt",
+      "Ligh Glass",
+      "Dark Glass",
+      "Dark Polished",
+      "Full Dark Polished"
+    ];
+    Object.values(SURFACES_BY_SIZE).forEach(surfs => {
+      surfs.forEach(s => {
+        if (!list.includes(s)) list.push(s);
+      });
+    });
+    return list;
+  }, []);
+
+  const availableSizes = useMemo(() => {
+    const defaultSizes = Object.keys(SURFACES_BY_SIZE);
+    const backendSizes = mediaStats?.distinctSizes || [];
+    const list = [...defaultSizes];
+    for (const bs of backendSizes) {
+      if (!list.some(s => normalizeSizeKey(s) === normalizeSizeKey(bs))) {
+        list.push(bs);
+      }
+    }
+    return list;
+  }, [mediaStats?.distinctSizes]);
+
+  const getSizeCount = (s) => {
+    if (!mediaStats?.sizeCounts) return 0;
+    if (mediaStats.sizeCounts[s] !== undefined) return mediaStats.sizeCounts[s];
+    const key = Object.keys(mediaStats.sizeCounts).find(k => normalizeSizeKey(k) === normalizeSizeKey(s));
+    return key ? mediaStats.sizeCounts[key] : 0;
+  };
+
+  const getSurfaceCount = (sizeKey, surf) => {
+    if (!mediaStats?.surfaceCounts) return 0;
+    if (sizeKey && sizeKey !== 'All') {
+      if (mediaStats.surfaceCounts[sizeKey]?.[surf] !== undefined) {
+        return mediaStats.surfaceCounts[sizeKey][surf];
+      }
+      const norm = normalizeSizeKey(sizeKey);
+      for (const [k, obj] of Object.entries(mediaStats.surfaceCounts)) {
+        if (normalizeSizeKey(k) === norm && obj?.[surf] !== undefined) {
+          return obj[surf];
+        }
+      }
+      return 0;
+    }
+    return mediaStats.surfaceCounts.overall?.[surf] ?? 0;
+  };
+
   // Sync state to URL search parameters & sessionStorage
   useEffect(() => {
     const params = new URLSearchParams();
     if (activeTab !== 'inventory') params.set('tab', activeTab);
     if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory);
     if (selectedSize && selectedSize !== 'All') params.set('size', selectedSize);
+    if (selectedSurface && selectedSurface !== 'All') params.set('surface', selectedSurface);
     if (searchTerm) params.set('search', searchTerm);
     if (filter360 && filter360 !== 'all') params.set('filter360', filter360);
     if (filter3d && filter3d !== 'all') params.set('filter3d', filter3d);
@@ -147,6 +289,7 @@ const ProductsList = () => {
       sessionStorage.setItem('admin_products_filter', JSON.stringify({
         category: selectedCategory,
         size: selectedSize,
+        surface: selectedSurface,
         search: searchTerm,
         page: currentPage,
         tab: activeTab,
@@ -155,12 +298,13 @@ const ProductsList = () => {
         filterTag
       }));
     } catch (e) {}
-  }, [activeTab, selectedCategory, selectedSize, searchTerm, currentPage, filter360, filter3d, filterTag]);
+  }, [activeTab, selectedCategory, selectedSize, selectedSurface, searchTerm, currentPage, filter360, filter3d, filterTag]);
 
   // Handle browser Back / Forward history navigation
   useEffect(() => {
     const urlCategory = searchParams.get('category') || 'All';
     const urlSize = searchParams.get('size') || 'All';
+    const urlSurface = searchParams.get('surface') || searchParams.get('finish') || 'All';
     const urlSearch = searchParams.get('search') || '';
     const urlPage = searchParams.get('page') ? parseInt(searchParams.get('page'), 10) || 1 : 1;
     const urlTab = searchParams.get('tab') || 'inventory';
@@ -170,6 +314,7 @@ const ProductsList = () => {
 
     setSelectedCategory(prev => prev !== urlCategory ? urlCategory : prev);
     setSelectedSize(prev => prev !== urlSize ? urlSize : prev);
+    setSelectedSurface(prev => prev !== urlSurface ? urlSurface : prev);
     setSearchTerm(prev => prev !== urlSearch ? urlSearch : prev);
     setCurrentPage(prev => prev !== urlPage ? urlPage : prev);
     setActiveTab(prev => prev !== urlTab ? urlTab : prev);
@@ -181,6 +326,7 @@ const ProductsList = () => {
   const isFiltered = (
     selectedCategory !== 'All' || 
     (selectedSize && selectedSize !== 'All') ||
+    (selectedSurface && selectedSurface !== 'All') ||
     Boolean(searchTerm) || 
     filter360 !== 'all' || 
     filter3d !== 'all' ||
@@ -190,6 +336,7 @@ const ProductsList = () => {
   const activeFilterCount = [
     selectedCategory !== 'All',
     selectedSize && selectedSize !== 'All',
+    selectedSurface && selectedSurface !== 'All',
     Boolean(searchTerm),
     filter360 !== 'all',
     filter3d !== 'all',
@@ -199,6 +346,7 @@ const ProductsList = () => {
   const handleClearFilters = () => {
     setSelectedCategory('All');
     setSelectedSize('All');
+    setSelectedSurface('All');
     setSearchTerm('');
     setFilter360('all');
     setFilter3d('all');
@@ -239,6 +387,7 @@ const ProductsList = () => {
           search: searchTerm,
           category: selectedCategory,
           size: selectedSize,
+          surface: selectedSurface,
           filter360,
           filter3d,
           filterTag
@@ -260,14 +409,14 @@ const ProductsList = () => {
     }
   };
 
-  // Re-fetch when page, category, size, search, or media filters change
+  // Re-fetch when page, category, size, surface, search, or media filters change
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchProducts();
     }, 400); // 400ms debounce for search
 
     return () => clearTimeout(delayDebounceFn);
-  }, [currentPage, selectedCategory, selectedSize, searchTerm, filter360, filter3d, filterTag]);
+  }, [currentPage, selectedCategory, selectedSize, selectedSurface, searchTerm, filter360, filter3d, filterTag]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -425,15 +574,66 @@ const ProductsList = () => {
                 <Ruler size={15} className={selectedSize && selectedSize !== 'All' ? 'text-indigo-600' : 'text-slate-400'} />
                 <select
                   value={selectedSize}
-                  onChange={(e) => { setSelectedSize(e.target.value); setCurrentPage(1); }}
+                  onChange={(e) => handleSizeChange(e.target.value)}
                   className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
                   <option value="All">All Sizes</option>
-                  {mediaStats?.distinctSizes && mediaStats.distinctSizes.map((s) => (
+                  {availableSizes.map((s) => (
                     <option key={s} value={s}>
-                      {s} {mediaStats?.sizeCounts?.[s] ? `(${mediaStats.sizeCounts[s]})` : ''}
+                      {s} ({getSizeCount(s)})
                     </option>
                   ))}
+                </select>
+              </div>
+
+              {/* Surface / Finish Filter Dropdown */}
+              <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors shrink-0 ${
+                selectedSurface && selectedSurface !== 'All' 
+                  ? 'border-teal-300 bg-teal-50 text-teal-900 shadow-sm' 
+                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+              }`}>
+                <Layers size={15} className={selectedSurface && selectedSurface !== 'All' ? 'text-teal-600' : 'text-slate-400'} />
+                <select
+                  value={selectedSurface}
+                  onChange={(e) => { setSelectedSurface(e.target.value); setCurrentPage(1); }}
+                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
+                >
+                  <option value="All">All Surfaces</option>
+                  {selectedSize && selectedSize !== 'All' ? (
+                    getSurfacesForSize(selectedSize).map((surf) => {
+                      const count = getSurfaceCount(selectedSize, surf);
+                      return (
+                        <option key={surf} value={surf}>
+                          {surf} ({count})
+                        </option>
+                      );
+                    })
+                  ) : (
+                    <>
+                      <optgroup label="✨ All Surfaces (Catalog Total)">
+                        {allUniqueSurfaces.map((surf) => {
+                          const count = getSurfaceCount(null, surf);
+                          return (
+                            <option key={`all-${surf}`} value={surf}>
+                              {surf} ({count})
+                            </option>
+                          );
+                        })}
+                      </optgroup>
+                      {Object.entries(SURFACES_BY_SIZE).map(([sizeKey, list]) => (
+                        <optgroup key={sizeKey} label={`${sizeKey} Surfaces`}>
+                          {list.map((surf) => {
+                            const count = getSurfaceCount(sizeKey, surf);
+                            return (
+                              <option key={`${sizeKey}-${surf}`} value={surf}>
+                                {surf} ({count})
+                              </option>
+                            );
+                          })}
+                        </optgroup>
+                      ))}
+                    </>
+                  )}
                 </select>
               </div>
 
@@ -625,7 +825,7 @@ const ProductsList = () => {
                                   <span>•</span>
                                   <span>Thick: {product.thickness || '-'}</span>
                                   <span>•</span>
-                                  <span>Finish: {product.finishes || '-'}</span>
+                                  <span>Surface: {product.finishes || '-'}</span>
                                   <span>•</span>
                                   <span>Body: {product.color || '-'}</span>
                                 </div>
