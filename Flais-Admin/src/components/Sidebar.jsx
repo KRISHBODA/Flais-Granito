@@ -13,7 +13,8 @@ import {
   Info,
   MapPin,
   Trophy,
-  BarChart3
+  BarChart3,
+  FolderTree
 } from 'lucide-react';
 import toast from 'react-hot-toast'; // Optional: for a nice notification
 
@@ -27,7 +28,8 @@ const navItems = [
   { name: 'Contact', path: '/admin/messages', icon: MessageSquare },
   { name: 'Blog', path: '/admin/blogs', icon: FileText },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
-    { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
+  { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
+  { name: 'Website Files', path: '/admin/website-files', icon: FolderTree },
 
 ];
 

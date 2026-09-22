@@ -48,6 +48,7 @@ const InstallationGuide = lazyWithRetry(() => import('./pages/InstallationGuide'
 const TileCalculator = lazyWithRetry(() => import('./pages/TileCalculator'));
 const Scan = lazyWithRetry(() => import('./pages/Scan'));
 const CountertopSmartpage = lazyWithRetry(() => import('./pages/CountertopSmartpage'));
+const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
 import ComingSoon from './pages/ComingSoon';
 
@@ -99,6 +100,7 @@ function App() {
                 <Route path="/scan" element={<Scan />} />
                 <Route path="/box-countertop-15mm-english" element={<CountertopSmartpage />} />
                 <Route path="/box-countertop-15mm" element={<CountertopSmartpage />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </Layout>

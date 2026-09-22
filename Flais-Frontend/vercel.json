@@ -15,6 +15,10 @@
   ],
   "rewrites": [
     {
+      "source": "/(.*\\.(pdf|jpg|jpeg|png|gif|mp4|zip|rar|csv|xlsx|docx))$",
+      "destination": "https://flaisbackend.onrender.com/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

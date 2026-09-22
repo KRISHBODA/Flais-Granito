@@ -105,9 +105,12 @@ const staticOptions = {
 
 app.use("/media", express.static(path.join(__dirname, "uploads"), staticOptions));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), staticOptions));
+app.use("/api/website-content", express.static(path.join(__dirname, "website-content"), staticOptions));
 
 // Routes
 app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/admin/website-nodes", require("./routes/websiteNodeRoutes"));
+app.use("/api/public/website-nodes", require("./routes/publicWebsiteNodeRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/blogs", require("./routes/blogRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));
