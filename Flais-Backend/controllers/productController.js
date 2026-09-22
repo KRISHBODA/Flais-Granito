@@ -80,7 +80,8 @@ exports.getProducts = async (req, res) => {
       limit: queryLimit,
       filter360 = "all",
       filter3d = "all",
-      filterTag = "all"
+      filterTag = "all",
+      size = "All"
     } = req.query;
 
     const page = Math.max(1, Number(req.query.page) || 1);
@@ -103,6 +104,13 @@ exports.getProducts = async (req, res) => {
 
     if (category && category !== "All" && category !== "All Categories") {
       andConditions.push({ category });
+    }
+
+    // Size filter
+    if (size && size !== "All" && size !== "all") {
+      andConditions.push({
+        size: { $regex: new RegExp(`^${escapeRegExp(String(size).trim())}$`, "i") }
+      });
     }
 
     // 360 Link filter: uploaded vs missing
@@ -175,7 +183,9 @@ exports.getProducts = async (req, res) => {
       bestSellingCount,
       newArrivalCount,
       distinctTags, 
-      totalAll
+      totalAll,
+      distinctSizes,
+      sizeAgg
     ] = await Promise.all([
       Product.countDocuments(query),
       Product.countDocuments({ link360: { $exists: true, $nin: ["", null, "null", "undefined"] } }),
@@ -185,7 +195,17 @@ exports.getProducts = async (req, res) => {
       Product.countDocuments({ tagReview: { $regex: /new\s*arrival/i } }),
       Product.distinct("tagReview", { tagReview: { $exists: true, $nin: ["", null, "null", "undefined"] } }),
       Product.countDocuments({}),
+      Product.distinct("size", { size: { $exists: true, $nin: ["", null] } }),
+      Product.aggregate([
+        { $match: { size: { $exists: true, $nin: ["", null] } } },
+        { $group: { _id: "$size", count: { $sum: 1 } } }
+      ])
     ]);
+
+    const sizeCounts = (sizeAgg || []).reduce((acc, item) => {
+      if (item._id) acc[item._id] = item.count;
+      return acc;
+    }, {});
     
     let dbQuery = Product.find(query).sort({ createdAt: -1 });
     if (limit > 0) {
@@ -204,6 +224,8 @@ exports.getProducts = async (req, res) => {
       bestSellingCount,
       newArrivalCount,
       distinctTags: (distinctTags || []).filter(Boolean),
+      distinctSizes: (distinctSizes || []).filter(Boolean).sort(),
+      sizeCounts,
     };
 
     res.status(200).json({
@@ -213,6 +235,7 @@ exports.getProducts = async (req, res) => {
       totalPages: limit > 0 ? Math.ceil(totalProducts / limit) : 1,
       currentPage: Number(page),
       mediaStats,
+      sizes: (distinctSizes || []).filter(Boolean).sort(),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error", error: error.message });

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
   Plus, Search, Filter, MoreVertical, Edit, Trash2, ChevronLeft, ChevronRight, 
   Layers, FileText, Package, Save, X, Compass, Sparkles, Images, AlertCircle, 
-  ExternalLink, CheckCircle2, Tag 
+  ExternalLink, CheckCircle2, Tag, Ruler 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CatalogFilters from './CatalogFilters.jsx';
@@ -52,6 +52,7 @@ const ProductsList = () => {
   // Read initial filter values from URL first, fallback to sessionStorage
   const getInitialFilters = () => {
     const urlCategory = searchParams.get('category');
+    const urlSize = searchParams.get('size');
     const urlSearch = searchParams.get('search');
     const urlPage = searchParams.get('page');
     const urlTab = searchParams.get('tab');
@@ -61,6 +62,7 @@ const ProductsList = () => {
 
     if (
       urlCategory !== null || 
+      urlSize !== null ||
       urlSearch !== null || 
       urlPage !== null || 
       urlTab !== null || 
@@ -70,6 +72,7 @@ const ProductsList = () => {
     ) {
       return {
         category: urlCategory || 'All',
+        size: urlSize || 'All',
         search: urlSearch || '',
         page: urlPage ? parseInt(urlPage, 10) || 1 : 1,
         tab: urlTab || 'inventory',
@@ -85,6 +88,7 @@ const ProductsList = () => {
         const parsed = JSON.parse(saved);
         return {
           category: parsed.category || 'All',
+          size: parsed.size || 'All',
           search: parsed.search || '',
           page: parsed.page || 1,
           tab: parsed.tab || 'inventory',
@@ -97,6 +101,7 @@ const ProductsList = () => {
 
     return { 
       category: 'All', 
+      size: 'All',
       search: '', 
       page: 1, 
       tab: 'inventory', 
@@ -112,6 +117,7 @@ const ProductsList = () => {
   const [activeTab, setActiveTab] = useState(initialFilters.tab);
   const [searchTerm, setSearchTerm] = useState(initialFilters.search);
   const [selectedCategory, setSelectedCategory] = useState(initialFilters.category);
+  const [selectedSize, setSelectedSize] = useState(initialFilters.size);
   const [filter360, setFilter360] = useState(initialFilters.filter360);
   const [filter3d, setFilter3d] = useState(initialFilters.filter3d);
   const [filterTag, setFilterTag] = useState(initialFilters.filterTag);
@@ -126,6 +132,7 @@ const ProductsList = () => {
     const params = new URLSearchParams();
     if (activeTab !== 'inventory') params.set('tab', activeTab);
     if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory);
+    if (selectedSize && selectedSize !== 'All') params.set('size', selectedSize);
     if (searchTerm) params.set('search', searchTerm);
     if (filter360 && filter360 !== 'all') params.set('filter360', filter360);
     if (filter3d && filter3d !== 'all') params.set('filter3d', filter3d);
@@ -139,6 +146,7 @@ const ProductsList = () => {
     try {
       sessionStorage.setItem('admin_products_filter', JSON.stringify({
         category: selectedCategory,
+        size: selectedSize,
         search: searchTerm,
         page: currentPage,
         tab: activeTab,
@@ -147,11 +155,12 @@ const ProductsList = () => {
         filterTag
       }));
     } catch (e) {}
-  }, [activeTab, selectedCategory, searchTerm, currentPage, filter360, filter3d, filterTag]);
+  }, [activeTab, selectedCategory, selectedSize, searchTerm, currentPage, filter360, filter3d, filterTag]);
 
   // Handle browser Back / Forward history navigation
   useEffect(() => {
     const urlCategory = searchParams.get('category') || 'All';
+    const urlSize = searchParams.get('size') || 'All';
     const urlSearch = searchParams.get('search') || '';
     const urlPage = searchParams.get('page') ? parseInt(searchParams.get('page'), 10) || 1 : 1;
     const urlTab = searchParams.get('tab') || 'inventory';
@@ -160,6 +169,7 @@ const ProductsList = () => {
     const urlFilterTag = searchParams.get('filterTag') || 'all';
 
     setSelectedCategory(prev => prev !== urlCategory ? urlCategory : prev);
+    setSelectedSize(prev => prev !== urlSize ? urlSize : prev);
     setSearchTerm(prev => prev !== urlSearch ? urlSearch : prev);
     setCurrentPage(prev => prev !== urlPage ? urlPage : prev);
     setActiveTab(prev => prev !== urlTab ? urlTab : prev);
@@ -170,6 +180,7 @@ const ProductsList = () => {
 
   const isFiltered = (
     selectedCategory !== 'All' || 
+    (selectedSize && selectedSize !== 'All') ||
     Boolean(searchTerm) || 
     filter360 !== 'all' || 
     filter3d !== 'all' ||
@@ -178,6 +189,7 @@ const ProductsList = () => {
 
   const activeFilterCount = [
     selectedCategory !== 'All',
+    selectedSize && selectedSize !== 'All',
     Boolean(searchTerm),
     filter360 !== 'all',
     filter3d !== 'all',
@@ -186,6 +198,7 @@ const ProductsList = () => {
 
   const handleClearFilters = () => {
     setSelectedCategory('All');
+    setSelectedSize('All');
     setSearchTerm('');
     setFilter360('all');
     setFilter3d('all');
@@ -225,6 +238,7 @@ const ProductsList = () => {
           page: currentPage,
           search: searchTerm,
           category: selectedCategory,
+          size: selectedSize,
           filter360,
           filter3d,
           filterTag
@@ -246,14 +260,14 @@ const ProductsList = () => {
     }
   };
 
-  // Re-fetch when page, category, search, or media filters change
+  // Re-fetch when page, category, size, search, or media filters change
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchProducts();
     }, 400); // 400ms debounce for search
 
     return () => clearTimeout(delayDebounceFn);
-  }, [currentPage, selectedCategory, searchTerm, filter360, filter3d, filterTag]);
+  }, [currentPage, selectedCategory, selectedSize, searchTerm, filter360, filter3d, filterTag]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -338,29 +352,62 @@ const ProductsList = () => {
       {activeTab === 'inventory' && (
         <>
           {/* Search & Media Filter Controls */}
-          <div className="rounded-2xl bg-white p-4 shadow-sm">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-              {/* Search Bar */}
-              <div className="relative flex-1">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+          <div className="rounded-2xl bg-white p-4 shadow-sm space-y-3.5">
+            {/* Top Row: Search Input + Clear Button */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="relative flex-1 max-w-2xl">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                   <Search size={18} />
                 </span>
                 <input
                   type="text"
-                  placeholder="Search by tile title or ID..."
+                  placeholder="Search by tile title, size, or ID..."
                   value={searchTerm}
                   onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm focus:border-[#0145F2] focus:outline-none transition-colors"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-sm focus:border-[#0145F2] focus:bg-white focus:outline-none transition-all"
                 />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchTerm(''); setCurrentPage(1); }}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 transition-colors"
+                    title="Clear search"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {isFiltered && (
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition-colors shrink-0 shadow-sm"
+                  title="Reset all filters"
+                >
+                  <X size={14} /> Clear All Filters ({activeFilterCount})
+                </button>
+              )}
+            </div>
+
+            {/* Bottom Row: Filter Dropdowns */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-slate-100">
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 mr-1 shrink-0">
+                <Filter size={13} className="text-slate-400" />
+                <span>Filters:</span>
               </div>
 
               {/* Collection Dropdown */}
-              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 shrink-0">
-                <Filter size={16} className="text-slate-400 shrink-0" />
+              <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors shrink-0 ${
+                selectedCategory !== 'All'
+                  ? 'border-blue-300 bg-blue-50 text-blue-900 shadow-sm'
+                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+              }`}>
+                <Filter size={15} className={selectedCategory !== 'All' ? 'text-blue-600' : 'text-slate-400'} />
                 <select
                   value={selectedCategory}
                   onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
-                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-2"
+                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
                   <option value="All">All Collections</option>
                   {categories.map(cat => (
@@ -369,17 +416,38 @@ const ProductsList = () => {
                 </select>
               </div>
 
+              {/* Size Filter Dropdown */}
+              <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors shrink-0 ${
+                selectedSize && selectedSize !== 'All' 
+                  ? 'border-indigo-300 bg-indigo-50 text-indigo-900 shadow-sm' 
+                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+              }`}>
+                <Ruler size={15} className={selectedSize && selectedSize !== 'All' ? 'text-indigo-600' : 'text-slate-400'} />
+                <select
+                  value={selectedSize}
+                  onChange={(e) => { setSelectedSize(e.target.value); setCurrentPage(1); }}
+                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
+                >
+                  <option value="All">All Sizes</option>
+                  {mediaStats?.distinctSizes && mediaStats.distinctSizes.map((s) => (
+                    <option key={s} value={s}>
+                      {s} {mediaStats?.sizeCounts?.[s] ? `(${mediaStats.sizeCounts[s]})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* 360° View Filter Dropdown */}
               <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors shrink-0 ${
                 filter360 !== 'all' 
-                  ? filter360 === 'uploaded' ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-rose-300 bg-rose-50 text-rose-800'
-                  : 'border-slate-200 bg-slate-50 text-slate-700'
+                  ? filter360 === 'uploaded' ? 'border-emerald-300 bg-emerald-50 text-emerald-800 shadow-sm' : 'border-rose-300 bg-rose-50 text-rose-800 shadow-sm'
+                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
               }`}>
-                <Compass size={16} className={filter360 !== 'all' ? (filter360 === 'uploaded' ? 'text-emerald-600' : 'text-rose-600') : 'text-slate-400'} />
+                <Compass size={15} className={filter360 !== 'all' ? (filter360 === 'uploaded' ? 'text-emerald-600' : 'text-rose-600') : 'text-slate-400'} />
                 <select
                   value={filter360}
                   onChange={(e) => { setFilter360(e.target.value); setCurrentPage(1); }}
-                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-2"
+                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
                   <option value="all">360° Link: All</option>
                   <option value="uploaded">🌐 360° Uploaded ({mediaStats?.has360Count ?? '...'})</option>
@@ -390,14 +458,14 @@ const ProductsList = () => {
               {/* 3D Preview Filter Dropdown */}
               <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors shrink-0 ${
                 filter3d !== 'all' 
-                  ? filter3d === 'uploaded' ? 'border-blue-300 bg-blue-50 text-blue-800' : 'border-amber-300 bg-amber-50 text-amber-800'
-                  : 'border-slate-200 bg-slate-50 text-slate-700'
+                  ? filter3d === 'uploaded' ? 'border-blue-300 bg-blue-50 text-blue-800 shadow-sm' : 'border-amber-300 bg-amber-50 text-amber-800 shadow-sm'
+                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
               }`}>
-                <Sparkles size={16} className={filter3d !== 'all' ? (filter3d === 'uploaded' ? 'text-blue-600' : 'text-amber-600') : 'text-slate-400'} />
+                <Sparkles size={15} className={filter3d !== 'all' ? (filter3d === 'uploaded' ? 'text-blue-600' : 'text-amber-600') : 'text-slate-400'} />
                 <select
                   value={filter3d}
                   onChange={(e) => { setFilter3d(e.target.value); setCurrentPage(1); }}
-                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-2"
+                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
                   <option value="all">3D Preview: All</option>
                   <option value="uploaded">✨ 3D Uploaded ({mediaStats?.has3dCount ?? '...'})</option>
@@ -409,15 +477,15 @@ const ProductsList = () => {
               <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors shrink-0 ${
                 filterTag !== 'all' 
                   ? /best\s*selling/i.test(filterTag)
-                    ? 'border-amber-300 bg-amber-50 text-amber-900'
+                    ? 'border-amber-300 bg-amber-50 text-amber-900 shadow-sm'
                     : /new\s*arrival/i.test(filterTag)
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900 shadow-sm'
                     : filterTag === 'missing'
-                    ? 'border-rose-300 bg-rose-50 text-rose-800'
-                    : 'border-purple-300 bg-purple-50 text-purple-800'
-                  : 'border-slate-200 bg-slate-50 text-slate-700'
+                    ? 'border-rose-300 bg-rose-50 text-rose-800 shadow-sm'
+                    : 'border-purple-300 bg-purple-50 text-purple-800 shadow-sm'
+                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
               }`}>
-                <Tag size={16} className={
+                <Tag size={15} className={
                   filterTag !== 'all' 
                     ? /best\s*selling/i.test(filterTag)
                       ? 'text-amber-600'
@@ -431,7 +499,7 @@ const ProductsList = () => {
                 <select
                   value={filterTag}
                   onChange={(e) => { setFilterTag(e.target.value); setCurrentPage(1); }}
-                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-2"
+                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
                   <option value="all">Tag/Review: All</option>
                   <option value="Best Selling">🔥 Best Selling ({mediaStats?.bestSellingCount ?? 0})</option>
@@ -449,18 +517,6 @@ const ProductsList = () => {
                   )}
                 </select>
               </div>
-
-              {/* Clear All Filters */}
-              {isFiltered && (
-                <button
-                  type="button"
-                  onClick={handleClearFilters}
-                  className="flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition-colors shrink-0"
-                  title="Reset all filters"
-                >
-                  <X size={14} /> Clear ({activeFilterCount})
-                </button>
-              )}
             </div>
           </div>
 
