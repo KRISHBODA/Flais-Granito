@@ -280,10 +280,9 @@ const WebsiteFileManager = () => {
   };
 
   const handleShare = (node) => {
-    // Generate clean link using the frontend domain
-    const baseUrl = window.location.origin;
+    // Generate link using the backend API route where it's actually hosted
     const relativePath = node.relativePath.startsWith('/') ? node.relativePath.slice(1) : node.relativePath;
-    const shareUrl = `${baseUrl}/${relativePath}`;
+    const shareUrl = `${API}/api/website-content/${relativePath}`;
     
     navigator.clipboard.writeText(shareUrl)
       .then(() => toast.success('Link copied to clipboard!'))
