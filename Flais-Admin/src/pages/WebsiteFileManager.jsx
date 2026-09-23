@@ -27,6 +27,7 @@ const WebsiteFileManager = () => {
   const [targetParentId, setTargetParentId] = useState('');
   const [allFolders, setAllFolders] = useState([]);
   const [uploadFile, setUploadFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Tree state
   const [treeExpanded, setTreeExpanded] = useState(new Set([null]));
@@ -169,8 +170,9 @@ const WebsiteFileManager = () => {
 
   const handleUploadFile = async (e) => {
     e.preventDefault();
-    if (!uploadFile) return;
+    if (!uploadFile || isUploading) return;
 
+    setIsUploading(true);
     const formData = new FormData();
     formData.append('file', uploadFile);
     if (currentNodeId) {
@@ -192,6 +194,8 @@ const WebsiteFileManager = () => {
       fetchNodes(currentNodeId);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to upload file');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -576,8 +580,8 @@ const WebsiteFileManager = () => {
                 <button type="button" onClick={() => {setShowUploadFile(false); setUploadFile(null);}} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={!uploadFile} className="px-4 py-2 text-sm font-medium text-white bg-[#0145F2] hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50">
-                  Upload File
+                <button type="submit" disabled={!uploadFile || isUploading} className="px-4 py-2 text-sm font-medium text-white bg-[#0145F2] hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50">
+                  {isUploading ? 'Uploading...' : 'Upload File'}
                 </button>
               </div>
             </form>

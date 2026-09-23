@@ -94,7 +94,10 @@ class WebsiteNodeService {
       await node.save();
       return node;
     } catch (dbError) {
-      // Rollback physical creation if it was empty (we won't delete recursively if it somehow existed before, but rmdir is safe for empty)
+      // Rollback physical creation only if it's not a duplicate key error
+      if (dbError.code === 11000) {
+        throw new Error(`A node with name ${name} already exists in this folder.`);
+      }
       try {
         await websiteFileSystemProvider.deleteRecursive(relativePath);
       } catch (e) {
@@ -139,7 +142,10 @@ class WebsiteNodeService {
       await node.save();
       return node;
     } catch (dbError) {
-      // Rollback physical file
+      // Rollback physical file only if it's not a duplicate key error
+      if (dbError.code === 11000) {
+        throw new Error(`A node with name ${name} already exists in this folder.`);
+      }
       try {
         await websiteFileSystemProvider.deleteRecursive(relativePath);
       } catch (e) {
