@@ -333,22 +333,76 @@ exports.getProducts = async (req, res) => {
     }
     combinedSizes.sort();
 
-    const sizeCounts = (sizeAgg || []).reduce((acc, item) => {
-      if (item._id) acc[item._id] = item.count;
-      return acc;
-    }, {});
+    // 1. Compute full filter matrix for cross-filtering across all catalog products
+    const categorySizes = {}; // { [category]: { [sizeKey]: count } }
+    const sizeCategories = {}; // { [sizeKey]: { [category]: count } }
+    const surfaceSizes = {}; // { [surface]: { [sizeKey]: count } }
+    const surfaceCategories = {}; // { [surface]: { [category]: count } }
+    const categoryCountsOverall = {};
+    const sizeCountsOverall = {};
 
-    for (const k of KNOWN_SIZE_KEYS) {
-      if (sizeCounts[k] === undefined) {
-        const existingKey = Object.keys(sizeCounts).find(ek => ek.toLowerCase() === k.toLowerCase());
-        if (existingKey) {
-          sizeCounts[k] = sizeCounts[existingKey];
-        } else {
-          sizeCounts[k] = 0;
+    const allSurfacesSet = new Set();
+    Object.values(SURFACES_BY_SIZE).forEach(list => list.forEach(s => allSurfacesSet.add(s)));
+
+    for (const surf of allSurfacesSet) {
+      surfaceSizes[surf] = {};
+      surfaceCategories[surf] = {};
+    }
+
+    for (const p of (allProductsFinishes || [])) {
+      const cat = p.category || "Uncategorized";
+      categoryCountsOverall[cat] = (categoryCountsOverall[cat] || 0) + 1;
+
+      for (const sizeKey of KNOWN_SIZE_KEYS) {
+        if (matchProductSize(p, sizeKey)) {
+          if (!categorySizes[cat]) categorySizes[cat] = {};
+          categorySizes[cat][sizeKey] = (categorySizes[cat][sizeKey] || 0) + 1;
+
+          if (!sizeCategories[sizeKey]) sizeCategories[sizeKey] = {};
+          sizeCategories[sizeKey][cat] = (sizeCategories[sizeKey][cat] || 0) + 1;
+
+          sizeCountsOverall[sizeKey] = (sizeCountsOverall[sizeKey] || 0) + 1;
+        }
+      }
+
+      for (const surf of allSurfacesSet) {
+        const reg = getSurfaceRegex(surf);
+        if (reg.test(p.finishes || "")) {
+          surfaceCategories[surf][cat] = (surfaceCategories[surf][cat] || 0) + 1;
+          for (const sizeKey of KNOWN_SIZE_KEYS) {
+            if (matchProductSize(p, sizeKey)) {
+              surfaceSizes[surf][sizeKey] = (surfaceSizes[surf][sizeKey] || 0) + 1;
+            }
+          }
         }
       }
     }
 
+    const surfaceRegex = chosenSurface ? getSurfaceRegex(chosenSurface) : null;
+
+    // 2. Active Category counts (dynamically filtered by current selected size AND surface)
+    const activeCategoryCounts = {};
+    for (const p of (allProductsFinishes || [])) {
+      const cat = p.category;
+      if (!cat) continue;
+      const matchSz = (!size || size === "All" || size === "all") ? true : matchProductSize(p, size);
+      const matchSurf = !surfaceRegex ? true : surfaceRegex.test(p.finishes || "");
+      if (matchSz && matchSurf) {
+        activeCategoryCounts[cat] = (activeCategoryCounts[cat] || 0) + 1;
+      }
+    }
+
+    // 3. Active Size counts (dynamically filtered by current selected category AND surface)
+    const activeSizeCounts = {};
+    for (const sizeKey of KNOWN_SIZE_KEYS) {
+      activeSizeCounts[sizeKey] = (allProductsFinishes || []).filter(p => {
+        const matchCat = (!category || category === "All" || category === "All Categories") ? true : (p.category === category);
+        const matchSurf = !surfaceRegex ? true : surfaceRegex.test(p.finishes || "");
+        return matchCat && matchSurf && matchProductSize(p, sizeKey);
+      }).length;
+    }
+
+    // 4. Surface counts (dynamically filtered by current selected category)
     const surfaceCounts = {
       overall: {}
     };
@@ -361,12 +415,16 @@ exports.getProducts = async (req, res) => {
       for (const surf of surfaceList) {
         const reg = getSurfaceRegex(surf);
         const countForSize = (allProductsFinishes || []).filter(p => {
-          return matchProductSize(p, sizeKey) && reg.test(p.finishes || "");
+          const matchCat = (!category || category === "All" || category === "All Categories") ? true : (p.category === category);
+          return matchCat && matchProductSize(p, sizeKey) && reg.test(p.finishes || "");
         }).length;
         surfaceCounts[sizeKey][surf] = countForSize;
 
         if (surfaceCounts.overall[surf] === undefined) {
-          const totalCount = (allProductsFinishes || []).filter(p => reg.test(p.finishes || "")).length;
+          const totalCount = (allProductsFinishes || []).filter(p => {
+            const matchCat = (!category || category === "All" || category === "All Categories") ? true : (p.category === category);
+            return matchCat && reg.test(p.finishes || "");
+          }).length;
           surfaceCounts.overall[surf] = totalCount;
         }
       }
@@ -390,9 +448,18 @@ exports.getProducts = async (req, res) => {
       newArrivalCount,
       distinctTags: (distinctTags || []).filter(Boolean),
       distinctSizes: combinedSizes,
-      sizeCounts,
+      sizeCounts: activeSizeCounts,
+      categoryCounts: activeCategoryCounts,
       surfaceCounts,
       surfacesBySize: SURFACES_BY_SIZE,
+      filterMatrix: {
+        categorySizes,
+        sizeCategories,
+        surfaceSizes,
+        surfaceCategories,
+        categoryCountsOverall,
+        sizeCountsOverall,
+      },
     };
 
     res.status(200).json({
@@ -405,6 +472,8 @@ exports.getProducts = async (req, res) => {
       sizes: combinedSizes,
       surfacesBySize: SURFACES_BY_SIZE,
       surfaceCounts,
+      categoryCounts: activeCategoryCounts,
+      filterMatrix: mediaStats.filterMatrix,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error", error: error.message });

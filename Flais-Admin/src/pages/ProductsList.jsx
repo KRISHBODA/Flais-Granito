@@ -72,6 +72,24 @@ const getSurfacesForSize = (sizeStr) => {
   return [];
 };
 
+const FALLBACK_CATEGORY_SIZES = {
+  "Carving Collection": ["600x1200"],
+  "Glossy Collection": ["600x1200"],
+  "Matt Collection": ["600x1200"],
+  "Electra Collection": ["800x1600"],
+  "Shine Collection": ["800x1600"],
+  "Extra Max Collection": ["1200x1800"],
+  "Liso Collection": ["1200x1800", "1200x2400"],
+  "Marvel Collection": ["1200x1800", "1200x2400"]
+};
+
+const FALLBACK_SIZE_CATEGORIES = {
+  "600x1200": ["Carving Collection", "Glossy Collection", "Matt Collection"],
+  "800x1600": ["Electra Collection", "Shine Collection"],
+  "1200x1800": ["Extra Max Collection", "Liso Collection", "Marvel Collection"],
+  "1200x2400": ["Liso Collection", "Marvel Collection"]
+};
+
 const ProductsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
@@ -195,34 +213,291 @@ const ProductsList = () => {
     totalPages: 1
   });
 
-  // When size changes, reset surface if the previously selected surface does not exist in the new size
-  const handleSizeChange = (newSize) => {
-    setSelectedSize(newSize);
+  // Helper: Find which categories have products for a specific size
+  const getCategoriesForSize = (sizeStr) => {
+    if (!sizeStr || sizeStr === 'All') return [];
+    const norm = normalizeSizeKey(sizeStr);
+
+    const matrixSizeCats = mediaStats?.filterMatrix?.sizeCategories;
+    if (matrixSizeCats) {
+      for (const [k, catsObj] of Object.entries(matrixSizeCats)) {
+        if (normalizeSizeKey(k) === norm) {
+          const list = Object.keys(catsObj).filter(c => catsObj[c] > 0);
+          if (list.length > 0) return list;
+        }
+      }
+    }
+
+    if (selectedSize && normalizeSizeKey(selectedSize) === norm && mediaStats?.categoryCounts) {
+      const activeCats = Object.keys(mediaStats.categoryCounts).filter(c => mediaStats.categoryCounts[c] > 0);
+      if (activeCats.length > 0) return activeCats;
+    }
+
+    for (const [k, cats] of Object.entries(FALLBACK_SIZE_CATEGORIES)) {
+      if (normalizeSizeKey(k) === norm) {
+        return cats;
+      }
+    }
+
+    return [];
+  };
+
+  // Helper: Find which sizes have products for a specific category
+  const getSizesForCategory = (catName) => {
+    if (!catName || catName === 'All') return [];
+
+    const matrixCatSizes = mediaStats?.filterMatrix?.categorySizes;
+    if (matrixCatSizes && matrixCatSizes[catName]) {
+      const sizesObj = matrixCatSizes[catName];
+      const validKeys = Object.keys(sizesObj).filter(k => sizesObj[k] > 0);
+      if (validKeys.length > 0) return validKeys;
+    }
+
+    if (selectedCategory === catName && mediaStats?.sizeCounts) {
+      const activeSizes = Object.keys(mediaStats.sizeCounts).filter(k => mediaStats.sizeCounts[k] > 0);
+      if (activeSizes.length > 0) return activeSizes;
+    }
+
+    if (FALLBACK_CATEGORY_SIZES[catName]) {
+      return FALLBACK_CATEGORY_SIZES[catName];
+    }
+
+    return [];
+  };
+
+  // Helper: Find which sizes have products with a specific surface
+  const getSizesForSurface = (surf) => {
+    if (!surf || surf === 'All') return [];
+    const matrix = mediaStats?.filterMatrix?.surfaceSizes;
+    if (matrix) {
+      const matchKey = Object.keys(matrix).find(k => k.toLowerCase() === surf.toLowerCase());
+      if (matchKey && matrix[matchKey]) {
+        const valid = Object.keys(matrix[matchKey]).filter(sz => matrix[matchKey][sz] > 0);
+        if (valid.length > 0) return valid;
+      }
+    }
+    const fallback = [];
+    for (const [sz, surfs] of Object.entries(SURFACES_BY_SIZE)) {
+      if (surfs.some(s => s.toLowerCase() === surf.toLowerCase())) {
+        fallback.push(sz);
+      }
+    }
+    return fallback;
+  };
+
+  // Helper: Find which categories have products with a specific surface
+  const getCategoriesForSurface = (surf) => {
+    if (!surf || surf === 'All') return [];
+    const matrix = mediaStats?.filterMatrix?.surfaceCategories;
+    if (matrix) {
+      const matchKey = Object.keys(matrix).find(k => k.toLowerCase() === surf.toLowerCase());
+      if (matchKey && matrix[matchKey]) {
+        const valid = Object.keys(matrix[matchKey]).filter(c => matrix[matchKey][c] > 0);
+        if (valid.length > 0) return valid;
+      }
+    }
+    if (selectedSurface === surf && mediaStats?.categoryCounts) {
+      const active = Object.keys(mediaStats.categoryCounts).filter(c => mediaStats.categoryCounts[c] > 0);
+      if (active.length > 0) return active;
+    }
+    return [];
+  };
+
+  // When category changes: auto-filter sizes & surfaces
+  const handleCategoryChange = (newCategory) => {
+    setSelectedCategory(newCategory);
     setCurrentPage(1);
-    if (newSize !== 'All' && selectedSurface !== 'All') {
-      const allowed = getSurfacesForSize(newSize);
-      if (!allowed.includes(selectedSurface)) {
-        setSelectedSurface('All');
+
+    if (newCategory !== 'All') {
+      const validSizes = getSizesForCategory(newCategory);
+      // If currently selected size does not belong to this category, reset size to 'All'
+      if (selectedSize !== 'All') {
+        const isStillValid = validSizes.some(vs => normalizeSizeKey(vs) === normalizeSizeKey(selectedSize));
+        if (!isStillValid) {
+          setSelectedSize('All');
+        }
+      }
+      // If currently selected surface is not available for this category's sizes, reset surface to 'All'
+      if (selectedSurface !== 'All') {
+        const allowedSurfaces = [];
+        const targetSizes = (selectedSize !== 'All' && validSizes.some(vs => normalizeSizeKey(vs) === normalizeSizeKey(selectedSize)))
+          ? [selectedSize]
+          : validSizes;
+        targetSizes.forEach(sz => {
+          getSurfacesForSize(sz).forEach(surf => {
+            if (!allowedSurfaces.includes(surf)) allowedSurfaces.push(surf);
+          });
+        });
+        if (allowedSurfaces.length > 0 && !allowedSurfaces.includes(selectedSurface)) {
+          setSelectedSurface('All');
+        }
       }
     }
   };
 
-  const availableSizes = useMemo(() => {
-    const defaultSizes = Object.keys(SURFACES_BY_SIZE);
-    const backendSizes = mediaStats?.distinctSizes || [];
-    const list = [...defaultSizes];
-    for (const bs of backendSizes) {
-      if (!list.some(s => normalizeSizeKey(s) === normalizeSizeKey(bs))) {
-        list.push(bs);
+  // When size changes: auto-filter collections & surfaces
+  const handleSizeChange = (newSize) => {
+    setSelectedSize(newSize);
+    setCurrentPage(1);
+
+    if (newSize !== 'All') {
+      const validCats = getCategoriesForSize(newSize);
+      // If currently selected collection does not have products in this size, reset category to 'All'
+      if (selectedCategory !== 'All') {
+        const isStillValid = validCats.includes(selectedCategory);
+        if (!isStillValid) {
+          setSelectedCategory('All');
+        }
+      }
+      // If currently selected surface does not exist in this size, reset surface to 'All'
+      if (selectedSurface !== 'All') {
+        const allowed = getSurfacesForSize(newSize);
+        if (!allowed.includes(selectedSurface)) {
+          setSelectedSurface('All');
+        }
       }
     }
+  };
+
+  // When surface changes: auto-filter sizes & collections
+  const handleSurfaceChange = (newSurface) => {
+    setSelectedSurface(newSurface);
+    setCurrentPage(1);
+
+    if (newSurface !== 'All') {
+      const validSizes = getSizesForSurface(newSurface);
+      const validCats = getCategoriesForSurface(newSurface);
+
+      // If currently selected size does not have this surface, reset size to 'All'
+      if (selectedSize !== 'All') {
+        const isStillValid = validSizes.some(vs => normalizeSizeKey(vs) === normalizeSizeKey(selectedSize));
+        if (!isStillValid) {
+          setSelectedSize('All');
+        }
+      }
+
+      // If currently selected collection does not have this surface, reset category to 'All'
+      if (selectedCategory !== 'All' && validCats.length > 0) {
+        const isStillValid = validCats.includes(selectedCategory);
+        if (!isStillValid) {
+          setSelectedCategory('All');
+        }
+      }
+    }
+  };
+
+  // Filter collections: when size or surface is selected, only show collections containing them
+  const availableCategories = useMemo(() => {
+    let list = categories;
+
+    // Filter by selectedSize
+    if (selectedSize && selectedSize !== 'All') {
+      const validCatNames = getCategoriesForSize(selectedSize);
+      if (validCatNames && validCatNames.length > 0) {
+        list = list.filter(c => validCatNames.includes(c.name));
+      }
+    }
+
+    // Filter by selectedSurface
+    if (selectedSurface && selectedSurface !== 'All') {
+      const validSurfCats = getCategoriesForSurface(selectedSurface);
+      if (validSurfCats && validSurfCats.length > 0) {
+        list = list.filter(c => validSurfCats.includes(c.name));
+      }
+    }
+
     return list;
-  }, [mediaStats?.distinctSizes]);
+  }, [categories, selectedSize, selectedSurface, mediaStats]);
+
+  // Filter sizes: when category or surface is selected, only show sizes containing them
+  const availableSizes = useMemo(() => {
+    let list = [];
+
+    // Base list or category-filtered list
+    if (selectedCategory && selectedCategory !== 'All') {
+      const validSizes = getSizesForCategory(selectedCategory);
+      list = (validSizes && validSizes.length > 0) ? validSizes : Object.keys(SURFACES_BY_SIZE);
+    } else {
+      const defaultSizes = Object.keys(SURFACES_BY_SIZE);
+      const backendSizes = mediaStats?.distinctSizes || [];
+      const combined = [...defaultSizes];
+      for (const bs of backendSizes) {
+        if (!combined.some(s => normalizeSizeKey(s) === normalizeSizeKey(bs))) {
+          combined.push(bs);
+        }
+      }
+      list = combined;
+    }
+
+    // Filter by selectedSurface
+    if (selectedSurface && selectedSurface !== 'All') {
+      const validSurfSizes = getSizesForSurface(selectedSurface);
+      if (validSurfSizes && validSurfSizes.length > 0) {
+        list = list.filter(sz => validSurfSizes.some(vs => normalizeSizeKey(vs) === normalizeSizeKey(sz)));
+      }
+    }
+
+    return list;
+  }, [selectedCategory, selectedSurface, mediaStats]);
+
+  const getCategoryCount = (catName) => {
+    if (!mediaStats) return 0;
+
+    // If surface is selected (and no specific size), check direct surfaceCategories matrix count
+    if (selectedSurface && selectedSurface !== 'All' && (!selectedSize || selectedSize === 'All')) {
+      const surfCats = mediaStats?.filterMatrix?.surfaceCategories?.[selectedSurface];
+      if (surfCats && surfCats[catName] !== undefined) {
+        return surfCats[catName];
+      }
+    }
+
+    if ((selectedSize && selectedSize !== 'All') || (selectedSurface && selectedSurface !== 'All')) {
+      if (mediaStats.categoryCounts?.[catName] !== undefined) {
+        return mediaStats.categoryCounts[catName];
+      }
+      const norm = normalizeSizeKey(selectedSize);
+      const matrixSizeCats = mediaStats?.filterMatrix?.sizeCategories;
+      if (matrixSizeCats && selectedSize && selectedSize !== 'All') {
+        for (const [k, catsObj] of Object.entries(matrixSizeCats)) {
+          if (normalizeSizeKey(k) === norm && catsObj[catName] !== undefined) {
+            return catsObj[catName];
+          }
+        }
+      }
+      return 0;
+    }
+    if (mediaStats.filterMatrix?.categoryCountsOverall?.[catName] !== undefined) {
+      return mediaStats.filterMatrix.categoryCountsOverall[catName];
+    }
+    return mediaStats.categoryCounts?.[catName] ?? 0;
+  };
 
   const getSizeCount = (s) => {
-    if (!mediaStats?.sizeCounts) return 0;
-    if (mediaStats.sizeCounts[s] !== undefined) return mediaStats.sizeCounts[s];
-    const key = Object.keys(mediaStats.sizeCounts).find(k => normalizeSizeKey(k) === normalizeSizeKey(s));
+    if (!mediaStats) return 0;
+    const norm = normalizeSizeKey(s);
+
+    // If surface is selected and no category, check direct surfaceSizes matrix count
+    if (selectedSurface && selectedSurface !== 'All' && (!selectedCategory || selectedCategory === 'All')) {
+      const surfSizes = mediaStats?.filterMatrix?.surfaceSizes?.[selectedSurface];
+      if (surfSizes) {
+        const foundKey = Object.keys(surfSizes).find(k => normalizeSizeKey(k) === norm);
+        if (foundKey) return surfSizes[foundKey];
+      }
+    }
+
+    if ((selectedCategory && selectedCategory !== 'All') || (selectedSurface && selectedSurface !== 'All')) {
+      if (mediaStats.sizeCounts?.[s] !== undefined) return mediaStats.sizeCounts[s];
+      const key = Object.keys(mediaStats.sizeCounts || {}).find(k => normalizeSizeKey(k) === norm);
+      if (key) return mediaStats.sizeCounts[key];
+      const matrixCatSizes = mediaStats?.filterMatrix?.categorySizes?.[selectedCategory];
+      if (matrixCatSizes && selectedCategory && selectedCategory !== 'All') {
+        const found = Object.keys(matrixCatSizes).find(k => normalizeSizeKey(k) === norm);
+        if (found) return matrixCatSizes[found];
+      }
+      return 0;
+    }
+    if (mediaStats.sizeCounts?.[s] !== undefined) return mediaStats.sizeCounts[s];
+    const key = Object.keys(mediaStats.sizeCounts || {}).find(k => normalizeSizeKey(k) === norm);
     return key ? mediaStats.sizeCounts[key] : 0;
   };
 
@@ -530,12 +805,22 @@ const ProductsList = () => {
                 <Filter size={15} className={selectedCategory !== 'All' ? 'text-blue-600' : 'text-slate-400'} />
                 <select
                   value={selectedCategory}
-                  onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
                   className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
-                  <option value="All">All Collections</option>
-                  {categories.map(cat => (
-                    <option key={cat._id} value={cat.name}>{cat.name}</option>
+                  <option value="All">
+                    All Collections {
+                      selectedSize && selectedSize !== 'All' && getSizeCount(selectedSize)
+                        ? `(${getSizeCount(selectedSize)})`
+                        : (selectedSurface && selectedSurface !== 'All' && mediaStats?.surfaceCounts?.overall?.[selectedSurface])
+                          ? `(${mediaStats.surfaceCounts.overall[selectedSurface]})`
+                          : ''
+                    }
+                  </option>
+                  {availableCategories.map(cat => (
+                    <option key={cat._id || cat.name} value={cat.name}>
+                      {cat.name} ({getCategoryCount(cat.name)})
+                    </option>
                   ))}
                 </select>
               </div>
@@ -552,7 +837,15 @@ const ProductsList = () => {
                   onChange={(e) => handleSizeChange(e.target.value)}
                   className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
-                  <option value="All">All Sizes</option>
+                  <option value="All">
+                    All Sizes {
+                      selectedCategory && selectedCategory !== 'All' && getCategoryCount(selectedCategory)
+                        ? `(${getCategoryCount(selectedCategory)})`
+                        : (selectedSurface && selectedSurface !== 'All' && mediaStats?.surfaceCounts?.overall?.[selectedSurface])
+                          ? `(${mediaStats.surfaceCounts.overall[selectedSurface]})`
+                          : ''
+                    }
+                  </option>
                   {availableSizes.map((s) => (
                     <option key={s} value={s}>
                       {s} ({getSizeCount(s)})
@@ -570,7 +863,7 @@ const ProductsList = () => {
                 <Layers size={15} className={selectedSurface && selectedSurface !== 'All' ? 'text-teal-600' : 'text-slate-400'} />
                 <select
                   value={selectedSurface}
-                  onChange={(e) => { setSelectedSurface(e.target.value); setCurrentPage(1); }}
+                  onChange={(e) => handleSurfaceChange(e.target.value)}
                   className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
                   <option value="All">All Surfaces</option>
@@ -584,18 +877,24 @@ const ProductsList = () => {
                       );
                     })
                   ) : (
-                    Object.entries(SURFACES_BY_SIZE).map(([sizeKey, list]) => (
-                      <optgroup key={sizeKey} label={`${sizeKey.replace(/_/g, ' ')} Surfaces`}>
-                        {list.map((surf) => {
-                          const count = getSurfaceCount(sizeKey, surf);
-                          return (
-                            <option key={`${sizeKey}-${surf}`} value={surf}>
-                              {surf} ({count})
-                            </option>
-                          );
-                        })}
-                      </optgroup>
-                    ))
+                    Object.entries(SURFACES_BY_SIZE)
+                      .filter(([sizeKey]) => {
+                        if (!selectedCategory || selectedCategory === 'All') return true;
+                        const validSizes = getSizesForCategory(selectedCategory);
+                        return validSizes.some(vs => normalizeSizeKey(vs) === normalizeSizeKey(sizeKey));
+                      })
+                      .map(([sizeKey, list]) => (
+                        <optgroup key={sizeKey} label={`${sizeKey.replace(/_/g, ' ')} Surfaces`}>
+                          {list.map((surf) => {
+                            const count = getSurfaceCount(sizeKey, surf);
+                            return (
+                              <option key={`${sizeKey}-${surf}`} value={surf}>
+                                {surf} ({count})
+                              </option>
+                            );
+                          })}
+                        </optgroup>
+                      ))
                   )}
                 </select>
               </div>
