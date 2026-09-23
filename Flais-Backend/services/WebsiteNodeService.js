@@ -5,11 +5,7 @@ const path = require("path");
 const fs = require("fs");
 
 const MAX_WEBSITE_UPLOAD_SIZE = parseInt(process.env.MAX_WEBSITE_UPLOAD_SIZE || 52428800, 10);
-const ALLOWED_EXTENSIONS = [
-  ".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif", 
-  ".pdf", ".mp4", ".webm", ".json", ".html", 
-  ".css", ".js", ".txt", ".zip"
-];
+
 
 class WebsiteNodeService {
   /**
@@ -28,10 +24,7 @@ class WebsiteNodeService {
       throw new Error(`File size exceeds maximum allowed size of ${MAX_WEBSITE_UPLOAD_SIZE} bytes.`);
     }
 
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      throw new Error(`File extension not allowed: ${ext}`);
-    }
+
   }
 
   /**

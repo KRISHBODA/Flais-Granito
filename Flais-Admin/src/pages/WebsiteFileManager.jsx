@@ -564,7 +564,7 @@ const WebsiteFileManager = () => {
                 <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
                   <Upload className="text-[#0145F2] mb-3" size={32} />
                   <span className="text-sm font-medium text-slate-700">Click to browse or drag and drop</span>
-                  <span className="text-xs text-slate-500 mt-1">Allowed: jpg, png, pdf, mp4, etc.</span>
+                  <span className="text-xs text-slate-500 mt-1">Allowed: Any file type (jpg, pdf, html, css, etc.)</span>
                 </label>
               </div>
               {uploadFile && (
