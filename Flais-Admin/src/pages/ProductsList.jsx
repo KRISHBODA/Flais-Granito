@@ -207,31 +207,6 @@ const ProductsList = () => {
     }
   };
 
-  const allUniqueSurfaces = useMemo(() => {
-    const list = [
-      "Light Polished",
-      "Liso",
-      "Liso+Carving",
-      "Polished",
-      "Matt",
-      "Carving",
-      "Marble Gloss",
-      "Glossy",
-      "High Glossy",
-      "Satin Matt",
-      "Ligh Glass",
-      "Dark Glass",
-      "Dark Polished",
-      "Full Dark Polished"
-    ];
-    Object.values(SURFACES_BY_SIZE).forEach(surfs => {
-      surfs.forEach(s => {
-        if (!list.includes(s)) list.push(s);
-      });
-    });
-    return list;
-  }, []);
-
   const availableSizes = useMemo(() => {
     const defaultSizes = Object.keys(SURFACES_BY_SIZE);
     const backendSizes = mediaStats?.distinctSizes || [];
@@ -609,30 +584,18 @@ const ProductsList = () => {
                       );
                     })
                   ) : (
-                    <>
-                      <optgroup label="✨ All Surfaces (Catalog Total)">
-                        {allUniqueSurfaces.map((surf) => {
-                          const count = getSurfaceCount(null, surf);
+                    Object.entries(SURFACES_BY_SIZE).map(([sizeKey, list]) => (
+                      <optgroup key={sizeKey} label={`${sizeKey.replace(/_/g, ' ')} Surfaces`}>
+                        {list.map((surf) => {
+                          const count = getSurfaceCount(sizeKey, surf);
                           return (
-                            <option key={`all-${surf}`} value={surf}>
+                            <option key={`${sizeKey}-${surf}`} value={surf}>
                               {surf} ({count})
                             </option>
                           );
                         })}
                       </optgroup>
-                      {Object.entries(SURFACES_BY_SIZE).map(([sizeKey, list]) => (
-                        <optgroup key={sizeKey} label={`${sizeKey} Surfaces`}>
-                          {list.map((surf) => {
-                            const count = getSurfaceCount(sizeKey, surf);
-                            return (
-                              <option key={`${sizeKey}-${surf}`} value={surf}>
-                                {surf} ({count})
-                              </option>
-                            );
-                          })}
-                        </optgroup>
-                      ))}
-                    </>
+                    ))
                   )}
                 </select>
               </div>
