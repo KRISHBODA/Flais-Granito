@@ -113,6 +113,22 @@ const downloadFile = async (req, res, next) => {
   }
 };
 
+// @desc    View a file inline
+// @route   GET /api/admin/website-nodes/:id/view
+// @access  Public
+const viewFile = async (req, res, next) => {
+  try {
+    const node = await WebsiteNode.findById(req.params.id);
+    if (!node || node.type !== "file") {
+      return res.status(404).json({ success: false, message: "File not found" });
+    }
+    const absolutePath = websiteFileSystemProvider.resolveWebsitePath(node.relativePath);
+    return res.sendFile(absolutePath);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Preview Sync from server
 // @route   GET /api/admin/website-nodes/sync/preview
 // @access  Private/Admin
@@ -170,4 +186,5 @@ module.exports = {
   previewSync,
   applySync,
   getBreadcrumbs,
+  viewFile,
 };

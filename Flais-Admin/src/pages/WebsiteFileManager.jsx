@@ -284,9 +284,8 @@ const WebsiteFileManager = () => {
   };
 
   const handleShare = (node) => {
-    // Generate link using the backend API route where it's actually hosted
-    const relativePath = node.relativePath.startsWith('/') ? node.relativePath.slice(1) : node.relativePath;
-    const shareUrl = `${API}/api/website-content/${relativePath}`;
+    // Generate link using the backend API /view route to bypass Nginx extension filtering
+    const shareUrl = `${API}/api/admin/website-nodes/${node._id}/view`;
     
     navigator.clipboard.writeText(shareUrl)
       .then(() => toast.success('Link copied to clipboard!'))

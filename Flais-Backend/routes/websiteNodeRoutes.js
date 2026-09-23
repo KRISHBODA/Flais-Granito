@@ -14,11 +14,16 @@ const {
   previewSync,
   applySync,
   getBreadcrumbs,
+  viewFile,
 } = require("../controllers/websiteNodeController");
 
 // @route   GET /api/admin/website-nodes/:id/download
 // Make download public so it doesn't require a token
 router.get("/:id/download", downloadFile);
+
+// @route   GET /api/admin/website-nodes/:id/view
+// View inline (avoids Nginx catching static extensions)
+router.get("/:id/view", viewFile);
 
 // Apply admin protection to all routes in this file
 router.use(protect);
