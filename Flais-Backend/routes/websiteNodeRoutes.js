@@ -16,6 +16,10 @@ const {
   getBreadcrumbs,
 } = require("../controllers/websiteNodeController");
 
+// @route   GET /api/admin/website-nodes/:id/download
+// Make download public so it doesn't require a token
+router.get("/:id/download", downloadFile);
+
 // Apply admin protection to all routes in this file
 router.use(protect);
 
@@ -50,7 +54,6 @@ router.patch("/:id/move", moveNode);
 // @route   DELETE /api/admin/website-nodes/:id
 router.delete("/:id", deleteNode);
 
-// @route   GET /api/admin/website-nodes/:id/download
-router.get("/:id/download", downloadFile);
+
 
 module.exports = router;
