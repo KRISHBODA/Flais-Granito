@@ -765,7 +765,7 @@ const Analytics = () => {
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">All collection breakdown</h3>
                   <p className="text-sm text-slate-500">
-                    Detailed counts for tiles uploaded (1 per design), total photos, and averages.
+                    Detailed counts for tiles uploaded (1 per design) and total photos.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2.5">
@@ -815,10 +815,6 @@ const Analytics = () => {
                       }`}>
                         Total Photos
                       </th>
-                      <th className="px-5 py-3.5 text-right">Avg / Tile</th>
-                      <th className="px-5 py-3.5 w-40">
-                        Share ({collectionMetricMode === 'tiles' ? '3D Previews' : collectionMetricMode === 'jpg' ? 'JPGs' : 'Photos'})
-                      </th>
                       <th className="px-5 py-3.5 text-center">Action</th>
                     </tr>
                   </thead>
@@ -828,30 +824,6 @@ const Analytics = () => {
                         const preview3D = col.preview3DCount ?? col.productCount ?? 0;
                         const simpleJpg = col.simpleTileJpgCount ?? Math.max(0, (col.photoCount || 0) - (col.productCount || 0));
                         const totalPhotos = col.photoCount || 0;
-
-                        const tileShare = col.percentageOfProducts || (collectionPhotos.totalProducts > 0
-                          ? Number(((preview3D / collectionPhotos.totalProducts) * 100).toFixed(1))
-                          : 0);
-                        const jpgShare = totalSimpleTileJpg > 0
-                          ? Number(((simpleJpg / totalSimpleTileJpg) * 100).toFixed(1))
-                          : 0;
-                        const photoShare = col.percentageOfPhotos || (collectionPhotos.totalPhotos > 0
-                          ? Number(((totalPhotos / collectionPhotos.totalPhotos) * 100).toFixed(1))
-                          : 0);
-
-                        let activeShare = tileShare;
-                        let activeModeLabel = '3D previews';
-                        let activeBarColor = 'bg-[#0145F2]';
-
-                        if (collectionMetricMode === 'jpg') {
-                          activeShare = jpgShare;
-                          activeModeLabel = 'JPGs';
-                          activeBarColor = 'bg-emerald-600';
-                        } else if (collectionMetricMode === 'photos') {
-                          activeShare = photoShare;
-                          activeModeLabel = 'photos';
-                          activeBarColor = 'bg-amber-500';
-                        }
 
                         return (
                           <tr key={col.collectionName} className="transition-colors hover:bg-slate-50/70">
@@ -915,26 +887,6 @@ const Analytics = () => {
                                 {formatNumber(totalPhotos)} photos
                               </span>
                             </td>
-                            <td className="px-5 py-4 text-right text-slate-600">
-                              <span className="font-mono text-xs font-semibold">{col.avgPhotosPerProduct}</span>
-                              <span className="text-[10px] text-slate-400 ml-1">photos/tile</span>
-                            </td>
-                            <td className="px-5 py-4">
-                              <div className="space-y-1.5">
-                                <div className="flex justify-between text-xs">
-                                  <span className="font-bold text-slate-700">{activeShare}%</span>
-                                  <span className="text-[10px] text-slate-400">
-                                    of {activeModeLabel}
-                                  </span>
-                                </div>
-                                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                                  <div
-                                    className={`h-full rounded-full transition-all duration-500 ${activeBarColor}`}
-                                    style={{ width: `${activeShare}%` }}
-                                  />
-                                </div>
-                              </div>
-                            </td>
                             <td className="px-5 py-4 text-center">
                               <Link
                                 to={`/admin/products?category=${encodeURIComponent(col.collectionName)}`}
@@ -950,7 +902,7 @@ const Analytics = () => {
                       })
                     ) : (
                       <tr>
-                        <td colSpan="7" className="px-5 py-10 text-center text-slate-400">
+                        <td colSpan="6" className="px-5 py-10 text-center text-slate-400">
                           No collections found matching "{collectionSearch}".
                         </td>
                       </tr>
