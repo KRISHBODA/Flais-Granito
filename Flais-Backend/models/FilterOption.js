@@ -5,7 +5,7 @@ const filterOptionSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["thickness", "size", "application"],
+      enum: ["thickness", "size", "application", "bodyType"],
     },
     value: {
       type: String,

@@ -70,6 +70,7 @@ const Products = () => {
   const [filter, setFilter] = useState('all');
   const [selectedCategorySlug, setSelectedCategorySlug] = useState('all');
   const [bodyTypeFilter, setBodyTypeFilter] = useState('all');
+  const [bodyShadeFilter, setBodyShadeFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [thicknessFilter, setThicknessFilter] = useState('all');
@@ -147,29 +148,29 @@ const Products = () => {
   }, []);
 
   const resolveCategoryFromParam = useCallback((catParam) => {
-    if (!catParam || catParam === 'all') return { name: 'all', slug: 'all' };
+    if (!catParam || catParam === 'all') return { name: 'all', slug: 'all', bodyType: null };
 
     // Check DB collections / categories
     const match = categories.find(
       (cat) => (cat.slug && cat.slug.toLowerCase() === catParam.toLowerCase()) || 
                (cat.name && cat.name.toLowerCase() === catParam.toLowerCase())
     );
-    if (match) return { name: match.name, slug: match.slug };
+    if (match) return { name: match.name, slug: match.slug, bodyType: null };
 
     // Check body types (from footer, home page, or external links)
     const norm = catParam.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (norm.includes('gvt') || norm.includes('pgvt') || norm === 'slab') {
-      return { name: 'GVT/PGVT Tiles', slug: 'gvt-pgvt' };
+      return { name: 'all', slug: 'all', bodyType: 'gvt-pgvt' };
     }
     if (norm.includes('colorbody') || norm.includes('digitalfullbody') || norm.includes('colourbody')) {
-      return { name: 'Color Body Tiles', slug: 'color-body' };
+      return { name: 'all', slug: 'all', bodyType: 'color-body' };
     }
     if (norm.includes('fullbody')) {
-      return { name: 'Full Body Tiles', slug: 'full-body' };
+      return { name: 'all', slug: 'all', bodyType: 'full-body' };
     }
 
     // Graceful fallback for any unknown slug: show all products
-    return { name: 'all', slug: 'all' };
+    return { name: 'all', slug: 'all', bodyType: null };
   }, [categories]);
 
   const updateQueryParams = useCallback((newValues) => {
@@ -199,12 +200,22 @@ const Products = () => {
   // Sync states with URL searchParams
   useEffect(() => {
     const catParam = searchParams.get('cat');
-    const { name, slug } = resolveCategoryFromParam(catParam);
+    const { name, slug, bodyType: resolvedBodyType } = resolveCategoryFromParam(catParam);
     setFilter(name);
     setSelectedCategorySlug(slug);
 
     const bodyParam = searchParams.get('bodyType');
-    setBodyTypeFilter(bodyParam || 'all');
+    const shadeParam = searchParams.get('shade') || searchParams.get('bodyShade');
+
+    const effectiveBodyType = bodyParam || resolvedBodyType || 'all';
+
+    if (CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === effectiveBodyType.toLowerCase())) {
+      setBodyTypeFilter('color-body');
+      setBodyShadeFilter(effectiveBodyType);
+    } else {
+      setBodyTypeFilter(effectiveBodyType);
+      setBodyShadeFilter(shadeParam || 'all');
+    }
 
     const sizeParam = searchParams.get('size');
     setSizeFilter(sizeParam || 'all');
@@ -230,41 +241,31 @@ const Products = () => {
 
   const selectedCategoryName = filter === 'all' ? null : filter;
 
+  const dbBodyTypeOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'bodyType'), [filterOptionsData]);
   const dbThicknessOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'thickness'), [filterOptionsData]);
   const dbSizeOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'size'), [filterOptionsData]);
   const dbApplicationOptions = useMemo(() => filterOptionsData.filter(o => o.type === 'application'), [filterOptionsData]);
 
+  const bodyTypeOptionsToRender = useMemo(() => {
+    if (dbBodyTypeOptions.length > 0) {
+      return dbBodyTypeOptions.map(o => ({
+        label: o.label,
+        value: o.value
+      }));
+    }
+    return [
+      { label: 'GVT/PGVT Tiles', value: 'gvt-pgvt' },
+      { label: 'Color Body Tiles', value: 'color-body' },
+      { label: 'Full Body Tiles', value: 'full-body' },
+    ];
+  }, [dbBodyTypeOptions]);
+
   // Matching helper functions
   const productMatchesCategory = useCallback((product, targetCat) => {
     if (!targetCat || targetCat === 'all') return true;
-    if (!product) return false;
+    if (!product || !product.category) return false;
 
     const tCat = targetCat.trim().toLowerCase();
-    const norm = tCat.replace(/[^a-z0-9]/g, '');
-
-    // Body type matching (GVT/PGVT, Color Body, Full Body)
-    if (norm.includes('gvt') || norm.includes('pgvt') || norm === 'slab') {
-      const color = (product.color || '').trim().toLowerCase();
-      if (color.includes('gvt') || color.includes('pgvt')) return true;
-      return !CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === color) && (product.category || '') !== 'Extra Max Collection';
-    }
-
-    if (norm.includes('colorbody') || norm.includes('digitalfullbody') || norm.includes('colourbody')) {
-      const color = (product.color || '').trim().toLowerCase();
-      if (CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === color)) return true;
-      const cat = (product.category || '').toLowerCase();
-      return cat.includes('extra max');
-    }
-
-    if (norm.includes('fullbody')) {
-      const color = (product.color || '').trim().toLowerCase();
-      if (CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === color)) return true;
-      const cat = (product.category || '').toLowerCase();
-      return cat.includes('extra max');
-    }
-
-    // Standard Category matching
-    if (!product.category) return false;
     const pCat = product.category.trim().toLowerCase();
     if (pCat === tCat) return true;
     const catObj = categories.find(c => (c.slug && c.slug.toLowerCase() === tCat) || (c.name && c.name.toLowerCase() === tCat));
@@ -272,11 +273,59 @@ const Products = () => {
     return false;
   }, [categories]);
 
-  const productMatchesBodyType = useCallback((productColor, targetBodyType) => {
+  const productMatchesBodyType = useCallback((product, targetBodyType, targetShade = 'all') => {
     if (!targetBodyType || targetBodyType === 'all') return true;
-    const pNorm = (productColor || '').trim().toLowerCase();
-    const tNorm = targetBodyType.trim().toLowerCase();
-    return pNorm === tNorm;
+    if (!product) return false;
+
+    const norm = targetBodyType.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // 1. GVT / PGVT Tiles
+    if (norm.includes('gvt') || norm.includes('pgvt')) {
+      const color = (product.color || '').trim().toLowerCase();
+      if (color.includes('gvt') || color.includes('pgvt')) return true;
+      const isColorShade = CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === color);
+      const isExtraMax = (product.category || '').toLowerCase().includes('extra max');
+      const isFull = (product.title || '').toLowerCase().includes('full body') || (product.size || '').toLowerCase().includes('fullbody');
+      return !isColorShade && !isExtraMax && !isFull;
+    }
+
+    // 2. Color Body Tiles
+    if (norm.includes('colorbody') || norm.includes('colourbody')) {
+      const color = (product.color || '').trim().toLowerCase();
+      const cat = (product.category || '').toLowerCase();
+      const title = (product.title || '').toLowerCase();
+      const size = (product.size || '').toLowerCase();
+
+      const isColorBody = CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === color) || 
+                          cat.includes('extra max') || 
+                          size.includes('colorbody') || 
+                          title.includes('color body');
+
+      if (!isColorBody) return false;
+      if (targetShade && targetShade !== 'all') {
+        return color === targetShade.trim().toLowerCase();
+      }
+      return true;
+    }
+
+    // 3. Full Body Tiles
+    if (norm.includes('fullbody')) {
+      const title = (product.title || '').toLowerCase();
+      const cat = (product.category || '').toLowerCase();
+      const size = (product.size || '').toLowerCase();
+      const thick = (product.thickness || '').toLowerCase();
+      const desc = (product.description || '').toLowerCase();
+      return title.includes('full body') || 
+             title.includes('fullbody') || 
+             cat.includes('full body') || 
+             cat.includes('fullbody') || 
+             size.includes('fullbody') || 
+             thick.includes('full body') || 
+             desc.includes('full body');
+    }
+
+    const color = (product.color || '').trim().toLowerCase();
+    return color === norm || color.includes(norm);
   }, []);
 
   const productMatchesThickness = useCallback((productThickness, optValue) => {
@@ -303,39 +352,17 @@ const Products = () => {
     return pNorm.includes(optNorm) || optNorm.includes(pNorm);
   }, [normalizeFilterString]);
 
-  // Color Body state & dynamic counts
+  const isBodyTypeOptionActive = useCallback((btValue) => {
+    if (btValue === 'all') return bodyTypeFilter === 'all';
+    const normVal = btValue.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normCur = (bodyTypeFilter || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return normCur === normVal || normCur.includes(normVal) || normVal.includes(normCur);
+  }, [bodyTypeFilter]);
+
+  // Color Body state
   const isColorBodyActive = useMemo(() => {
-    if (selectedCategorySlug === 'color-body' || filter === 'Color Body Tiles') return true;
-    const norm = (filter || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (norm.includes('colorbody') || norm.includes('colourbody')) return true;
-    if (norm.includes('extramax')) return true;
-    if (bodyTypeFilter && bodyTypeFilter !== 'all') return true;
-    return false;
-  }, [selectedCategorySlug, filter, bodyTypeFilter]);
-
-  const colorBodyProducts = useMemo(() => {
-    return products.filter(p => {
-      const col = (p.color || '').trim().toLowerCase();
-      if (CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === col)) return true;
-      const cat = (p.category || '').toLowerCase();
-      return cat.includes('extra max');
-    });
-  }, [products]);
-
-  const bodyTypeCounts = useMemo(() => {
-    const counts = {};
-    CANONICAL_BODY_TYPES.forEach(bt => { counts[bt] = 0; });
-    colorBodyProducts.forEach(p => {
-      const col = (p.color || '').trim().toLowerCase();
-      const match = CANONICAL_BODY_TYPES.find(bt => bt.toLowerCase() === col);
-      if (match) {
-        counts[match] = (counts[match] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [colorBodyProducts]);
-
-  const colorBodyTotalCount = colorBodyProducts.length;
+    return isBodyTypeOptionActive('color-body');
+  }, [isBodyTypeOptionActive]);
 
   // Dynamic Faceted Calculations
   // Facet 1: Available Categories (evaluated against active Size, Thickness, Application, Body Type)
@@ -344,10 +371,10 @@ const Products = () => {
       const matchesSize = sizeFilter === 'all' || productMatchesSize(p.size, sizeFilter);
       const matchesThickness = thicknessFilter === 'all' || productMatchesThickness(p.thickness, thicknessFilter);
       const matchesApp = appFilter === 'all' || productMatchesApp(p.application, appFilter);
-      const matchesBody = bodyTypeFilter === 'all' || productMatchesBodyType(p.color, bodyTypeFilter);
+      const matchesBody = productMatchesBodyType(p, bodyTypeFilter, bodyShadeFilter);
       return matchesSize && matchesThickness && matchesApp && matchesBody;
     });
-  }, [products, sizeFilter, thicknessFilter, appFilter, bodyTypeFilter, productMatchesSize, productMatchesThickness, productMatchesApp, productMatchesBodyType]);
+  }, [products, sizeFilter, thicknessFilter, appFilter, bodyTypeFilter, bodyShadeFilter, productMatchesSize, productMatchesThickness, productMatchesApp, productMatchesBodyType]);
 
   const availableCategories = useMemo(() => {
     if (!productsForCategoryFacet || productsForCategoryFacet.length === 0) return [];
@@ -373,10 +400,10 @@ const Products = () => {
       const matchesCat = filter === 'all' || productMatchesCategory(p, filter);
       const matchesSize = sizeFilter === 'all' || productMatchesSize(p.size, sizeFilter);
       const matchesApp = appFilter === 'all' || productMatchesApp(p.application, appFilter);
-      const matchesBody = bodyTypeFilter === 'all' || productMatchesBodyType(p.color, bodyTypeFilter);
+      const matchesBody = productMatchesBodyType(p, bodyTypeFilter, bodyShadeFilter);
       return matchesCat && matchesSize && matchesApp && matchesBody;
     });
-  }, [products, filter, sizeFilter, appFilter, bodyTypeFilter, productMatchesCategory, productMatchesSize, productMatchesApp, productMatchesBodyType]);
+  }, [products, filter, sizeFilter, appFilter, bodyTypeFilter, bodyShadeFilter, productMatchesCategory, productMatchesSize, productMatchesApp, productMatchesBodyType]);
 
   const availableThicknessOptions = useMemo(() => {
     if (!productsForThicknessFacet || productsForThicknessFacet.length === 0) return [];
@@ -396,10 +423,10 @@ const Products = () => {
       const matchesCat = filter === 'all' || productMatchesCategory(p, filter);
       const matchesThickness = thicknessFilter === 'all' || productMatchesThickness(p.thickness, thicknessFilter);
       const matchesApp = appFilter === 'all' || productMatchesApp(p.application, appFilter);
-      const matchesBody = bodyTypeFilter === 'all' || productMatchesBodyType(p.color, bodyTypeFilter);
+      const matchesBody = productMatchesBodyType(p, bodyTypeFilter, bodyShadeFilter);
       return matchesCat && matchesThickness && matchesApp && matchesBody;
     });
-  }, [products, filter, thicknessFilter, appFilter, bodyTypeFilter, productMatchesCategory, productMatchesThickness, productMatchesApp, productMatchesBodyType]);
+  }, [products, filter, thicknessFilter, appFilter, bodyTypeFilter, bodyShadeFilter, productMatchesCategory, productMatchesThickness, productMatchesApp, productMatchesBodyType]);
 
   const availableSizeOptions = useMemo(() => {
     if (!productsForSizeFacet || productsForSizeFacet.length === 0) return [];
@@ -419,10 +446,10 @@ const Products = () => {
       const matchesCat = filter === 'all' || productMatchesCategory(p, filter);
       const matchesSize = sizeFilter === 'all' || productMatchesSize(p.size, sizeFilter);
       const matchesThickness = thicknessFilter === 'all' || productMatchesThickness(p.thickness, thicknessFilter);
-      const matchesBody = bodyTypeFilter === 'all' || productMatchesBodyType(p.color, bodyTypeFilter);
+      const matchesBody = productMatchesBodyType(p, bodyTypeFilter, bodyShadeFilter);
       return matchesCat && matchesSize && matchesThickness && matchesBody;
     });
-  }, [products, filter, sizeFilter, thicknessFilter, bodyTypeFilter, productMatchesCategory, productMatchesSize, productMatchesThickness, productMatchesBodyType]);
+  }, [products, filter, sizeFilter, thicknessFilter, bodyTypeFilter, bodyShadeFilter, productMatchesCategory, productMatchesSize, productMatchesThickness, productMatchesBodyType]);
 
   const availableApplicationOptions = useMemo(() => {
     if (!productsForAppFacet || productsForAppFacet.length === 0) return [];
@@ -540,13 +567,13 @@ const Products = () => {
 
   useEffect(() => {
     setVisibleCount(20);
-  }, [filter, bodyTypeFilter, debouncedSearchQuery, thicknessFilter, sizeFilter, appFilter, lookFilter]);
+  }, [filter, bodyTypeFilter, bodyShadeFilter, debouncedSearchQuery, thicknessFilter, sizeFilter, appFilter, lookFilter]);
 
   // Local filtering for all criteria
   const filteredProducts = React.useMemo(() => {
     return products.filter(product => {
       const matchesCategory = filter === 'all' || productMatchesCategory(product, filter);
-      const matchesBodyType = bodyTypeFilter === 'all' || productMatchesBodyType(product.color, bodyTypeFilter);
+      const matchesBodyType = productMatchesBodyType(product, bodyTypeFilter, bodyShadeFilter);
       const matchesThickness = thicknessFilter === 'all' || productMatchesThickness(product.thickness, thicknessFilter);
       const matchesSize = sizeFilter === 'all' || productMatchesSize(product.size, sizeFilter);
       const matchesApp = appFilter === 'all' || productMatchesApp(product.application, appFilter);
@@ -558,7 +585,7 @@ const Products = () => {
 
       return matchesCategory && matchesBodyType && matchesThickness && matchesSize && matchesApp && matchesLook;
     });
-  }, [products, filter, bodyTypeFilter, thicknessFilter, sizeFilter, appFilter, lookFilter, productMatchesCategory, productMatchesBodyType, productMatchesThickness, productMatchesSize, productMatchesApp, normalizeFilterString]);
+  }, [products, filter, bodyTypeFilter, bodyShadeFilter, thicknessFilter, sizeFilter, appFilter, lookFilter, productMatchesCategory, productMatchesBodyType, productMatchesThickness, productMatchesSize, productMatchesApp, normalizeFilterString]);
 
   const visibleProducts = useMemo(() => {
     return filteredProducts.slice(0, visibleCount);
@@ -587,12 +614,6 @@ const Products = () => {
     let newApp = appFilter === 'all' ? null : appFilter;
     let newBodyType = bodyTypeFilter === 'all' ? null : bodyTypeFilter;
 
-    // If changing category away from Color Body, reset bodyType filter
-    const isTargetColorBody = newCat === 'color-body' || newCat === 'Color Body Tiles' || (newCat && newCat.toLowerCase().includes('extra-max'));
-    if (!isTargetColorBody && newCat !== null) {
-      newBodyType = null;
-    }
-
     if (newCat) {
       const prodsInNewCat = products.filter(p => productMatchesCategory(p, newCat));
       if (newSize && !prodsInNewCat.some(p => productMatchesSize(p.size, newSize))) {
@@ -615,18 +636,41 @@ const Products = () => {
     });
   };
 
-  const handleBodyTypeChange = (bodyTypeVal) => {
-    const isCurrentlyActive = bodyTypeFilter.toLowerCase() === bodyTypeVal.toLowerCase();
-    const newBodyType = isCurrentlyActive || bodyTypeVal === 'all' ? null : bodyTypeVal;
+  const handleBodyTypeSelection = (btVal) => {
+    const isCurrentlyActive = isBodyTypeOptionActive(btVal);
+    const nextBodyType = isCurrentlyActive || btVal === 'all' ? 'all' : btVal;
+    setBodyTypeFilter(nextBodyType);
+    setBodyShadeFilter('all');
 
-    let newCat = selectedCategorySlug;
-    if (!isColorBodyActive) {
-      newCat = 'color-body';
+    let newSize = sizeFilter === 'all' ? null : sizeFilter;
+    let newThick = thicknessFilter === 'all' ? null : thicknessFilter;
+    let newApp = appFilter === 'all' ? null : appFilter;
+
+    if (nextBodyType !== 'all') {
+      const prodsInBodyType = products.filter(p => productMatchesBodyType(p, nextBodyType, 'all'));
+      if (newSize && !prodsInBodyType.some(p => productMatchesSize(p.size, newSize))) newSize = null;
+      if (newThick && !prodsInBodyType.some(p => productMatchesThickness(p.thickness, newThick))) newThick = null;
+      if (newApp && !prodsInBodyType.some(p => productMatchesApp(p.application, newApp))) newApp = null;
     }
 
     updateQueryParams({
-      bodyType: newBodyType,
-      cat: newCat === 'all' ? 'color-body' : newCat
+      bodyType: nextBodyType === 'all' ? null : nextBodyType,
+      shade: null,
+      size: newSize,
+      thickness: newThick,
+      app: newApp
+    });
+  };
+
+  const handleBodyShadeSelection = (shadeVal) => {
+    const isCurrentlyActive = bodyShadeFilter.toLowerCase() === shadeVal.toLowerCase();
+    const nextShade = isCurrentlyActive || shadeVal === 'all' ? 'all' : shadeVal;
+    setBodyShadeFilter(nextShade);
+    setBodyTypeFilter('color-body');
+
+    updateQueryParams({
+      bodyType: 'color-body',
+      shade: nextShade === 'all' ? null : nextShade
     });
   };
 
@@ -852,14 +896,6 @@ const Products = () => {
                       <span className={`mr-3 transition-colors ${isCategoryActive('all', 'all') ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> All Collections
                     </button>
                   </li>
-                  <li>
-                    <button
-                      onClick={() => handleFilterChange('Color Body Tiles', 'color-body')}
-                      className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${isCategoryActive('Color Body Tiles', 'color-body') ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
-                    >
-                      <span className={`mr-3 transition-colors ${isCategoryActive('Color Body Tiles', 'color-body') ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> Color Body Tiles
-                    </button>
-                  </li>
                   <AnimatePresence>
                     {availableCategories.filter(cat => cat.slug !== 'color-body' && cat.name !== 'Color Body Tiles').map((cat) => (
                       <motion.li
@@ -884,83 +920,99 @@ const Products = () => {
                 </ul>
               </div>
 
-              {/* Body Type Filter (Visible when Color Body Tiles is selected/active) */}
-              <AnimatePresence>
-                {isColorBodyActive && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0, y: -8 }}
-                    animate={{ opacity: 1, height: 'auto', y: 0 }}
-                    exit={{ opacity: 0, height: 0, y: -8 }}
-                    transition={{ duration: 0.25 }}
-                    className="bg-[#FAF8F5] border border-[#5D4037]/25 rounded-2xl p-4 shadow-xs"
-                  >
-                    <div className="flex items-center justify-between mb-3 border-b border-[#5D4037]/15 pb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#5D4037]" />
-                        <h3 className="text-base font-bold text-zinc-900 tracking-tight">
-                          Body Type
-                        </h3>
-                      </div>
-                      {bodyTypeFilter !== 'all' && (
+              {/* Body Type Filter (Positioned in between Category and Thickness) */}
+              <div>
+                <h3 className="text-lg font-bold text-zinc-900 mb-6 border-b-2 border-zinc-900 pb-1 inline-block">
+                  Body Type
+                </h3>
+                <ul className="space-y-1">
+                  <li>
+                    <button
+                      onClick={() => handleBodyTypeSelection('all')}
+                      className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${
+                        bodyTypeFilter === 'all'
+                          ? 'bg-[#5D4037] text-white font-medium'
+                          : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+                      }`}
+                    >
+                      <span className={`mr-3 transition-colors ${bodyTypeFilter === 'all' ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> All Body Types
+                    </button>
+                  </li>
+                  {bodyTypeOptionsToRender.map((btOpt) => {
+                    const active = isBodyTypeOptionActive(btOpt.value);
+                    const isColorBody = btOpt.value === 'color-body' || btOpt.label.toLowerCase().includes('color body');
+                    return (
+                      <li key={btOpt.value}>
                         <button
-                          onClick={() => handleBodyTypeChange('all')}
-                          className="text-[11px] font-bold text-[#5D4037] hover:underline uppercase tracking-wider cursor-pointer"
-                        >
-                          All Types
-                        </button>
-                      )}
-                    </div>
-
-                    <p className="text-[12px] text-zinc-500 mb-3">
-                      Select body type from admin data:
-                    </p>
-
-                    <ul className="space-y-1">
-                      <li>
-                        <button
-                          onClick={() => handleBodyTypeChange('all')}
-                          className={`flex items-center text-left w-full px-3 py-2 transition-all text-[13px] rounded-lg cursor-pointer ${
-                            bodyTypeFilter === 'all'
-                              ? 'bg-[#5D4037] text-white font-semibold shadow-xs'
-                              : 'text-zinc-700 hover:bg-zinc-200/60'
+                          onClick={() => handleBodyTypeSelection(btOpt.value)}
+                          className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${
+                            active
+                              ? 'bg-[#5D4037] text-white font-medium'
+                              : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
                           }`}
                         >
-                          <span className="flex items-center">
-                            <span className={`mr-2.5 transition-colors ${bodyTypeFilter === 'all' ? 'text-white' : 'text-zinc-400'}`}>→</span>
-                            All Body Types
-                          </span>
+                          <span className={`mr-3 transition-colors ${active ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> {btOpt.label}
                         </button>
-                      </li>
-                      {CANONICAL_BODY_TYPES.map((bt, index) => {
-                        const active = bodyTypeFilter.toLowerCase() === bt.toLowerCase();
-                        return (
-                          <li key={bt}>
-                            <button
-                              onClick={() => handleBodyTypeChange(bt)}
-                              className={`flex items-center text-left w-full px-3 py-2 transition-all text-[13px] rounded-lg cursor-pointer ${
-                                active
-                                  ? 'bg-[#5D4037] text-white font-semibold shadow-xs'
-                                  : 'text-zinc-700 hover:bg-zinc-200/60'
-                              }`}
+
+                        {/* When Color Body Tiles is selected, expand the 8 body type shades */}
+                        <AnimatePresence>
+                          {isColorBody && active && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="ml-3 pl-3 border-l-2 border-[#5D4037]/25 my-2 space-y-1"
                             >
-                              <span className="flex items-center gap-2.5">
-                                <span className={`text-[11px] font-mono w-4 text-left ${active ? 'text-white/80' : 'text-zinc-400'}`}>
-                                  {index + 1}.
+                              <div className="flex items-center justify-between py-1 mb-1">
+                                <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                                  Body Shade:
                                 </span>
-                                <span
-                                  className="w-3.5 h-3.5 rounded-full border border-black/20 shadow-2xs flex-shrink-0"
-                                  style={{ backgroundColor: BODY_TYPE_SWATCHES[bt.toLowerCase()] || '#E0E0E0' }}
-                                />
-                                <span>{bt}</span>
-                              </span>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                                {bodyShadeFilter !== 'all' && (
+                                  <button
+                                    onClick={() => handleBodyShadeSelection('all')}
+                                    className="text-[10px] font-bold text-[#5D4037] hover:underline uppercase cursor-pointer"
+                                  >
+                                    All Shades
+                                  </button>
+                                )}
+                              </div>
+                              <ul className="space-y-1">
+                                {CANONICAL_BODY_TYPES.map((shade, idx) => {
+                                  const isShadeActive = bodyShadeFilter.toLowerCase() === shade.toLowerCase();
+                                  return (
+                                    <li key={shade}>
+                                      <button
+                                        onClick={() => handleBodyShadeSelection(shade)}
+                                        className={`flex items-center text-left w-full px-2.5 py-1.5 transition-all text-[12px] rounded-md cursor-pointer ${
+                                          isShadeActive
+                                            ? 'bg-[#5D4037] text-white font-semibold'
+                                            : 'text-zinc-700 hover:bg-zinc-100'
+                                        }`}
+                                      >
+                                        <span className="flex items-center gap-2">
+                                          <span className={`text-[10px] font-mono w-3.5 text-left ${isShadeActive ? 'text-white/80' : 'text-zinc-400'}`}>
+                                            {idx + 1}.
+                                          </span>
+                                          <span
+                                            className="w-3 h-3 rounded-full border border-black/20 shadow-2xs flex-shrink-0"
+                                            style={{ backgroundColor: BODY_TYPE_SWATCHES[shade.toLowerCase()] || '#E0E0E0' }}
+                                          />
+                                          <span>{shade}</span>
+                                        </span>
+                                      </button>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
 
               {/* Thickness Filter */}
               <div>
@@ -1092,14 +1144,31 @@ const Products = () => {
                     )}
                     {bodyTypeFilter !== 'all' && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#5D4037] text-white shadow-xs">
-                        <span
-                          className="w-2 h-2 rounded-full border border-white/60"
-                          style={{ backgroundColor: BODY_TYPE_SWATCHES[bodyTypeFilter.toLowerCase()] || '#E0E0E0' }}
-                        />
-                        Body: {bodyTypeFilter}
+                        {bodyShadeFilter !== 'all' ? (
+                          <>
+                            <span
+                              className="w-2 h-2 rounded-full border border-white/60"
+                              style={{ backgroundColor: BODY_TYPE_SWATCHES[bodyShadeFilter.toLowerCase()] || '#E0E0E0' }}
+                            />
+                            Body: Color Body ({bodyShadeFilter})
+                          </>
+                        ) : (
+                          <>
+                            Body: {
+                              bodyTypeFilter === 'gvt-pgvt' ? 'GVT/PGVT Tiles' :
+                              bodyTypeFilter === 'color-body' ? 'Color Body Tiles' :
+                              bodyTypeFilter === 'full-body' ? 'Full Body Tiles' :
+                              bodyTypeFilter
+                            }
+                          </>
+                        )}
                         <button
                           type="button"
-                          onClick={() => handleBodyTypeChange('all')}
+                          onClick={() => {
+                            setBodyTypeFilter('all');
+                            setBodyShadeFilter('all');
+                            updateQueryParams({ bodyType: null, shade: null });
+                          }}
                           className="hover:text-zinc-200 ml-1 text-xs font-bold leading-none cursor-pointer"
                           title="Clear body type filter"
                         >
@@ -1108,16 +1177,21 @@ const Products = () => {
                       </span>
                     )}
                   </div>
-                  {(filter !== 'all' || bodyTypeFilter !== 'all') && (
+                  {(filter !== 'all' || bodyTypeFilter !== 'all' || sizeFilter !== 'all' || thicknessFilter !== 'all' || appFilter !== 'all') && (
                     <button
                       type="button"
                       onClick={() => {
                         handleFilterChange('all', 'all');
-                        handleBodyTypeChange('all');
+                        setBodyTypeFilter('all');
+                        setBodyShadeFilter('all');
+                        setSizeFilter('all');
+                        setThicknessFilter('all');
+                        setAppFilter('all');
+                        updateQueryParams({ cat: null, bodyType: null, shade: null, size: null, thickness: null, app: null });
                       }}
                       className="text-xs font-semibold text-[#5D4037] hover:underline cursor-pointer"
                     >
-                      Show All Collections
+                      Clear All Filters
                     </button>
                   )}
                 </div>

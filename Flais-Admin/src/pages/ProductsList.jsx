@@ -708,7 +708,7 @@ const ProductsList = () => {
                 {isFiltered && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-800">Filtered</span>}
               </span>
             ) : 
-             activeTab === 'filters' ? 'Manage dynamic catalog sidebar filters (Category, Thickness, Size, Application)' :
+             activeTab === 'filters' ? 'Manage dynamic catalog sidebar filters (Category, Body Type, Thickness, Size, Application)' :
              'Edit banner media and description for the collection page'}
           </p>
         </div>
@@ -902,12 +902,16 @@ const ProductsList = () => {
                   className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
                   <option value="All">All Body Types</option>
-                  {['White', 'Ivory', 'Grey', 'Black', 'Green', 'Brown', 'Choco', 'Verde'].map((bt) => (
-                    <option key={bt} value={bt}>
-                      {bt}
-                    </option>
-                  ))}
-                  <option value="GVT">GVT</option>
+                  <option value="GVT/PGVT Tiles">GVT/PGVT Tiles</option>
+                  <option value="Color Body Tiles">Color Body Tiles</option>
+                  <option value="Full Body Tiles">Full Body Tiles</option>
+                  <optgroup label="Color Body Shades">
+                    {['White', 'Ivory', 'Grey', 'Black', 'Green', 'Brown', 'Choco', 'Verde'].map((bt) => (
+                      <option key={bt} value={bt}>
+                        {bt}
+                      </option>
+                    ))}
+                  </optgroup>
                 </select>
               </div>
 

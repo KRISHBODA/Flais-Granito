@@ -4,7 +4,7 @@ import { Search, Trash2, Sliders, Plus, Edit, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CatalogFilters = () => {
-  const [activeTab, setActiveTab] = useState('category'); // 'category', 'thickness', 'size', 'application'
+  const [activeTab, setActiveTab] = useState('category'); // 'category', 'bodyType', 'thickness', 'size', 'application'
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -192,6 +192,12 @@ const CatalogFilters = () => {
           Category Filters
         </button>
         <button
+          onClick={() => setActiveTab('bodyType')}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === 'bodyType' ? 'bg-[#0145F2] text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+        >
+          Body Type Filters
+        </button>
+        <button
           onClick={() => setActiveTab('thickness')}
           className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === 'thickness' ? 'bg-[#0145F2] text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
         >
@@ -300,7 +306,8 @@ const CatalogFilters = () => {
                 value={newLabel}
                 onChange={handleLabelChange}
                 placeholder={
-                  activeTab === 'category' ? 'e.g. Full body' :
+                  activeTab === 'category' ? 'e.g. Marvel Collection' :
+                  activeTab === 'bodyType' ? 'e.g. GVT/PGVT Tiles' :
                   activeTab === 'thickness' ? 'e.g. 12 MM Full Body' :
                   activeTab === 'size' ? 'e.g. 600 x 600 MM' : 'e.g. Outdoor'
                 }
@@ -317,6 +324,7 @@ const CatalogFilters = () => {
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
                   placeholder={
+                    activeTab === 'bodyType' ? 'e.g. gvt-pgvt' :
                     activeTab === 'thickness' ? 'e.g. 12mm' :
                     activeTab === 'size' ? 'e.g. 600x600' : 'e.g. outdoor'
                   }

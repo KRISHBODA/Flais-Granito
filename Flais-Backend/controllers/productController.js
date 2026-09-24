@@ -252,9 +252,42 @@ exports.getProducts = async (req, res) => {
       : (color && color !== "All" && color !== "all" ? color : null);
 
     if (chosenBodyType) {
-      andConditions.push({
-        color: { $regex: new RegExp(`^${escapeRegExp(chosenBodyType).trim()}$`, "i") }
-      });
+      const norm = chosenBodyType.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const CANONICAL_SHADES = ['WHITE', 'IVORY', 'GREY', 'BLACK', 'GREEN', 'BROWN', 'CHOCO', 'VERDE', 'White', 'Ivory', 'Grey', 'Black', 'Green', 'Brown', 'Choco', 'Verde'];
+      if (norm.includes('gvt') || norm.includes('pgvt')) {
+        andConditions.push({
+          $or: [
+            { color: { $regex: /gvt|pgvt/i } },
+            {
+              $and: [
+                { category: { $ne: 'Extra Max Collection' } },
+                { color: { $nin: CANONICAL_SHADES } }
+              ]
+            }
+          ]
+        });
+      } else if (norm.includes('colorbody') || norm.includes('colourbody')) {
+        andConditions.push({
+          $or: [
+            { category: { $regex: /extra max/i } },
+            { color: { $in: CANONICAL_SHADES } }
+          ]
+        });
+      } else if (norm.includes('fullbody')) {
+        andConditions.push({
+          $or: [
+            { title: { $regex: /full\s*body/i } },
+            { category: { $regex: /full\s*body/i } },
+            { size: { $regex: /full\s*body/i } },
+            { thickness: { $regex: /full\s*body/i } },
+            { description: { $regex: /full\s*body/i } }
+          ]
+        });
+      } else {
+        andConditions.push({
+          color: { $regex: new RegExp(`^${escapeRegExp(chosenBodyType).trim()}$`, "i") }
+        });
+      }
     }
 
     // 360 Link filter: uploaded vs missing
