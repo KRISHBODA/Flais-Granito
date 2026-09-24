@@ -820,18 +820,10 @@ const ProductsList = () => {
                   onChange={(e) => handleCategoryChange(e.target.value)}
                   className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
-                  <option value="All">
-                    All Collections {
-                      selectedSize && selectedSize !== 'All' && getSizeCount(selectedSize)
-                        ? `(${getSizeCount(selectedSize)})`
-                        : (selectedSurface && selectedSurface !== 'All' && mediaStats?.surfaceCounts?.overall?.[selectedSurface])
-                          ? `(${mediaStats.surfaceCounts.overall[selectedSurface]})`
-                          : ''
-                    }
-                  </option>
+                  <option value="All">All Collections</option>
                   {availableCategories.map(cat => (
                     <option key={cat._id || cat.name} value={cat.name}>
-                      {cat.name} ({getCategoryCount(cat.name)})
+                      {cat.name}
                     </option>
                   ))}
                 </select>
@@ -849,18 +841,10 @@ const ProductsList = () => {
                   onChange={(e) => handleSizeChange(e.target.value)}
                   className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
-                  <option value="All">
-                    All Sizes {
-                      selectedCategory && selectedCategory !== 'All' && getCategoryCount(selectedCategory)
-                        ? `(${getCategoryCount(selectedCategory)})`
-                        : (selectedSurface && selectedSurface !== 'All' && mediaStats?.surfaceCounts?.overall?.[selectedSurface])
-                          ? `(${mediaStats.surfaceCounts.overall[selectedSurface]})`
-                          : ''
-                    }
-                  </option>
+                  <option value="All">All Sizes</option>
                   {availableSizes.map((s) => (
                     <option key={s} value={s}>
-                      {s} ({getSizeCount(s)})
+                      {s}
                     </option>
                   ))}
                 </select>
@@ -880,14 +864,11 @@ const ProductsList = () => {
                 >
                   <option value="All">All Surfaces</option>
                   {selectedSize && selectedSize !== 'All' ? (
-                    getSurfacesForSize(selectedSize).map((surf) => {
-                      const count = getSurfaceCount(selectedSize, surf);
-                      return (
-                        <option key={surf} value={surf}>
-                          {surf} ({count})
-                        </option>
-                      );
-                    })
+                    getSurfacesForSize(selectedSize).map((surf) => (
+                      <option key={surf} value={surf}>
+                        {surf}
+                      </option>
+                    ))
                   ) : (
                     Object.entries(SURFACES_BY_SIZE)
                       .filter(([sizeKey]) => {
@@ -897,14 +878,11 @@ const ProductsList = () => {
                       })
                       .map(([sizeKey, list]) => (
                         <optgroup key={sizeKey} label={`${sizeKey.replace(/_/g, ' ')} Surfaces`}>
-                          {list.map((surf) => {
-                            const count = getSurfaceCount(sizeKey, surf);
-                            return (
-                              <option key={`${sizeKey}-${surf}`} value={surf}>
-                                {surf} ({count})
-                              </option>
-                            );
-                          })}
+                          {list.map((surf) => (
+                            <option key={`${sizeKey}-${surf}`} value={surf}>
+                              {surf}
+                            </option>
+                          ))}
                         </optgroup>
                       ))
                   )}
@@ -924,15 +902,12 @@ const ProductsList = () => {
                   className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
                 >
                   <option value="All">All Body Types</option>
-                  {['White', 'Ivory', 'Grey', 'Black', 'Green', 'Brown', 'Choco', 'Verde'].map((bt) => {
-                    const count = mediaStats?.bodyTypeCounts?.[bt] ?? 0;
-                    return (
-                      <option key={bt} value={bt}>
-                        {bt} ({count})
-                      </option>
-                    );
-                  })}
-                  <option value="GVT">GVT ({mediaStats?.bodyTypeCounts?.["GVT"] ?? 0})</option>
+                  {['White', 'Ivory', 'Grey', 'Black', 'Green', 'Brown', 'Choco', 'Verde'].map((bt) => (
+                    <option key={bt} value={bt}>
+                      {bt}
+                    </option>
+                  ))}
+                  <option value="GVT">GVT</option>
                 </select>
               </div>
 

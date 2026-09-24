@@ -847,27 +847,17 @@ const Products = () => {
                   <li>
                     <button
                       onClick={() => handleFilterChange('all','all')}
-                      className={`flex items-center justify-between text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${isCategoryActive('all', 'all') ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                      className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${isCategoryActive('all', 'all') ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                     >
-                      <span className="flex items-center">
-                        <span className={`mr-3 transition-colors ${isCategoryActive('all', 'all') ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> All Collections
-                      </span>
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${isCategoryActive('all', 'all') ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-500'}`}>
-                        {products.length}
-                      </span>
+                      <span className={`mr-3 transition-colors ${isCategoryActive('all', 'all') ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> All Collections
                     </button>
                   </li>
                   <li>
                     <button
                       onClick={() => handleFilterChange('Color Body Tiles', 'color-body')}
-                      className={`flex items-center justify-between text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${isCategoryActive('Color Body Tiles', 'color-body') ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                      className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${isCategoryActive('Color Body Tiles', 'color-body') ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                     >
-                      <span className="flex items-center">
-                        <span className={`mr-3 transition-colors ${isCategoryActive('Color Body Tiles', 'color-body') ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> Color Body Tiles
-                      </span>
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${isCategoryActive('Color Body Tiles', 'color-body') ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-900 border border-amber-200'}`}>
-                        {colorBodyTotalCount}
-                      </span>
+                      <span className={`mr-3 transition-colors ${isCategoryActive('Color Body Tiles', 'color-body') ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> Color Body Tiles
                     </button>
                   </li>
                   <AnimatePresence>
@@ -929,7 +919,7 @@ const Products = () => {
                       <li>
                         <button
                           onClick={() => handleBodyTypeChange('all')}
-                          className={`flex items-center justify-between text-left w-full px-3 py-2 transition-all text-[13px] rounded-lg cursor-pointer ${
+                          className={`flex items-center text-left w-full px-3 py-2 transition-all text-[13px] rounded-lg cursor-pointer ${
                             bodyTypeFilter === 'all'
                               ? 'bg-[#5D4037] text-white font-semibold shadow-xs'
                               : 'text-zinc-700 hover:bg-zinc-200/60'
@@ -939,25 +929,19 @@ const Products = () => {
                             <span className={`mr-2.5 transition-colors ${bodyTypeFilter === 'all' ? 'text-white' : 'text-zinc-400'}`}>→</span>
                             All Body Types
                           </span>
-                          <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
-                            bodyTypeFilter === 'all' ? 'bg-white/20 text-white' : 'bg-white text-zinc-600 border border-zinc-200'
-                          }`}>
-                            {colorBodyTotalCount}
-                          </span>
                         </button>
                       </li>
                       {CANONICAL_BODY_TYPES.map((bt, index) => {
-                        const count = bodyTypeCounts[bt] || 0;
                         const active = bodyTypeFilter.toLowerCase() === bt.toLowerCase();
                         return (
                           <li key={bt}>
                             <button
                               onClick={() => handleBodyTypeChange(bt)}
-                              className={`flex items-center justify-between text-left w-full px-3 py-2 transition-all text-[13px] rounded-lg cursor-pointer ${
+                              className={`flex items-center text-left w-full px-3 py-2 transition-all text-[13px] rounded-lg cursor-pointer ${
                                 active
                                   ? 'bg-[#5D4037] text-white font-semibold shadow-xs'
                                   : 'text-zinc-700 hover:bg-zinc-200/60'
-                              } ${count === 0 ? 'opacity-50' : ''}`}
+                              }`}
                             >
                               <span className="flex items-center gap-2.5">
                                 <span className={`text-[11px] font-mono w-4 text-left ${active ? 'text-white/80' : 'text-zinc-400'}`}>
@@ -968,11 +952,6 @@ const Products = () => {
                                   style={{ backgroundColor: BODY_TYPE_SWATCHES[bt.toLowerCase()] || '#E0E0E0' }}
                                 />
                                 <span>{bt}</span>
-                              </span>
-                              <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
-                                active ? 'bg-white/20 text-white' : 'bg-white text-zinc-600 border border-zinc-200'
-                              }`}>
-                                {count}
                               </span>
                             </button>
                           </li>
@@ -1098,9 +1077,6 @@ const Products = () => {
                 {/* Active Filter Header */}
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-100 flex-wrap gap-3">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-sm font-semibold text-zinc-900">
-                      {filteredProducts.length} {filteredProducts.length === 1 ? 'Tile' : 'Tiles'} Found
-                    </span>
                     {filter !== 'all' && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#5D4037]/10 text-[#5D4037] border border-[#5D4037]/20">
                         {selectedCategoryName || filter}
@@ -1141,7 +1117,7 @@ const Products = () => {
                       }}
                       className="text-xs font-semibold text-[#5D4037] hover:underline cursor-pointer"
                     >
-                      Show All Collections ({products.length})
+                      Show All Collections
                     </button>
                   )}
                 </div>
