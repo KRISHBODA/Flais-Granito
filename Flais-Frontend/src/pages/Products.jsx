@@ -493,6 +493,38 @@ const Products = () => {
     return [];
   }, [availableApplicationOptions]);
 
+  // Facet for Color Body Shades: only show shades with > 0 matching products
+  const availableBodyShades = useMemo(() => {
+    const productsForShadeFacet = products.filter(p => {
+      const matchesCat = filter === 'all' || productMatchesCategory(p, filter);
+      const matchesThickness = thicknessFilter === 'all' || productMatchesThickness(p.thickness, thicknessFilter);
+      const matchesSize = sizeFilter === 'all' || productMatchesSize(p.size, sizeFilter);
+      const matchesApp = appFilter === 'all' || productMatchesApp(p.application, appFilter);
+      const matchesColorBody = productMatchesBodyType(p, 'color-body', 'all');
+      return matchesCat && matchesThickness && matchesSize && matchesApp && matchesColorBody;
+    });
+
+    const canonicalWithProducts = CANONICAL_BODY_TYPES.filter(shade => {
+      return productsForShadeFacet.some(p => 
+        (p.color || '').trim().toLowerCase() === shade.toLowerCase()
+      );
+    });
+
+    const otherColors = [];
+    productsForShadeFacet.forEach(p => {
+      const c = (p.color || '').trim();
+      if (!c) return;
+      const cLower = c.toLowerCase();
+      if (cLower === 'gvt' || cLower.includes('gvt') || cLower.includes('pgvt')) return;
+      if (!CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === cLower) && !otherColors.some(o => o.toLowerCase() === cLower)) {
+        const formatted = c.charAt(0).toUpperCase() + c.slice(1).toLowerCase();
+        otherColors.push(formatted);
+      }
+    });
+
+    return [...canonicalWithProducts, ...otherColors];
+  }, [products, filter, thicknessFilter, sizeFilter, appFilter, productMatchesCategory, productMatchesThickness, productMatchesSize, productMatchesApp, productMatchesBodyType]);
+
   // Active option checkers
   const isCategoryActive = useCallback((catName, catSlug) => {
     if (catName === 'all' || catSlug === 'all') {
@@ -642,18 +674,25 @@ const Products = () => {
     setBodyTypeFilter(nextBodyType);
     setBodyShadeFilter('all');
 
+    let newCat = filter === 'all' ? null : filter;
     let newSize = sizeFilter === 'all' ? null : sizeFilter;
     let newThick = thicknessFilter === 'all' ? null : thicknessFilter;
     let newApp = appFilter === 'all' ? null : appFilter;
 
     if (nextBodyType !== 'all') {
       const prodsInBodyType = products.filter(p => productMatchesBodyType(p, nextBodyType, 'all'));
+      if (newCat && !prodsInBodyType.some(p => productMatchesCategory(p, newCat))) {
+        newCat = null;
+        setFilter('all');
+        setSelectedCategorySlug(null);
+      }
       if (newSize && !prodsInBodyType.some(p => productMatchesSize(p.size, newSize))) newSize = null;
       if (newThick && !prodsInBodyType.some(p => productMatchesThickness(p.thickness, newThick))) newThick = null;
       if (newApp && !prodsInBodyType.some(p => productMatchesApp(p.application, newApp))) newApp = null;
     }
 
     updateQueryParams({
+      cat: newCat,
       bodyType: nextBodyType === 'all' ? null : nextBodyType,
       shade: null,
       size: newSize,
@@ -978,7 +1017,7 @@ const Products = () => {
                                 )}
                               </div>
                               <ul className="space-y-1">
-                                {CANONICAL_BODY_TYPES.map((shade, idx) => {
+                                {availableBodyShades.map((shade, idx) => {
                                   const isShadeActive = bodyShadeFilter.toLowerCase() === shade.toLowerCase();
                                   return (
                                     <li key={shade}>
