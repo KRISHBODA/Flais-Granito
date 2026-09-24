@@ -43,10 +43,33 @@ const ProductImage = ({ src, alt, hoverSrc }) => {
   );
 };
 
+const CANONICAL_BODY_TYPES = [
+  'White',
+  'Ivory',
+  'Grey',
+  'Black',
+  'Green',
+  'Brown',
+  'Choco',
+  'Verde'
+];
+
+const BODY_TYPE_SWATCHES = {
+  white: '#F8F9FA',
+  ivory: '#FFFFF0',
+  grey: '#9E9E9E',
+  black: '#212121',
+  green: '#2E7D32',
+  brown: '#6D4C41',
+  choco: '#3E2723',
+  verde: '#004D40'
+};
+
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filter, setFilter] = useState('all');
   const [selectedCategorySlug, setSelectedCategorySlug] = useState('all');
+  const [bodyTypeFilter, setBodyTypeFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [thicknessFilter, setThicknessFilter] = useState('all');
@@ -180,6 +203,9 @@ const Products = () => {
     setFilter(name);
     setSelectedCategorySlug(slug);
 
+    const bodyParam = searchParams.get('bodyType');
+    setBodyTypeFilter(bodyParam || 'all');
+
     const sizeParam = searchParams.get('size');
     setSizeFilter(sizeParam || 'all');
 
@@ -218,21 +244,21 @@ const Products = () => {
 
     // Body type matching (GVT/PGVT, Color Body, Full Body)
     if (norm.includes('gvt') || norm.includes('pgvt') || norm === 'slab') {
-      const color = (product.color || '').trim().toUpperCase();
-      if (color.includes('GVT') || color.includes('PGVT')) return true;
-      return color !== 'WHITE' && color !== 'IVORY' && color !== 'GREY' && color !== 'BLACK' && (product.category || '') !== 'Extra Max Collection';
+      const color = (product.color || '').trim().toLowerCase();
+      if (color.includes('gvt') || color.includes('pgvt')) return true;
+      return !CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === color) && (product.category || '') !== 'Extra Max Collection';
     }
 
     if (norm.includes('colorbody') || norm.includes('digitalfullbody') || norm.includes('colourbody')) {
-      const color = (product.color || '').trim().toUpperCase();
-      if (['WHITE', 'IVORY', 'GREY', 'BLACK'].includes(color)) return true;
+      const color = (product.color || '').trim().toLowerCase();
+      if (CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === color)) return true;
       const cat = (product.category || '').toLowerCase();
       return cat.includes('extra max');
     }
 
     if (norm.includes('fullbody')) {
-      const color = (product.color || '').trim().toUpperCase();
-      if (['WHITE', 'IVORY', 'GREY', 'BLACK'].includes(color)) return true;
+      const color = (product.color || '').trim().toLowerCase();
+      if (CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === color)) return true;
       const cat = (product.category || '').toLowerCase();
       return cat.includes('extra max');
     }
@@ -245,6 +271,13 @@ const Products = () => {
     if (catObj && catObj.name.toLowerCase() === pCat) return true;
     return false;
   }, [categories]);
+
+  const productMatchesBodyType = useCallback((productColor, targetBodyType) => {
+    if (!targetBodyType || targetBodyType === 'all') return true;
+    const pNorm = (productColor || '').trim().toLowerCase();
+    const tNorm = targetBodyType.trim().toLowerCase();
+    return pNorm === tNorm;
+  }, []);
 
   const productMatchesThickness = useCallback((productThickness, optValue) => {
     if (!optValue || optValue === 'all') return true;
@@ -270,16 +303,51 @@ const Products = () => {
     return pNorm.includes(optNorm) || optNorm.includes(pNorm);
   }, [normalizeFilterString]);
 
+  // Color Body state & dynamic counts
+  const isColorBodyActive = useMemo(() => {
+    if (selectedCategorySlug === 'color-body' || filter === 'Color Body Tiles') return true;
+    const norm = (filter || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (norm.includes('colorbody') || norm.includes('colourbody')) return true;
+    if (norm.includes('extramax')) return true;
+    if (bodyTypeFilter && bodyTypeFilter !== 'all') return true;
+    return false;
+  }, [selectedCategorySlug, filter, bodyTypeFilter]);
+
+  const colorBodyProducts = useMemo(() => {
+    return products.filter(p => {
+      const col = (p.color || '').trim().toLowerCase();
+      if (CANONICAL_BODY_TYPES.some(bt => bt.toLowerCase() === col)) return true;
+      const cat = (p.category || '').toLowerCase();
+      return cat.includes('extra max');
+    });
+  }, [products]);
+
+  const bodyTypeCounts = useMemo(() => {
+    const counts = {};
+    CANONICAL_BODY_TYPES.forEach(bt => { counts[bt] = 0; });
+    colorBodyProducts.forEach(p => {
+      const col = (p.color || '').trim().toLowerCase();
+      const match = CANONICAL_BODY_TYPES.find(bt => bt.toLowerCase() === col);
+      if (match) {
+        counts[match] = (counts[match] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [colorBodyProducts]);
+
+  const colorBodyTotalCount = colorBodyProducts.length;
+
   // Dynamic Faceted Calculations
-  // Facet 1: Available Categories (evaluated against active Size, Thickness, Application)
+  // Facet 1: Available Categories (evaluated against active Size, Thickness, Application, Body Type)
   const productsForCategoryFacet = useMemo(() => {
     return products.filter(p => {
       const matchesSize = sizeFilter === 'all' || productMatchesSize(p.size, sizeFilter);
       const matchesThickness = thicknessFilter === 'all' || productMatchesThickness(p.thickness, thicknessFilter);
       const matchesApp = appFilter === 'all' || productMatchesApp(p.application, appFilter);
-      return matchesSize && matchesThickness && matchesApp;
+      const matchesBody = bodyTypeFilter === 'all' || productMatchesBodyType(p.color, bodyTypeFilter);
+      return matchesSize && matchesThickness && matchesApp && matchesBody;
     });
-  }, [products, sizeFilter, thicknessFilter, appFilter, productMatchesSize, productMatchesThickness, productMatchesApp]);
+  }, [products, sizeFilter, thicknessFilter, appFilter, bodyTypeFilter, productMatchesSize, productMatchesThickness, productMatchesApp, productMatchesBodyType]);
 
   const availableCategories = useMemo(() => {
     if (!productsForCategoryFacet || productsForCategoryFacet.length === 0) return [];
@@ -299,15 +367,16 @@ const Products = () => {
     }));
   }, [productsForCategoryFacet, categories, productMatchesCategory]);
 
-  // Facet 2: Available Thickness (evaluated against active Category, Size, Application)
+  // Facet 2: Available Thickness (evaluated against active Category, Size, Application, Body Type)
   const productsForThicknessFacet = useMemo(() => {
     return products.filter(p => {
       const matchesCat = filter === 'all' || productMatchesCategory(p, filter);
       const matchesSize = sizeFilter === 'all' || productMatchesSize(p.size, sizeFilter);
       const matchesApp = appFilter === 'all' || productMatchesApp(p.application, appFilter);
-      return matchesCat && matchesSize && matchesApp;
+      const matchesBody = bodyTypeFilter === 'all' || productMatchesBodyType(p.color, bodyTypeFilter);
+      return matchesCat && matchesSize && matchesApp && matchesBody;
     });
-  }, [products, filter, sizeFilter, appFilter, productMatchesCategory, productMatchesSize, productMatchesApp]);
+  }, [products, filter, sizeFilter, appFilter, bodyTypeFilter, productMatchesCategory, productMatchesSize, productMatchesApp, productMatchesBodyType]);
 
   const availableThicknessOptions = useMemo(() => {
     if (!productsForThicknessFacet || productsForThicknessFacet.length === 0) return [];
@@ -321,15 +390,16 @@ const Products = () => {
     return unique.map(t => ({ value: t, label: t }));
   }, [productsForThicknessFacet, dbThicknessOptions, productMatchesThickness]);
 
-  // Facet 3: Available Size (evaluated against active Category, Thickness, Application)
+  // Facet 3: Available Size (evaluated against active Category, Thickness, Application, Body Type)
   const productsForSizeFacet = useMemo(() => {
     return products.filter(p => {
       const matchesCat = filter === 'all' || productMatchesCategory(p, filter);
       const matchesThickness = thicknessFilter === 'all' || productMatchesThickness(p.thickness, thicknessFilter);
       const matchesApp = appFilter === 'all' || productMatchesApp(p.application, appFilter);
-      return matchesCat && matchesThickness && matchesApp;
+      const matchesBody = bodyTypeFilter === 'all' || productMatchesBodyType(p.color, bodyTypeFilter);
+      return matchesCat && matchesThickness && matchesApp && matchesBody;
     });
-  }, [products, filter, thicknessFilter, appFilter, productMatchesCategory, productMatchesThickness, productMatchesApp]);
+  }, [products, filter, thicknessFilter, appFilter, bodyTypeFilter, productMatchesCategory, productMatchesThickness, productMatchesApp, productMatchesBodyType]);
 
   const availableSizeOptions = useMemo(() => {
     if (!productsForSizeFacet || productsForSizeFacet.length === 0) return [];
@@ -343,15 +413,16 @@ const Products = () => {
     return unique.map(s => ({ value: s, label: s }));
   }, [productsForSizeFacet, dbSizeOptions, productMatchesSize]);
 
-  // Facet 4: Available Application (evaluated against active Category, Size, Thickness)
+  // Facet 4: Available Application (evaluated against active Category, Size, Thickness, Body Type)
   const productsForAppFacet = useMemo(() => {
     return products.filter(p => {
       const matchesCat = filter === 'all' || productMatchesCategory(p, filter);
       const matchesSize = sizeFilter === 'all' || productMatchesSize(p.size, sizeFilter);
       const matchesThickness = thicknessFilter === 'all' || productMatchesThickness(p.thickness, thicknessFilter);
-      return matchesCat && matchesSize && matchesThickness;
+      const matchesBody = bodyTypeFilter === 'all' || productMatchesBodyType(p.color, bodyTypeFilter);
+      return matchesCat && matchesSize && matchesThickness && matchesBody;
     });
-  }, [products, filter, sizeFilter, thicknessFilter, productMatchesCategory, productMatchesSize, productMatchesThickness]);
+  }, [products, filter, sizeFilter, thicknessFilter, bodyTypeFilter, productMatchesCategory, productMatchesSize, productMatchesThickness, productMatchesBodyType]);
 
   const availableApplicationOptions = useMemo(() => {
     if (!productsForAppFacet || productsForAppFacet.length === 0) return [];
@@ -469,12 +540,13 @@ const Products = () => {
 
   useEffect(() => {
     setVisibleCount(20);
-  }, [filter, debouncedSearchQuery, thicknessFilter, sizeFilter, appFilter, lookFilter]);
+  }, [filter, bodyTypeFilter, debouncedSearchQuery, thicknessFilter, sizeFilter, appFilter, lookFilter]);
 
   // Local filtering for all criteria
   const filteredProducts = React.useMemo(() => {
     return products.filter(product => {
       const matchesCategory = filter === 'all' || productMatchesCategory(product, filter);
+      const matchesBodyType = bodyTypeFilter === 'all' || productMatchesBodyType(product.color, bodyTypeFilter);
       const matchesThickness = thicknessFilter === 'all' || productMatchesThickness(product.thickness, thicknessFilter);
       const matchesSize = sizeFilter === 'all' || productMatchesSize(product.size, sizeFilter);
       const matchesApp = appFilter === 'all' || productMatchesApp(product.application, appFilter);
@@ -484,9 +556,9 @@ const Products = () => {
         )
       );
 
-      return matchesCategory && matchesThickness && matchesSize && matchesApp && matchesLook;
+      return matchesCategory && matchesBodyType && matchesThickness && matchesSize && matchesApp && matchesLook;
     });
-  }, [products, filter, thicknessFilter, sizeFilter, appFilter, lookFilter, productMatchesCategory, productMatchesThickness, productMatchesSize, productMatchesApp, normalizeFilterString]);
+  }, [products, filter, bodyTypeFilter, thicknessFilter, sizeFilter, appFilter, lookFilter, productMatchesCategory, productMatchesBodyType, productMatchesThickness, productMatchesSize, productMatchesApp, normalizeFilterString]);
 
   const visibleProducts = useMemo(() => {
     return filteredProducts.slice(0, visibleCount);
@@ -513,6 +585,13 @@ const Products = () => {
     let newSize = sizeFilter === 'all' ? null : sizeFilter;
     let newThick = thicknessFilter === 'all' ? null : thicknessFilter;
     let newApp = appFilter === 'all' ? null : appFilter;
+    let newBodyType = bodyTypeFilter === 'all' ? null : bodyTypeFilter;
+
+    // If changing category away from Color Body, reset bodyType filter
+    const isTargetColorBody = newCat === 'color-body' || newCat === 'Color Body Tiles' || (newCat && newCat.toLowerCase().includes('extra-max'));
+    if (!isTargetColorBody && newCat !== null) {
+      newBodyType = null;
+    }
 
     if (newCat) {
       const prodsInNewCat = products.filter(p => productMatchesCategory(p, newCat));
@@ -531,7 +610,23 @@ const Products = () => {
       cat: newCat,
       size: newSize,
       thickness: newThick,
-      app: newApp
+      app: newApp,
+      bodyType: newBodyType
+    });
+  };
+
+  const handleBodyTypeChange = (bodyTypeVal) => {
+    const isCurrentlyActive = bodyTypeFilter.toLowerCase() === bodyTypeVal.toLowerCase();
+    const newBodyType = isCurrentlyActive || bodyTypeVal === 'all' ? null : bodyTypeVal;
+
+    let newCat = selectedCategorySlug;
+    if (!isColorBodyActive) {
+      newCat = 'color-body';
+    }
+
+    updateQueryParams({
+      bodyType: newBodyType,
+      cat: newCat === 'all' ? 'color-body' : newCat
     });
   };
 
@@ -628,6 +723,7 @@ const Products = () => {
     }
     setFilter('all');
     setSelectedCategorySlug('all');
+    setBodyTypeFilter('all');
     setThicknessFilter('all');
     setSizeFilter('all');
     setAppFilter('all');
@@ -751,13 +847,31 @@ const Products = () => {
                   <li>
                     <button
                       onClick={() => handleFilterChange('all','all')}
-                      className={`flex items-center text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${isCategoryActive('all', 'all') ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                      className={`flex items-center justify-between text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${isCategoryActive('all', 'all') ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
                     >
-                      <span className={`mr-3 transition-colors ${isCategoryActive('all', 'all') ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> All Collections
+                      <span className="flex items-center">
+                        <span className={`mr-3 transition-colors ${isCategoryActive('all', 'all') ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> All Collections
+                      </span>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${isCategoryActive('all', 'all') ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-500'}`}>
+                        {products.length}
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => handleFilterChange('Color Body Tiles', 'color-body')}
+                      className={`flex items-center justify-between text-left w-full px-4 py-2 transition-all text-[14px] group rounded-lg ${isCategoryActive('Color Body Tiles', 'color-body') ? 'bg-[#5D4037] text-white font-medium' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}
+                    >
+                      <span className="flex items-center">
+                        <span className={`mr-3 transition-colors ${isCategoryActive('Color Body Tiles', 'color-body') ? 'text-white' : 'text-zinc-300 group-hover:text-zinc-500'}`}>→</span> Color Body Tiles
+                      </span>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${isCategoryActive('Color Body Tiles', 'color-body') ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-900 border border-amber-200'}`}>
+                        {colorBodyTotalCount}
+                      </span>
                     </button>
                   </li>
                   <AnimatePresence>
-                    {availableCategories.map((cat) => (
+                    {availableCategories.filter(cat => cat.slug !== 'color-body' && cat.name !== 'Color Body Tiles').map((cat) => (
                       <motion.li
                         key={cat._id || cat.slug || cat.name}
                         initial={{ opacity: 0, height: 0 }}
@@ -779,6 +893,95 @@ const Products = () => {
                   )}
                 </ul>
               </div>
+
+              {/* Body Type Filter (Visible when Color Body Tiles is selected/active) */}
+              <AnimatePresence>
+                {isColorBodyActive && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, y: -8 }}
+                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                    exit={{ opacity: 0, height: 0, y: -8 }}
+                    transition={{ duration: 0.25 }}
+                    className="bg-[#FAF8F5] border border-[#5D4037]/25 rounded-2xl p-4 shadow-xs"
+                  >
+                    <div className="flex items-center justify-between mb-3 border-b border-[#5D4037]/15 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#5D4037]" />
+                        <h3 className="text-base font-bold text-zinc-900 tracking-tight">
+                          Body Type
+                        </h3>
+                      </div>
+                      {bodyTypeFilter !== 'all' && (
+                        <button
+                          onClick={() => handleBodyTypeChange('all')}
+                          className="text-[11px] font-bold text-[#5D4037] hover:underline uppercase tracking-wider cursor-pointer"
+                        >
+                          All Types
+                        </button>
+                      )}
+                    </div>
+
+                    <p className="text-[12px] text-zinc-500 mb-3">
+                      Select body type from admin data:
+                    </p>
+
+                    <ul className="space-y-1">
+                      <li>
+                        <button
+                          onClick={() => handleBodyTypeChange('all')}
+                          className={`flex items-center justify-between text-left w-full px-3 py-2 transition-all text-[13px] rounded-lg cursor-pointer ${
+                            bodyTypeFilter === 'all'
+                              ? 'bg-[#5D4037] text-white font-semibold shadow-xs'
+                              : 'text-zinc-700 hover:bg-zinc-200/60'
+                          }`}
+                        >
+                          <span className="flex items-center">
+                            <span className={`mr-2.5 transition-colors ${bodyTypeFilter === 'all' ? 'text-white' : 'text-zinc-400'}`}>→</span>
+                            All Body Types
+                          </span>
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
+                            bodyTypeFilter === 'all' ? 'bg-white/20 text-white' : 'bg-white text-zinc-600 border border-zinc-200'
+                          }`}>
+                            {colorBodyTotalCount}
+                          </span>
+                        </button>
+                      </li>
+                      {CANONICAL_BODY_TYPES.map((bt, index) => {
+                        const count = bodyTypeCounts[bt] || 0;
+                        const active = bodyTypeFilter.toLowerCase() === bt.toLowerCase();
+                        return (
+                          <li key={bt}>
+                            <button
+                              onClick={() => handleBodyTypeChange(bt)}
+                              className={`flex items-center justify-between text-left w-full px-3 py-2 transition-all text-[13px] rounded-lg cursor-pointer ${
+                                active
+                                  ? 'bg-[#5D4037] text-white font-semibold shadow-xs'
+                                  : 'text-zinc-700 hover:bg-zinc-200/60'
+                              } ${count === 0 ? 'opacity-50' : ''}`}
+                            >
+                              <span className="flex items-center gap-2.5">
+                                <span className={`text-[11px] font-mono w-4 text-left ${active ? 'text-white/80' : 'text-zinc-400'}`}>
+                                  {index + 1}.
+                                </span>
+                                <span
+                                  className="w-3.5 h-3.5 rounded-full border border-black/20 shadow-2xs flex-shrink-0"
+                                  style={{ backgroundColor: BODY_TYPE_SWATCHES[bt.toLowerCase()] || '#E0E0E0' }}
+                                />
+                                <span>{bt}</span>
+                              </span>
+                              <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
+                                active ? 'bg-white/20 text-white' : 'bg-white text-zinc-600 border border-zinc-200'
+                              }`}>
+                                {count}
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Thickness Filter */}
               <div>
@@ -911,11 +1114,31 @@ const Products = () => {
                         </button>
                       </span>
                     )}
+                    {bodyTypeFilter !== 'all' && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#5D4037] text-white shadow-xs">
+                        <span
+                          className="w-2 h-2 rounded-full border border-white/60"
+                          style={{ backgroundColor: BODY_TYPE_SWATCHES[bodyTypeFilter.toLowerCase()] || '#E0E0E0' }}
+                        />
+                        Body: {bodyTypeFilter}
+                        <button
+                          type="button"
+                          onClick={() => handleBodyTypeChange('all')}
+                          className="hover:text-zinc-200 ml-1 text-xs font-bold leading-none cursor-pointer"
+                          title="Clear body type filter"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
                   </div>
-                  {filter !== 'all' && (
+                  {(filter !== 'all' || bodyTypeFilter !== 'all') && (
                     <button
                       type="button"
-                      onClick={() => handleFilterChange('all', 'all')}
+                      onClick={() => {
+                        handleFilterChange('all', 'all');
+                        handleBodyTypeChange('all');
+                      }}
                       className="text-xs font-semibold text-[#5D4037] hover:underline cursor-pointer"
                     >
                       Show All Collections ({products.length})
@@ -956,6 +1179,15 @@ const Products = () => {
                         <div className="pt-6 px-2 flex flex-col flex-1">
                           <div className="mb-2 flex items-center gap-2 flex-wrap">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-[#5D4037] bg-[#5D4037]/5 px-2.5 py-0.5 rounded border border-[#5D4037]/10">{product.category || 'Standard'}</span>
+                            {product.color && product.color.toUpperCase() !== 'GVT' && (
+                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-zinc-200 bg-white text-zinc-700 flex items-center gap-1.5 shadow-2xs">
+                                <span
+                                  className="w-2 h-2 rounded-full border border-black/20"
+                                  style={{ backgroundColor: BODY_TYPE_SWATCHES[product.color.toLowerCase()] || '#A0A0A0' }}
+                                />
+                                {product.color} Body
+                              </span>
+                            )}
                             {product.tagReview && String(product.tagReview).trim() !== '' && (
                               <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border ${
                                 /best\s*selling/i.test(product.tagReview)

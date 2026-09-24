@@ -40,6 +40,17 @@ const SURFACES_BY_SIZE = {
   ]
 };
 
+const CANONICAL_BODY_TYPES = [
+  "White",
+  "Ivory",
+  "Grey",
+  "Black",
+  "Green",
+  "Brown",
+  "Choco",
+  "Verde"
+];
+
 const getSurfaceRegex = (token) => {
   const clean = String(token).trim();
   if (/liso\s*\+?\s*carving/i.test(clean) || /liso\s*\+\s*cr/i.test(clean)) {
@@ -169,7 +180,9 @@ exports.getProducts = async (req, res) => {
       filterTag = "all",
       size = "All",
       surface = "All",
-      finish = "All"
+      finish = "All",
+      bodyType = "All",
+      color = "All"
     } = req.query;
 
     const page = Math.max(1, Number(req.query.page) || 1);
@@ -230,6 +243,17 @@ exports.getProducts = async (req, res) => {
     if (chosenSurface) {
       andConditions.push({
         finishes: { $regex: getSurfaceRegex(chosenSurface) }
+      });
+    }
+
+    // Body Type / Color filter
+    const chosenBodyType = (bodyType && bodyType !== "All" && bodyType !== "all")
+      ? bodyType
+      : (color && color !== "All" && color !== "all" ? color : null);
+
+    if (chosenBodyType) {
+      andConditions.push({
+        color: { $regex: new RegExp(`^${escapeRegExp(chosenBodyType).trim()}$`, "i") }
       });
     }
 
@@ -430,6 +454,14 @@ exports.getProducts = async (req, res) => {
       }
     }
     
+    // 5. Body Type counts across canonical 8 types + GVT
+    const bodyTypeCounts = {};
+    for (const bt of CANONICAL_BODY_TYPES) {
+      const reg = new RegExp(`^${escapeRegExp(bt)}$`, "i");
+      bodyTypeCounts[bt] = (allProductsFinishes || []).filter(p => reg.test((p.color || "").trim())).length;
+    }
+    bodyTypeCounts["GVT"] = (allProductsFinishes || []).filter(p => /gvt/i.test((p.color || "").trim())).length;
+    
     let dbQuery = Product.find(query).sort({ createdAt: -1 });
     if (limit > 0) {
       dbQuery = dbQuery.limit(limit).skip(skip);
@@ -452,6 +484,8 @@ exports.getProducts = async (req, res) => {
       categoryCounts: activeCategoryCounts,
       surfaceCounts,
       surfacesBySize: SURFACES_BY_SIZE,
+      bodyTypeCounts,
+      bodyTypes: CANONICAL_BODY_TYPES,
       filterMatrix: {
         categorySizes,
         sizeCategories,
@@ -473,6 +507,8 @@ exports.getProducts = async (req, res) => {
       surfacesBySize: SURFACES_BY_SIZE,
       surfaceCounts,
       categoryCounts: activeCategoryCounts,
+      bodyTypeCounts,
+      bodyTypes: CANONICAL_BODY_TYPES,
       filterMatrix: mediaStats.filterMatrix,
     });
   } catch (error) {

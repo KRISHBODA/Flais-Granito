@@ -250,15 +250,52 @@ const AddProduct = () => {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">Body Type</label>
-                  <input
-                    type="text"
-                    name="color"
-                    value={formData.color}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Grey"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm transition-all focus:border-[#0145F2] focus:outline-none focus:ring-1 focus:ring-[#0145F2]"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-semibold text-slate-700">Body Type</label>
+                    <span className="text-[11px] text-slate-400 font-medium">8 Color Body types</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      list="bodyTypeOptions"
+                      name="color"
+                      value={formData.color}
+                      onChange={handleInputChange}
+                      placeholder="Select or enter Body Type (e.g. Ivory)"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm transition-all focus:border-[#0145F2] focus:outline-none focus:ring-1 focus:ring-[#0145F2]"
+                    />
+                    <datalist id="bodyTypeOptions">
+                      <option value="White" />
+                      <option value="Ivory" />
+                      <option value="Grey" />
+                      <option value="Black" />
+                      <option value="Green" />
+                      <option value="Brown" />
+                      <option value="Choco" />
+                      <option value="Verde" />
+                      <option value="GVT" />
+                    </datalist>
+                  </div>
+                  {/* Quick-select Body Type pills */}
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {['White', 'Ivory', 'Grey', 'Black', 'Green', 'Brown', 'Choco', 'Verde'].map((bt) => {
+                      const isSelected = (formData.color || '').trim().toUpperCase() === bt.toUpperCase();
+                      return (
+                        <button
+                          key={bt}
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, color: bt }))}
+                          className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all ${
+                            isSelected 
+                              ? 'bg-[#0145F2] text-white shadow-sm' 
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                          }`}
+                        >
+                          {bt}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-slate-700">Thickness</label>

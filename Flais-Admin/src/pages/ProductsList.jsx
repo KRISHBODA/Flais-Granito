@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
   Plus, Search, Filter, MoreVertical, Edit, Trash2, ChevronLeft, ChevronRight, 
   Layers, FileText, Package, Save, X, Compass, Sparkles, Images, AlertCircle, 
-  ExternalLink, CheckCircle2, Tag, Ruler 
+  ExternalLink, CheckCircle2, Tag, Ruler, Palette 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CatalogFilters from './CatalogFilters.jsx';
@@ -134,6 +134,7 @@ const ProductsList = () => {
     const urlCategory = searchParams.get('category');
     const urlSize = searchParams.get('size');
     const urlSurface = searchParams.get('surface') || searchParams.get('finish');
+    const urlBodyType = searchParams.get('bodyType');
     const urlSearch = searchParams.get('search');
     const urlPage = searchParams.get('page');
     const urlTab = searchParams.get('tab');
@@ -145,6 +146,7 @@ const ProductsList = () => {
       urlCategory !== null || 
       urlSize !== null ||
       urlSurface !== null ||
+      urlBodyType !== null ||
       urlSearch !== null || 
       urlPage !== null || 
       urlTab !== null || 
@@ -156,6 +158,7 @@ const ProductsList = () => {
         category: urlCategory || 'All',
         size: urlSize || 'All',
         surface: urlSurface || 'All',
+        bodyType: urlBodyType || 'All',
         search: urlSearch || '',
         page: urlPage ? parseInt(urlPage, 10) || 1 : 1,
         tab: urlTab || 'inventory',
@@ -204,6 +207,7 @@ const ProductsList = () => {
   const [selectedCategory, setSelectedCategory] = useState(initialFilters.category);
   const [selectedSize, setSelectedSize] = useState(initialFilters.size);
   const [selectedSurface, setSelectedSurface] = useState(initialFilters.surface);
+  const [selectedBodyType, setSelectedBodyType] = useState(initialFilters.bodyType || 'All');
   const [filter360, setFilter360] = useState(initialFilters.filter360);
   const [filter3d, setFilter3d] = useState(initialFilters.filter3d);
   const [filterTag, setFilterTag] = useState(initialFilters.filterTag);
@@ -525,6 +529,7 @@ const ProductsList = () => {
     if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory);
     if (selectedSize && selectedSize !== 'All') params.set('size', selectedSize);
     if (selectedSurface && selectedSurface !== 'All') params.set('surface', selectedSurface);
+    if (selectedBodyType && selectedBodyType !== 'All') params.set('bodyType', selectedBodyType);
     if (searchTerm) params.set('search', searchTerm);
     if (filter360 && filter360 !== 'all') params.set('filter360', filter360);
     if (filter3d && filter3d !== 'all') params.set('filter3d', filter3d);
@@ -540,6 +545,7 @@ const ProductsList = () => {
         category: selectedCategory,
         size: selectedSize,
         surface: selectedSurface,
+        bodyType: selectedBodyType,
         search: searchTerm,
         page: currentPage,
         tab: activeTab,
@@ -548,13 +554,14 @@ const ProductsList = () => {
         filterTag
       }));
     } catch (e) {}
-  }, [activeTab, selectedCategory, selectedSize, selectedSurface, searchTerm, currentPage, filter360, filter3d, filterTag]);
+  }, [activeTab, selectedCategory, selectedSize, selectedSurface, selectedBodyType, searchTerm, currentPage, filter360, filter3d, filterTag]);
 
   // Handle browser Back / Forward history navigation
   useEffect(() => {
     const urlCategory = searchParams.get('category') || 'All';
     const urlSize = searchParams.get('size') || 'All';
     const urlSurface = searchParams.get('surface') || searchParams.get('finish') || 'All';
+    const urlBodyType = searchParams.get('bodyType') || 'All';
     const urlSearch = searchParams.get('search') || '';
     const urlPage = searchParams.get('page') ? parseInt(searchParams.get('page'), 10) || 1 : 1;
     const urlTab = searchParams.get('tab') || 'inventory';
@@ -565,6 +572,7 @@ const ProductsList = () => {
     setSelectedCategory(prev => prev !== urlCategory ? urlCategory : prev);
     setSelectedSize(prev => prev !== urlSize ? urlSize : prev);
     setSelectedSurface(prev => prev !== urlSurface ? urlSurface : prev);
+    setSelectedBodyType(prev => prev !== urlBodyType ? urlBodyType : prev);
     setSearchTerm(prev => prev !== urlSearch ? urlSearch : prev);
     setCurrentPage(prev => prev !== urlPage ? urlPage : prev);
     setActiveTab(prev => prev !== urlTab ? urlTab : prev);
@@ -577,6 +585,7 @@ const ProductsList = () => {
     selectedCategory !== 'All' || 
     (selectedSize && selectedSize !== 'All') ||
     (selectedSurface && selectedSurface !== 'All') ||
+    (selectedBodyType && selectedBodyType !== 'All') ||
     Boolean(searchTerm) || 
     filter360 !== 'all' || 
     filter3d !== 'all' ||
@@ -587,6 +596,7 @@ const ProductsList = () => {
     selectedCategory !== 'All',
     selectedSize && selectedSize !== 'All',
     selectedSurface && selectedSurface !== 'All',
+    selectedBodyType && selectedBodyType !== 'All',
     Boolean(searchTerm),
     filter360 !== 'all',
     filter3d !== 'all',
@@ -597,6 +607,7 @@ const ProductsList = () => {
     setSelectedCategory('All');
     setSelectedSize('All');
     setSelectedSurface('All');
+    setSelectedBodyType('All');
     setSearchTerm('');
     setFilter360('all');
     setFilter3d('all');
@@ -638,6 +649,7 @@ const ProductsList = () => {
           category: selectedCategory,
           size: selectedSize,
           surface: selectedSurface,
+          bodyType: selectedBodyType,
           filter360,
           filter3d,
           filterTag
@@ -659,14 +671,14 @@ const ProductsList = () => {
     }
   };
 
-  // Re-fetch when page, category, size, surface, search, or media filters change
+  // Re-fetch when page, category, size, surface, bodyType, search, or media filters change
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchProducts();
     }, 400); // 400ms debounce for search
 
     return () => clearTimeout(delayDebounceFn);
-  }, [currentPage, selectedCategory, selectedSize, selectedSurface, searchTerm, filter360, filter3d, filterTag]);
+  }, [currentPage, selectedCategory, selectedSize, selectedSurface, selectedBodyType, searchTerm, filter360, filter3d, filterTag]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -896,6 +908,31 @@ const ProductsList = () => {
                         </optgroup>
                       ))
                   )}
+                </select>
+              </div>
+
+              {/* Body Type Filter Dropdown */}
+              <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors shrink-0 ${
+                selectedBodyType && selectedBodyType !== 'All' 
+                  ? 'border-purple-300 bg-purple-50 text-purple-900 shadow-sm' 
+                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'
+              }`}>
+                <Palette size={15} className={selectedBodyType && selectedBodyType !== 'All' ? 'text-purple-600' : 'text-slate-400'} />
+                <select
+                  value={selectedBodyType}
+                  onChange={(e) => { setSelectedBodyType(e.target.value); setCurrentPage(1); }}
+                  className="bg-transparent focus:outline-none cursor-pointer text-sm pr-1"
+                >
+                  <option value="All">All Body Types</option>
+                  {['White', 'Ivory', 'Grey', 'Black', 'Green', 'Brown', 'Choco', 'Verde'].map((bt) => {
+                    const count = mediaStats?.bodyTypeCounts?.[bt] ?? 0;
+                    return (
+                      <option key={bt} value={bt}>
+                        {bt} ({count})
+                      </option>
+                    );
+                  })}
+                  <option value="GVT">GVT ({mediaStats?.bodyTypeCounts?.["GVT"] ?? 0})</option>
                 </select>
               </div>
 
