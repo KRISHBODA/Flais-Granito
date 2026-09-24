@@ -195,6 +195,15 @@ exports.getAnalyticsSummary = async (req, res) => {
                 ]
               }
             },
+            simpleTileJpgCount: {
+              $sum: {
+                $cond: [
+                  { $gt: [{ $size: { $ifNull: ["$images", []] } }, 1] },
+                  1,
+                  0
+                ]
+              }
+            },
             sampleImages: { $push: { $slice: ["$images", 3] } }
           }
         },
@@ -208,13 +217,14 @@ exports.getAnalyticsSummary = async (req, res) => {
       const collections = agg.map((item) => {
         const previewImages = (item.sampleImages || []).flat().filter(Boolean).slice(0, 4);
         const link360Count = item.link360Count || 0;
+        const simpleTileJpgCount = item.simpleTileJpgCount !== undefined ? item.simpleTileJpgCount : item.productCount;
         return {
           collectionName: item._id || "Uncategorized",
           productCount: item.productCount || 0,
           tilesUploaded: item.productCount || 0, // 1 per unique tile design uploaded
           photoCount: item.photoCount || 0,     // Total photos across all tile designs
           preview3DCount: item.productCount || 0, // 3D preview photo (#1 photo on collection page)
-          simpleTileJpgCount: Math.max(0, (item.photoCount || 0) - (item.productCount || 0)), // Simple tile photo (remaining photos)
+          simpleTileJpgCount,                   // Count only 1 JPG photo per design
           link360Count,                         // Count of 360 photo links in this collection
           has360: link360Count > 0,
           percentageOfProducts: totalProducts > 0 ? Number(((item.productCount / totalProducts) * 100).toFixed(1)) : 0,
@@ -226,6 +236,7 @@ exports.getAnalyticsSummary = async (req, res) => {
         };
       });
 
+      const totalSimpleTileJpg = collections.reduce((sum, item) => sum + (item.simpleTileJpgCount || 0), 0);
       const collectionsWith360Count = collections.filter((c) => c.has360).length;
 
       collectionStats = {
@@ -233,7 +244,7 @@ exports.getAnalyticsSummary = async (req, res) => {
         totalProducts,
         totalTilesUploaded: totalProducts,
         total3DPreviews: totalProducts,
-        totalSimpleTileJpg: Math.max(0, totalPhotos - totalProducts),
+        totalSimpleTileJpg,
         total360Links,
         collectionsCount: collections.length,
         collectionsWith360Count,
@@ -291,6 +302,15 @@ exports.getCollectionPhotosSummary = async (req, res) => {
               ]
             }
           },
+          simpleTileJpgCount: {
+            $sum: {
+              $cond: [
+                { $gt: [{ $size: { $ifNull: ["$images", []] } }, 1] },
+                1,
+                0
+              ]
+            }
+          },
           sampleImages: { $push: { $slice: ["$images", 3] } }
         }
       },
@@ -304,13 +324,14 @@ exports.getCollectionPhotosSummary = async (req, res) => {
     const collections = agg.map((item) => {
       const previewImages = (item.sampleImages || []).flat().filter(Boolean).slice(0, 4);
       const link360Count = item.link360Count || 0;
+      const simpleTileJpgCount = item.simpleTileJpgCount !== undefined ? item.simpleTileJpgCount : item.productCount;
       return {
         collectionName: item._id || "Uncategorized",
         productCount: item.productCount || 0,
         tilesUploaded: item.productCount || 0,
         photoCount: item.photoCount || 0,
         preview3DCount: item.productCount || 0, // 3D preview photo (#1 photo on collection page)
-        simpleTileJpgCount: Math.max(0, (item.photoCount || 0) - (item.productCount || 0)), // Simple tile photo (remaining photos)
+        simpleTileJpgCount,                   // Count only 1 JPG photo per design
         link360Count,
         has360: link360Count > 0,
         percentageOfProducts: totalProducts > 0 ? Number(((item.productCount / totalProducts) * 100).toFixed(1)) : 0,
@@ -322,6 +343,7 @@ exports.getCollectionPhotosSummary = async (req, res) => {
       };
     });
 
+    const totalSimpleTileJpg = collections.reduce((sum, item) => sum + (item.simpleTileJpgCount || 0), 0);
     const collectionsWith360Count = collections.filter((c) => c.has360).length;
 
     res.status(200).json({
@@ -331,7 +353,7 @@ exports.getCollectionPhotosSummary = async (req, res) => {
         totalProducts,
         totalTilesUploaded: totalProducts,
         total3DPreviews: totalProducts,
-        totalSimpleTileJpg: Math.max(0, totalPhotos - totalProducts),
+        totalSimpleTileJpg,
         total360Links,
         collectionsCount: collections.length,
         collectionsWith360Count,

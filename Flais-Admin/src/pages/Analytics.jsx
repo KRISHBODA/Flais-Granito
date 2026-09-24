@@ -112,7 +112,7 @@ const Analytics = () => {
   const total3DPreviews = collectionPhotos.total3DPreviews || collectionPhotos.totalProducts || 0;
   const totalSimpleTileJpg = collectionPhotos.totalSimpleTileJpg !== undefined
     ? collectionPhotos.totalSimpleTileJpg
-    : Math.max(0, (collectionPhotos.totalPhotos || 0) - (collectionPhotos.totalProducts || 0));
+    : (collectionPhotos.collections || []).reduce((sum, c) => sum + (c.simpleTileJpgCount ?? c.productCount ?? 0), 0);
 
   const collectionsWith360 = useMemo(() => {
     return (collectionPhotos.collections || [])
@@ -139,8 +139,8 @@ const Analytics = () => {
       list.sort((a, b) => (a.productCount || 0) - (b.productCount || 0));
     } else if (collectionSort === 'jpg-desc') {
       list.sort((a, b) => {
-        const aJpg = a.simpleTileJpgCount ?? Math.max(0, (a.photoCount || 0) - (a.productCount || 0));
-        const bJpg = b.simpleTileJpgCount ?? Math.max(0, (b.photoCount || 0) - (b.productCount || 0));
+        const aJpg = a.simpleTileJpgCount ?? a.productCount ?? 0;
+        const bJpg = b.simpleTileJpgCount ?? b.productCount ?? 0;
         return bJpg - aJpg;
       });
     } else if (collectionSort === 'photos-desc') {
@@ -156,7 +156,7 @@ const Analytics = () => {
   const collectionChartData = useMemo(() => {
     return (collectionPhotos.collections || []).map((item) => {
       const preview3D = item.preview3DCount ?? item.productCount ?? 0;
-      const simpleJpg = item.simpleTileJpgCount ?? Math.max(0, (item.photoCount || 0) - (item.productCount || 0));
+      const simpleJpg = item.simpleTileJpgCount ?? item.productCount ?? 0;
       const totalPhotos = item.photoCount || 0;
 
       let value = preview3D;
@@ -557,8 +557,8 @@ const Analytics = () => {
                 <span className="font-bold text-slate-900">Understanding 3D Preview Photos vs. Simple Tile Photos (JPG):</span>
                 <p className="text-slate-600 leading-relaxed">
                   • <strong>3D Preview (#1 Photo)</strong>: The primary room-scene mockup image (first photo <code className="bg-blue-100/60 px-1 py-0.5 rounded text-[#0145F2] font-semibold">images[0]</code>) displayed on the collection page for each tile product. There is exactly <strong>1 3D preview per tile product</strong> (Total: <strong>{formatNumber(total3DPreviews)} previews</strong> across catalog).<br />
-                  • <strong>Simple Tile Photos (JPG)</strong>: The flat tile faces, random patterns, and detail photos uploaded for each tile product (Total: <strong>{formatNumber(totalSimpleTileJpg)} simple tile photos</strong>).<br />
-                  • <strong>Total Photos</strong>: The sum of the 3D preview photo plus all simple tile photos (Total: <strong>{formatNumber(collectionPhotos.totalPhotos)} photos</strong>).
+                  • <strong>Simple Tile Photos (JPG)</strong>: The flat tile faces (exactly <strong>1 JPG photo counted per tile design</strong>, Total: <strong>{formatNumber(totalSimpleTileJpg)} simple tile photos</strong>).<br />
+                  • <strong>Total Photos</strong>: The sum of all photos uploaded across all tile designs (Total: <strong>{formatNumber(collectionPhotos.totalPhotos)} photos</strong>).
                 </p>
               </div>
             </div>
@@ -597,7 +597,7 @@ const Analytics = () => {
                       )}
                     </div>
                     <p className="mt-2 text-3xl font-extrabold text-slate-900">{formatNumber(totalSimpleTileJpg)}</p>
-                    <p className="mt-1 text-xs text-slate-400">Plain tile faces & texture shots</p>
+                    <p className="mt-1 text-xs text-slate-400">1 simple photo per design</p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md">
                     <ImageIcon size={22} />
@@ -805,7 +805,7 @@ const Analytics = () => {
                     {filteredCollections.length > 0 ? (
                       filteredCollections.map((col, idx) => {
                         const preview3D = col.preview3DCount ?? col.productCount ?? 0;
-                        const simpleJpg = col.simpleTileJpgCount ?? Math.max(0, (col.photoCount || 0) - (col.productCount || 0));
+                        const simpleJpg = col.simpleTileJpgCount ?? col.productCount ?? 0;
                         const totalPhotos = col.photoCount || 0;
 
                         return (
