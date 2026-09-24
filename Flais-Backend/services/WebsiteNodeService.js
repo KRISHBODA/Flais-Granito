@@ -112,17 +112,39 @@ class WebsiteNodeService {
    */
   async uploadFile(parentId, file) {
     this.validateFile(file);
-    const name = file.originalname;
+    let name = file.originalname;
+
+    const isJpeg = file.mimetype === 'image/jpeg' || 
+                   path.extname(name).toLowerCase() === '.jpg' || 
+                   path.extname(name).toLowerCase() === '.jpeg';
+    
+    if (isJpeg) {
+      name = '1.jpeg';
+    }
+
     this.validateName(name);
 
     const slug = this.calculateSlug(name);
     const existing = await WebsiteNode.findOne({ parentId: parentId || null, slug });
-    if (existing) {
-      throw new Error(`A node with name ${name} already exists in this folder.`);
-    }
-
+    
     const relativePath = await this.calculateRelativePath(parentId, name);
     const ext = path.extname(name).toLowerCase();
+
+    if (existing) {
+      if (isJpeg) {
+        // Overwrite the existing 1.jpeg
+        const fsResult = await websiteFileSystemProvider.saveFile(relativePath, file.buffer);
+        
+        existing.mimeType = file.mimetype;
+        existing.fileSize = fsResult.size;
+        existing.extension = ext;
+        await existing.save();
+        
+        return existing;
+      } else {
+        throw new Error(`A node with name ${name} already exists in this folder.`);
+      }
+    }
 
     // 1. Filesystem Operation
     const fsResult = await websiteFileSystemProvider.saveFile(relativePath, file.buffer);
