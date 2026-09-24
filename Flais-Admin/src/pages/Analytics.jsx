@@ -563,8 +563,8 @@ const Analytics = () => {
               </div>
             </div>
 
-            {/* 4 Summary Metric Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {/* 3 Summary Metric Cards */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className={`rounded-3xl border bg-white p-5 shadow-sm transition-all ${
                 collectionMetricMode === 'tiles' ? 'border-[#0145F2] ring-2 ring-[#0145F2]/20' : 'border-slate-200'
               }`}>
@@ -621,23 +621,6 @@ const Analytics = () => {
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md">
                     <Camera size={22} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Avg Simple Photos / Tile</p>
-                    <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                      {total3DPreviews > 0
-                        ? (totalSimpleTileJpg / total3DPreviews).toFixed(1)
-                        : '0.0'}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">Simple tile photos per tile design</p>
-                  </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white shadow-md">
-                    <Layers size={22} />
                   </div>
                 </div>
               </div>
@@ -944,7 +927,7 @@ const Analytics = () => {
             </div>
 
             {/* 360 Summary Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-3xl border border-purple-200 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/30 p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -961,23 +944,6 @@ const Analytics = () => {
               <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Catalog 360° Coverage</p>
-                    <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                      {collectionPhotos.percentage360Coverage || '47.8'}%
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {formatNumber(collectionPhotos.total360Links)} of {formatNumber(collectionPhotos.totalProducts)} total tiles have 360°
-                    </p>
-                  </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-md">
-                    <Eye size={22} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
                     <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Collections Status</p>
                     <p className="mt-2 text-3xl font-extrabold text-slate-900">
                       <span className="text-emerald-600">{collectionsWith360.length} Active</span>
@@ -985,7 +951,7 @@ const Analytics = () => {
                       <span className="text-slate-500 text-2xl">{collectionsWithout360.length} Missing</span>
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      4 collections have 360°, 4 collections have 0 links
+                      {collectionsWith360.length} collections have 360°, {collectionsWithout360.length} collections have 0 links
                     </p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md">
