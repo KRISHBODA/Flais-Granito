@@ -11,7 +11,7 @@ const ChangePassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+  const BackendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
 
   const handleSubmit = async (e) => {
     e.preventDefault();

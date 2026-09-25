@@ -17,7 +17,7 @@ const emptyDealer = {
 const AdminFlaisPark = () => {
   const [activeTab, setActiveTab] = useState('locations');
   const [loading, setLoading] = useState(true);
-  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
+  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
 
   const [pageSettings, setPageSettings] = useState({
     heroTitle: "FLAIS PARK",

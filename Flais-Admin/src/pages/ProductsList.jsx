@@ -94,7 +94,7 @@ const ProductsList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
-  const API = import.meta.env.VITE_BACKEND_URL;
+  const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
   const [collectionSettings, setCollectionSettings] = useState({
     bannerVideo: "",
     title: "Our Tile Collection",

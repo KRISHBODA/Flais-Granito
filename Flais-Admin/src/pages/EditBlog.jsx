@@ -13,7 +13,7 @@ const EditBlog = () => {
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+  const BackendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
 
   // 1. Fetch the specific blog data when the page loads
   useEffect(() => {

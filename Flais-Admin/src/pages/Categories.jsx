@@ -12,7 +12,7 @@ const Categories = () => {
   const [newCategoryImagePreview, setNewCategoryImagePreview] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
-  const API = import.meta.env.VITE_BACKEND_URL;
+  const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
 
   const fetchCategories = async () => {
     try {

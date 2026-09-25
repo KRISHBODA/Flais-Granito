@@ -478,7 +478,7 @@ const Messages = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [settingsLoading, setSettingsLoading] = useState(true);
-  const API = import.meta.env.VITE_BACKEND_URL;
+  const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
   const enrichedMessages = useMemo(
     () => messages.map((msg) => ({ ...msg, country: getCountryFromPhone(msg.phone) })),
     [messages]

@@ -25,7 +25,7 @@ const ICON_MAP = {
 const AdminAchievement = () => {
   const [activeTab, setActiveTab] = useState('exhibitions');
   const [loading, setLoading] = useState(true);
-  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
+  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
 
   async function persistFlaisGuide(updatedData = {}) {
     try {
@@ -177,7 +177,7 @@ const AdminAchievement = () => {
   const getPdfPreviewUrl = (url) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
+    const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
     if (url.includes('/uploads/')) {
       const parts = url.split('/uploads/');
       return `${backendUrl}/uploads/${parts[parts.length - 1]}`;

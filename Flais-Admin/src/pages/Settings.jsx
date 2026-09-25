@@ -19,7 +19,7 @@ const Settings = () => {
     address: 'Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.'
   });
 
-  const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+  const BackendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
 
   // Load profile settings & footer settings
   useEffect(() => {

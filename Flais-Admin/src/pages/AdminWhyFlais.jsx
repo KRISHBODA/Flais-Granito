@@ -29,7 +29,7 @@ const AdminWhyFlais = () => {
   const [activeTab, setActiveTab] = useState('media');
   const [loading, setLoading] = useState(true);
   const [uploadingField, setUploadingField] = useState(null); // Track which field is uploading
-  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
+  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
 
   // ── About page text/image settings
   const [aboutSettings, setAboutSettings] = useState({

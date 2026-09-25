@@ -50,7 +50,7 @@ const uploadToCloudinary = async (BackendUrl, file, label, { raw = false } = {})
 
 // ─── Catalog Form Modal ───────────────────────────────────────────────────────
 const CatalogModal = ({ catalog, catalogs, onSave, onClose }) => {
-  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
+  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
   const [form, setForm] = useState(catalog || emptyCatalog);
   const [preview, setPreview] = useState(catalog?.image || '');
   const [pdfSource, setPdfSource] = useState(() => {
@@ -338,7 +338,7 @@ const CatalogModal = ({ catalog, catalogs, onSave, onClose }) => {
 const AdminCatalog = () => {
   const [activeTab, setActiveTab] = useState('brochures');
   const [loading, setLoading] = useState(true);
-  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim();
+  const BackendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').trim().replace(/\/$/, '');
 
   const [pageSettings, setPageSettings] = useState({
     heroTitle: "DOWNLOAD CATALOGS",

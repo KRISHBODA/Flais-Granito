@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const backend_url = import.meta.env.VITE_BACKEND_URL;
+const backend_url = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
 
 
 const AddProduct = () => {

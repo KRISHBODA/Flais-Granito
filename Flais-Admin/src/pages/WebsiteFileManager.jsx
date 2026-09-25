@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API = import.meta.env.VITE_BACKEND_URL;
+const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
 
 const WebsiteFileManager = () => {
   const [nodes, setNodes] = useState([]);

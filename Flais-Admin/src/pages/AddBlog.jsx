@@ -10,7 +10,7 @@ const AddBlog = () => {
   const [content, setContent] = useState('');
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+  const BackendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
 
   const handleSubmit = async (e) => {
     e.preventDefault();

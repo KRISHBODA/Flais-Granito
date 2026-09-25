@@ -9,7 +9,7 @@ const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const API = import.meta.env.VITE_BACKEND_URL; // Get API URL
+  const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, ''); // Get API URL
 
   const handleBack = () => {
     if (location.state?.from) {

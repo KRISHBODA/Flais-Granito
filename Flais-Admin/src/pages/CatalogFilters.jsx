@@ -15,7 +15,7 @@ const CatalogFilters = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
 
-  const API = import.meta.env.VITE_BACKEND_URL;
+  const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
 
   const fetchOptions = async () => {
     try {

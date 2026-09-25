@@ -33,7 +33,7 @@ const AdminUsers = () => {
     { id: 'website-files', label: 'Website Files' }
   ];
 
-  const BackendUrl = import.meta.env.VITE_BACKEND_URL;
+  const BackendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
   const token = localStorage.getItem('adminToken');
   const axiosInstance = axios.create({
     headers: { Authorization: `Bearer ${token}` }
