@@ -7,14 +7,14 @@ const {
   updateHeroSlide,
 } = require("../controllers/heroController");
 const upload = require("../middleware/upload");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 // Public Route
 router.get("/", getHeroSlides);
 
 // Protected Routes (Admin)
-router.post("/", protect, upload.single("image"), createHeroSlide);
-router.put("/:id", protect, upload.single("image"), updateHeroSlide);
-router.delete("/:id", protect, deleteHeroSlide);
+router.post("/", protect, authorize("home"), upload.single("image"), createHeroSlide);
+router.put("/:id", protect, authorize("home"), upload.single("image"), updateHeroSlide);
+router.delete("/:id", protect, authorize("home"), deleteHeroSlide);
 
 module.exports = router;

@@ -45,7 +45,10 @@ exports.loginAdmin = async (req, res) => {
       success: true,
       message: "Login successful",
       token, // Send token to frontend
-      email: admin.email
+      email: admin.email,
+      role: admin.role,
+      permissions: admin.permissions,
+      requirePasswordChange: admin.mustChangePassword || false
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -93,5 +96,32 @@ exports.updateAdminProfile = async (req, res) => {
     res.status(200).json({ success: true, message: "Credentials updated successfully!" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Update failed", error: error.message });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    if (!req.admin) {
+      return res.status(401).json({ success: false, message: "Not authorized" });
+    }
+
+    if (!newPassword || newPassword.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({
+        success: false,
+        message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+      });
+    }
+
+    const admin = await Admin.findById(req.admin._id);
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+    admin.password = newPassword;
+    admin.mustChangePassword = false;
+    await admin.save();
+
+    res.status(200).json({ success: true, message: "Password changed successfully!" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Password change failed", error: error.message });
   }
 };

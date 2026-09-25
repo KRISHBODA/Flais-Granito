@@ -24,6 +24,9 @@ router.post("/login", loginLimiter, loginAdmin);
 // @route   GET /api/admin/profile
 router.get("/profile", protect, getAdminProfile);
 
+// @route   POST /api/admin/change-password
+router.post("/change-password", protect, require("../controllers/adminController").changePassword);
+
 // @route   PUT /api/admin/profile
 router.put("/profile", protect, updateAdminProfile);
 

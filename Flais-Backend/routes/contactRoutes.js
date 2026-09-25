@@ -6,7 +6,7 @@ const {
   updateMessageStatus,
   deleteMessage,
 } = require("../controllers/contactController");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 const { createRateLimit } = require("../middleware/rateLimit");
 
 const contactLimiter = createRateLimit({
@@ -19,8 +19,8 @@ const contactLimiter = createRateLimit({
 router.post("/", contactLimiter, createMessage);
 
 // Protected Routes (Admin)
-router.get("/", protect, getMessages);
-router.put("/:id", protect, updateMessageStatus);
-router.delete("/:id", protect, deleteMessage);
+router.get("/", protect, authorize("contact"), getMessages);
+router.put("/:id", protect, authorize("contact"), updateMessageStatus);
+router.delete("/:id", protect, authorize("contact"), deleteMessage);
 
 module.exports = router;

@@ -21,6 +21,8 @@ const AdminFlaisPark = lazy(() => import('../pages/AdminFlaisPark.jsx'));
 const AdminAchievement = lazy(() => import('../pages/AdminAchievement.jsx'));
 const Analytics = lazy(() => import('../pages/Analytics.jsx'));
 const WebsiteFileManager = lazy(() => import('../pages/WebsiteFileManager.jsx'));
+const ChangePassword = lazy(() => import('../pages/ChangePassword.jsx'));
+const AdminUsers = lazy(() => import('../pages/AdminUsers.jsx'));
 
 // Loading Spinner Component
 const Loading = () => (
@@ -49,7 +51,12 @@ const ProtectedRoute = () => {
   } catch (error) {
     // If token is malformed/invalid
     localStorage.removeItem('adminToken');
-      return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
+  if (adminData.requirePasswordChange) {
+    return <Navigate to="/admin/change-password" replace />;
   }
 
   return <Outlet />;
@@ -83,8 +90,11 @@ const AdminRoutes = () => {
             <Route path="website-files" element={<WebsiteFileManager />} />
             <Route path="flais-park" element={<AdminFlaisPark />} />
             <Route path="achievement" element={<AdminAchievement />} />
+            <Route path="users" element={<AdminUsers />} />
           </Route>
         </Route>
+
+        <Route path="/admin/change-password" element={<ChangePassword />} />
 
         {/* Catch all - Redirect unknown paths to login */}
         <Route path="/" element={<Navigate to="/admin/login" replace />} />

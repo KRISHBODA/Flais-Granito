@@ -112,6 +112,7 @@ app.use("/api/website-content", express.static(path.join(__dirname, "website-con
 
 // Routes
 app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/admin/users", require("./routes/adminUsersRoutes"));
 app.use("/api/admin/website-nodes", require("./routes/websiteNodeRoutes"));
 app.use("/api/public/website-nodes", require("./routes/publicWebsiteNodeRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));

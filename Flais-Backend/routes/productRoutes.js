@@ -9,7 +9,7 @@ const {
   scanProduct,
 } = require("../controllers/productController");
 const upload = require("../middleware/upload");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 // Public Routes
 router.get("/", getProducts);
@@ -18,8 +18,8 @@ router.get("/:id", getProductById);
 
 // Protected Routes (Admin)
 // Accepts any file fields (e.g. previewImages for 3D preview, images for JPGs)
-router.post("/", protect, upload.any(), createProduct);
-router.put("/:id", protect, upload.any(), updateProduct);
-router.delete("/:id", protect, deleteProduct);
+router.post("/", protect, authorize("collection"), upload.any(), createProduct);
+router.put("/:id", protect, authorize("collection"), upload.any(), updateProduct);
+router.delete("/:id", protect, authorize("collection"), deleteProduct);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
 const {
   getNodes,
@@ -23,8 +23,8 @@ router.get("/:id/download", downloadFile);
 
 
 
-// Apply admin protection to all routes in this file
-router.use(protect);
+// Apply admin protect, authorize("website-files")ion to all routes in this file
+router.use(protect, authorize("website-files"));
 
 // @route   GET /api/admin/website-nodes
 router.get("/", getNodes);

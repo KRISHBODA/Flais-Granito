@@ -31,6 +31,16 @@ const protect = async (req, res, next) => {
         return res.status(401).json({ success: false, message: "Not authorized, admin not found" });
       }
 
+      if (req.admin.isActive === false) {
+        return res.status(403).json({ success: false, message: "Account disabled. Please contact Super Admin." });
+      }
+
+      if (req.admin.mustChangePassword) {
+        if (req.originalUrl !== '/api/admin/change-password') {
+          return res.status(403).json({ success: false, requirePasswordChange: true, message: "Must change password" });
+        }
+      }
+
       next();
     } catch (error) {
       res.status(401).json({ success: false, message: "Not authorized, token failed" });
@@ -40,4 +50,27 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+
+const authorize = (permission) => {
+  return (req, res, next) => {
+    if (!req.admin) {
+      return res.status(401).json({ success: false, message: "Not authorized" });
+    }
+    if (req.admin.role === "superadmin") {
+      return next();
+    }
+    if (req.admin.permissions && req.admin.permissions.includes(permission)) {
+      return next();
+    }
+    return res.status(403).json({ success: false, message: `Forbidden: requires ${permission} permission` });
+  };
+};
+
+const superAdminOnly = (req, res, next) => {
+  if (req.admin && req.admin.role === "superadmin") {
+    return next();
+  }
+  return res.status(403).json({ success: false, message: "Forbidden: Super Admin only" });
+};
+
+module.exports = { protect, authorize, superAdminOnly };

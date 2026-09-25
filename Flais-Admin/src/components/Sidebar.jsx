@@ -19,22 +19,25 @@ import {
 import toast from 'react-hot-toast'; // Optional: for a nice notification
 
 const navItems = [
-  { name: 'Home', path: '/admin/home', icon: Home },
-  { name: 'Why FLAIS', path: '/admin/why-flais', icon: Info },
-  { name: 'Collection', path: '/admin/products', icon: Package },
-  { name: 'Flais Park', path: '/admin/flais-park', icon: MapPin },
-  { name: 'Catalog', path: '/admin/catalog', icon: BookOpen },
-  { name: 'Achievement', path: '/admin/achievement', icon: Trophy },
-  { name: 'Contact', path: '/admin/messages', icon: MessageSquare },
-  { name: 'Blog', path: '/admin/blogs', icon: FileText },
-  { name: 'Settings', path: '/admin/settings', icon: Settings },
-  { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
-  { name: 'Website Files', path: '/admin/website-files', icon: FolderTree },
-
+  { name: 'Home', path: '/admin/home', icon: Home, permission: 'home' },
+  { name: 'Why FLAIS', path: '/admin/why-flais', icon: Info, permission: 'why-flais' },
+  { name: 'Collection', path: '/admin/products', icon: Package, permission: 'collection' },
+  { name: 'Flais Park', path: '/admin/flais-park', icon: MapPin, permission: 'flais-park' },
+  { name: 'Catalog', path: '/admin/catalog', icon: BookOpen, permission: 'catalog' },
+  { name: 'Achievement', path: '/admin/achievement', icon: Trophy, permission: 'achievement' },
+  { name: 'Contact', path: '/admin/messages', icon: MessageSquare, permission: 'contact' },
+  { name: 'Blog', path: '/admin/blogs', icon: FileText, permission: 'blog' },
+  { name: 'Settings', path: '/admin/settings', icon: Settings, permission: 'settings' },
+  { name: 'Analytics', path: '/admin/analytics', icon: BarChart3, permission: 'analytics' },
+  { name: 'Website Files', path: '/admin/website-files', icon: FolderTree, permission: 'website-files' },
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
+  
+  const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
+  const userRole = adminData.role || 'admin';
+  const userPermissions = adminData.permissions || [];
 
   const handleLogout = () => {
     // 1. Confirm with the user (optional)
@@ -79,7 +82,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
         {/* Navigation Links */}
         <nav className="flex-1 space-y-1 px-4 py-4 overflow-y-auto border-t border-slate-50">
-          {navItems.map((item) => (
+          {navItems.filter(item => userRole === 'superadmin' || userPermissions.includes(item.permission)).map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
@@ -96,6 +99,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               {item.name}
             </NavLink>
           ))}
+          {userRole === 'superadmin' && (
+            <NavLink
+              to="/admin/users"
+              onClick={() => setIsOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 mt-4 ${
+                  isActive
+                    ? 'bg-[#0145F2] text-white shadow-md'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#0145F2]'
+                }`
+              }
+            >
+              <Settings size={20} />
+              Admin Users
+            </NavLink>
+          )}
         </nav>
 
         {/* Logout Section */}

@@ -8,15 +8,15 @@ const {
   deleteBlog,
 } = require("../controllers/blogController");
 const upload = require("../middleware/upload");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 // Public Routes
 router.get("/", getBlogs);
 router.get("/:id", getBlogById);
 
 // Protected Routes (Admin)
-router.post("/", protect, upload.single("image"), createBlog);
-router.put("/:id", protect, upload.single("image"), updateBlog);
-router.delete("/:id", protect, deleteBlog);
+router.post("/", protect, authorize("blog"), upload.single("image"), createBlog);
+router.put("/:id", protect, authorize("blog"), upload.single("image"), updateBlog);
+router.delete("/:id", protect, authorize("blog"), deleteBlog);
 
 module.exports = router;

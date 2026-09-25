@@ -6,14 +6,14 @@ const {
   deleteFilterOption,
   updateFilterOption,
 } = require("../controllers/filterOptionController");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 // Public Routes
 router.get("/", getFilterOptions);
 
 // Protected Routes (Admin)
-router.post("/", protect, createFilterOption);
-router.put("/:id", protect, updateFilterOption);
-router.delete("/:id", protect, deleteFilterOption);
+router.post("/", protect, authorize("collection"), createFilterOption);
+router.put("/:id", protect, authorize("collection"), updateFilterOption);
+router.delete("/:id", protect, authorize("collection"), deleteFilterOption);
 
 module.exports = router;
