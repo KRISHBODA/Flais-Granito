@@ -269,7 +269,7 @@ const Home = () => {
         <button
           onClick={toggleMute}
           title={isMuted ? 'Unmute' : 'Mute'}
-          className="absolute bottom-4 right-4 sm:bottom-10 sm:right-8 z-20 flex items-center gap-2 bg-black/45 hover:bg-black/65 backdrop-blur-md border border-white/25 rounded-full px-3 py-2 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-semibold tracking-wider uppercase text-white cursor-pointer transition-all duration-200"
+          className="absolute bottom-4 left-4 sm:bottom-10 sm:left-8 z-20 flex items-center gap-2 bg-black/45 hover:bg-black/65 backdrop-blur-md border border-white/25 rounded-full px-3 py-2 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-semibold tracking-wider uppercase text-white cursor-pointer transition-all duration-200"
         >
           {isMuted ? (
             /* Speaker with X (muted) */
