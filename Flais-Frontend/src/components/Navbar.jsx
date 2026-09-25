@@ -318,6 +318,11 @@ const Navbar = () => {
               ) : (
                 <Link
                   to={link.path}
+                  onClick={() => {
+                    if (location.pathname === link.path) {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
                   className={`relative text-xs xl:text-sm font-semibold tracking-wide py-1 whitespace-nowrap transition-colors duration-200 ${location.pathname === link.path
                     ? shouldShowBg ? 'text-[#5D4037]' : 'text-white'
                     : shouldShowBg ? 'text-zinc-500 hover:text-zinc-900' : 'text-white/75 hover:text-white'
@@ -539,7 +544,12 @@ const Navbar = () => {
                   ) : (
                     <Link
                       to={link.path}
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => {
+                        setIsOpen(false);
+                        if (location.pathname === link.path) {
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                      }}
                       className={`text-base font-semibold ${location.pathname === link.path ? 'text-[#5D4037]' : 'text-zinc-700'}`}
                     >
                       {link.name}

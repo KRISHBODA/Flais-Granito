@@ -7,7 +7,12 @@ const SmoothScroll = ({ children }) => {
   const rafRef = useRef(null);
   const location = useLocation();
 
+  const prevPathnameRef = useRef(location.pathname);
+
   useEffect(() => {
+    const isNewRoute = prevPathnameRef.current !== location.pathname;
+    prevPathnameRef.current = location.pathname;
+
     const savedProductsScroll = typeof window !== 'undefined'
       ? sessionStorage.getItem('flais:products-scroll-y')
       : null;
@@ -25,7 +30,9 @@ const SmoothScroll = ({ children }) => {
         lenisRef.current = null;
       }
       // Always scroll to top on route change (native fallback)
-      window.scrollTo(0, 0);
+      if (isNewRoute) {
+        window.scrollTo(0, 0);
+      }
       return;
     }
 
@@ -58,7 +65,9 @@ const SmoothScroll = ({ children }) => {
 
     if (!isTouchDevice) {
       // Desktop: prefer native scrolling (do not initialize Lenis)
-      window.scrollTo(0, 0);
+      if (isNewRoute) {
+        window.scrollTo(0, 0);
+      }
       return;
     }
 
@@ -88,22 +97,25 @@ const SmoothScroll = ({ children }) => {
       lenis.resize();
     }
 
-    // Always scroll to top on every route change (pathname or search),
+    // Always scroll to top on every actual route change (pathname),
     // except when we are restoring the products page position.
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(0, { immediate: true });
-    }
-    // Native fallback to ensure scroll resets even before Lenis takes over
-    window.scrollTo(0, 0);
-
-    // Force scroll to top again after a brief delay to account for React Suspense
-    // lazy loading the new route components into the DOM.
-    const suspenseScrollTimer = setTimeout(() => {
+    let suspenseScrollTimer;
+    if (isNewRoute) {
       if (lenisRef.current) {
         lenisRef.current.scrollTo(0, { immediate: true });
       }
+      // Native fallback to ensure scroll resets even before Lenis takes over
       window.scrollTo(0, 0);
-    }, 150);
+
+      // Force scroll to top again after a brief delay to account for React Suspense
+      // lazy loading the new route components into the DOM.
+      suspenseScrollTimer = setTimeout(() => {
+        if (lenisRef.current) {
+          lenisRef.current.scrollTo(0, { immediate: true });
+        }
+        window.scrollTo(0, 0);
+      }, 150);
+    }
 
     // Debounced ResizeObserver: recalculates Lenis scroll height when page
     // content changes (e.g. after lazy Suspense resolves or images load).
@@ -119,11 +131,11 @@ const SmoothScroll = ({ children }) => {
 
     return () => {
       // clear the suspense scroll timer (if set) and the debounced resize timer
-      clearTimeout(suspenseScrollTimer);
+      if (suspenseScrollTimer) clearTimeout(suspenseScrollTimer);
       clearTimeout(resizeTimer);
       resizeObserver.disconnect();
     };
-  }, [location.pathname, location.search]);
+  }, [location.pathname]);
 
   // Clean up on unmount
   useEffect(() => {

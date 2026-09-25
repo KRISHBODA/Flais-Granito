@@ -20,23 +20,38 @@ const ProductSkeleton = () => (
   </div>
 );
 
-const ProductImage = ({ src, alt, hoverSrc }) => {
+const ProductImage = ({ src, alt, hoverSrc, index = 0 }) => {
   const [loaded, setLoaded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, [src]);
+
   return (
-    <div className={`relative w-full h-full transition-all duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}>
+    <div 
+      className={`relative w-full h-full transition-all duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+    >
       <img
+        ref={imgRef}
         src={src}
         alt={alt}
-        loading="lazy"
+        loading={index < 6 ? 'eager' : 'lazy'}
+        fetchPriority={index < 3 ? 'high' : 'auto'}
+        decoding="async"
         onLoad={() => setLoaded(true)}
-        className={`w-full h-full object-cover transition-all duration-700 ${hoverSrc ? 'group-hover/card:opacity-0 group-hover/card:scale-105' : 'group-hover/card:scale-105'} ${loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        className={`w-full h-full object-cover transition-all duration-500 ${hoverSrc && isHovered ? 'group-hover/card:opacity-0 group-hover/card:scale-105' : 'group-hover/card:scale-105'} ${loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-98'}`}
       />
-      {hoverSrc && (
+      {hoverSrc && isHovered && (
         <img
           src={hoverSrc}
           alt={`${alt} tile face`}
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-contain p-4 opacity-0 transition-all duration-500 group-hover/card:opacity-100 group-hover/card:scale-102 bg-[#FAF8F5]/95 pointer-events-none"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-contain p-4 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100 group-hover/card:scale-102 bg-[#FAF8F5]/95 pointer-events-none"
         />
       )}
     </div>
@@ -187,15 +202,6 @@ const Products = () => {
     });
   }, [setSearchParams]);
 
-  // Restore saved query params from sessionStorage on initial load if URL search is empty
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const currentSearch = searchParams.toString();
-    const savedQuery = sessionStorage.getItem('flais:products-query');
-    if (!currentSearch && savedQuery) {
-      setSearchParams(new URLSearchParams(savedQuery), { replace: true });
-    }
-  }, []);
 
   // Sync states with URL searchParams
   useEffect(() => {
@@ -874,6 +880,8 @@ const Products = () => {
               <img
                 src={getOptimizedImageUrl(bannerMedia, 1200)}
                 alt={collectionSettings.title}
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover block"
               />
             ) : (
@@ -1235,22 +1243,18 @@ const Products = () => {
                   )}
                 </div>
 
-                <motion.div 
-                  layout
+                <div 
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                 >
-                  <AnimatePresence mode="popLayout">
+                  <AnimatePresence>
                     {visibleProducts.map((product, index) => (
                       <motion.div
-                        layout
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
                         transition={{ 
-                          type: "spring", 
-                          stiffness: 300, 
-                          damping: 30,
-                          opacity: { duration: 0.25 }
+                          duration: 0.22, 
+                          ease: "easeOut"
                         }}
                         key={product._id}
                         className="p-4 pb-8 rounded-tl-[3.5rem] rounded-br-[3.5rem] rounded-tr-[1.25rem] rounded-bl-[1.25rem] bg-[#FAF8F5] border border-[#D2C9B1]/30 group flex flex-col h-full hover:shadow-xl hover:border-[#5D4037]/30"
@@ -1260,6 +1264,7 @@ const Products = () => {
                             src={getOptimizedImageUrl(product.images && product.images.length > 0 ? product.images[0] : (product.image || 'https://via.placeholder.com/400x400?text=No+Image'), 600)}
                             hoverSrc={product.images && product.images.length > 1 ? getOptimizedImageUrl(product.images[1], 600) : null}
                             alt={product.title || product.name}
+                            index={index}
                           />
                           <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/5 transition-colors duration-300 pointer-events-none" />
                           
@@ -1312,7 +1317,7 @@ const Products = () => {
                       </motion.div>
                     ))}
                   </AnimatePresence>
-                </motion.div>
+                </div>
 
                 {visibleCount < filteredProducts.length && (
                   <div ref={sentinelRef} className="w-full h-20 flex items-center justify-center mt-8">

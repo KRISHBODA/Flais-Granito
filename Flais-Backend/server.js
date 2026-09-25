@@ -97,9 +97,12 @@ app.use("/api", apiLimiter);
 // Uploaded assets are user-supplied: block inline script execution (e.g. SVG payloads)
 // and MIME sniffing so they can never run in the site's origin.
 const staticOptions = {
+  maxAge: '7d',
+  immutable: true,
   setHeaders(res) {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+    res.setHeader("Cache-Control", "public, max-age=604800, immutable");
   },
 };
 
