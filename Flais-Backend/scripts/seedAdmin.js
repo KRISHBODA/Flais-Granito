@@ -3,7 +3,7 @@ const connectDB = require("../config/db");
 const Admin = require("../models/Admin");
 
 const DEFAULT_EMAIL = "admin@flais.com";
-const MIN_PASSWORD_LENGTH = 12;
+const MIN_PASSWORD_LENGTH = 8;
 
 const run = async () => {
   const email = process.env.ADMIN_SEED_EMAIL || DEFAULT_EMAIL;

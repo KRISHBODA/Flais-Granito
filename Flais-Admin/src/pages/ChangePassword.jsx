@@ -20,8 +20,8 @@ const ChangePassword = () => {
       return toast.error("Passwords do not match");
     }
 
-    if (password.length < 12) {
-      return toast.error("Password must be at least 12 characters");
+    if (password.length < 8) {
+      return toast.error("Password must be at least 8 characters");
     }
 
     setIsLoading(true);
@@ -75,7 +75,7 @@ const ChangePassword = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 12 characters"
+                  placeholder="At least 8 characters"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-12 text-sm transition-all focus:border-[#0145F2] outline-none"
                 />
                 <button

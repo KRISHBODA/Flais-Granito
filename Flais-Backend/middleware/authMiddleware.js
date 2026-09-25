@@ -36,7 +36,7 @@ const protect = async (req, res, next) => {
       }
 
       if (req.admin.mustChangePassword) {
-        if (req.originalUrl !== '/api/admin/change-password') {
+        if (!req.originalUrl.includes('/change-password')) {
           return res.status(403).json({ success: false, requirePasswordChange: true, message: "Must change password" });
         }
       }

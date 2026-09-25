@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_ISSUER = "flais-admin";
 const JWT_AUDIENCE = "flais-dashboard";
-const MIN_PASSWORD_LENGTH = 12;
+const MIN_PASSWORD_LENGTH = 8;
 
 const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -60,7 +60,13 @@ exports.getAdminProfile = async (req, res) => {
     if (!req.admin) {
       return res.status(401).json({ success: false, message: "Not authorized" });
     }
-    res.status(200).json({ email: req.admin.email });
+    res.status(200).json({ 
+      success: true,
+      email: req.admin.email,
+      role: req.admin.role,
+      permissions: req.admin.permissions,
+      isActive: req.admin.isActive
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
