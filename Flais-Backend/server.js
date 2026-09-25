@@ -108,7 +108,15 @@ const staticOptions = {
 
 app.use("/media", express.static(path.join(__dirname, "uploads"), staticOptions));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), staticOptions));
-app.use("/api/website-content", express.static(path.join(__dirname, "website-content"), staticOptions));
+const websiteContentOptions = {
+  maxAge: '7d',
+  setHeaders(res) {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Cache-Control", "public, max-age=604800");
+  },
+};
+const websiteContentRoot = process.env.WEBSITE_CONTENT_ROOT ? path.resolve(process.env.WEBSITE_CONTENT_ROOT) : path.join(__dirname, "website-content");
+app.use("/api/website-content", express.static(websiteContentRoot, websiteContentOptions));
 
 // Routes
 app.use("/api/admin", require("./routes/adminRoutes"));
