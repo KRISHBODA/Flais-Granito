@@ -62,6 +62,36 @@ const ProtectedRoute = () => {
   return <Outlet />;
 };
 
+// --- UNAUTHORIZED COMPONENT ---
+const Unauthorized = () => (
+  <div className="flex h-[80vh] w-full flex-col items-center justify-center">
+    <h2 className="text-3xl font-bold text-slate-800">Access Denied</h2>
+    <p className="text-slate-600 mt-2">You don't have permission to view this page.</p>
+  </div>
+);
+
+// --- PERMISSION GUARD ---
+const PermissionGuard = ({ permission, children }) => {
+  const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
+  const role = adminData.role;
+  const permissions = adminData.permissions || [];
+  
+  if (role === 'superadmin' || permissions.includes(permission)) {
+    return children;
+  }
+  
+  return <Unauthorized />;
+};
+
+// --- SUPER ADMIN GUARD ---
+const SuperAdminGuard = ({ children }) => {
+  const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
+  if (adminData.role === 'superadmin') {
+    return children;
+  }
+  return <Unauthorized />;
+};
+
 const AdminRoutes = () => {
   return (
     <Suspense fallback={<Loading />}>
@@ -74,23 +104,23 @@ const AdminRoutes = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/home" replace />} />
-            <Route path="products" element={<ProductsList />} />
-            <Route path="products/add" element={<AddProduct />} />
-            <Route path="products/edit/:id" element={<EditProduct />} />
-            <Route path="categories" element={<Categories />} />
-            <Route path="messages" element={<Messages />} />
-            <Route path="blogs" element={<Blogs />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="blogs/add" element={<AddBlog />} />
-            <Route path="blogs/edit/:id" element={<EditBlog />} />
-            <Route path="home" element={<AdminHome />} />
-            <Route path="why-flais" element={<AdminWhyFlais />} />
-            <Route path="catalog" element={<AdminCatalog />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="website-files" element={<WebsiteFileManager />} />
-            <Route path="flais-park" element={<AdminFlaisPark />} />
-            <Route path="achievement" element={<AdminAchievement />} />
-            <Route path="users" element={<AdminUsers />} />
+            <Route path="products" element={<PermissionGuard permission="collection"><ProductsList /></PermissionGuard>} />
+            <Route path="products/add" element={<PermissionGuard permission="collection"><AddProduct /></PermissionGuard>} />
+            <Route path="products/edit/:id" element={<PermissionGuard permission="collection"><EditProduct /></PermissionGuard>} />
+            <Route path="categories" element={<PermissionGuard permission="collection"><Categories /></PermissionGuard>} />
+            <Route path="messages" element={<PermissionGuard permission="contact"><Messages /></PermissionGuard>} />
+            <Route path="blogs" element={<PermissionGuard permission="blog"><Blogs /></PermissionGuard>} />
+            <Route path="settings" element={<PermissionGuard permission="settings"><Settings /></PermissionGuard>} />
+            <Route path="blogs/add" element={<PermissionGuard permission="blog"><AddBlog /></PermissionGuard>} />
+            <Route path="blogs/edit/:id" element={<PermissionGuard permission="blog"><EditBlog /></PermissionGuard>} />
+            <Route path="home" element={<PermissionGuard permission="home"><AdminHome /></PermissionGuard>} />
+            <Route path="why-flais" element={<PermissionGuard permission="why-flais"><AdminWhyFlais /></PermissionGuard>} />
+            <Route path="catalog" element={<PermissionGuard permission="catalog"><AdminCatalog /></PermissionGuard>} />
+            <Route path="analytics" element={<PermissionGuard permission="analytics"><Analytics /></PermissionGuard>} />
+            <Route path="website-files" element={<PermissionGuard permission="website-files"><WebsiteFileManager /></PermissionGuard>} />
+            <Route path="flais-park" element={<PermissionGuard permission="flais-park"><AdminFlaisPark /></PermissionGuard>} />
+            <Route path="achievement" element={<PermissionGuard permission="achievement"><AdminAchievement /></PermissionGuard>} />
+            <Route path="users" element={<SuperAdminGuard><AdminUsers /></SuperAdminGuard>} />
           </Route>
         </Route>
 
