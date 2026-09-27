@@ -26,7 +26,7 @@ const WebsiteFileManager = () => {
   const [newName, setNewName] = useState('');
   const [targetParentId, setTargetParentId] = useState('');
   const [allFolders, setAllFolders] = useState([]);
-  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadFiles, setUploadFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   
   // Tree state
@@ -170,30 +170,34 @@ const WebsiteFileManager = () => {
 
   const handleUploadFile = async (e) => {
     e.preventDefault();
-    if (!uploadFile || isUploading) return;
+    if (uploadFiles.length === 0 || isUploading) return;
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', uploadFile);
-    if (currentNodeId) {
-      formData.append('parentId', currentNodeId);
-    }
 
     try {
-      await axios.post(`${API}/api/admin/website-nodes/upload`, formData, {
-        headers: {
-          ...getHeaders().headers,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      await Promise.all(
+        uploadFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          if (currentNodeId) {
+            formData.append('parentId', currentNodeId);
+          }
+          await axios.post(`${API}/api/admin/website-nodes/upload`, formData, {
+            headers: {
+              ...getHeaders().headers,
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+        })
+      );
       
-      toast.success('File uploaded successfully');
+      toast.success(uploadFiles.length > 1 ? 'Files uploaded successfully' : 'File uploaded successfully');
       setShowUploadFile(false);
-      setUploadFile(null);
+      setUploadFiles([]);
       if (fileInputRef.current) fileInputRef.current.value = '';
       fetchNodes(currentNodeId);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to upload file');
+      toast.error(error.response?.data?.message || 'Failed to upload one or more files');
     } finally {
       setIsUploading(false);
     }
@@ -559,8 +563,9 @@ const WebsiteFileManager = () => {
               <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:bg-slate-50 transition-colors">
                 <input 
                   type="file" 
+                  multiple
                   ref={fileInputRef}
-                  onChange={(e) => setUploadFile(e.target.files[0])}
+                  onChange={(e) => setUploadFiles(Array.from(e.target.files))}
                   className="hidden"
                   id="file-upload"
                   required
@@ -571,18 +576,22 @@ const WebsiteFileManager = () => {
                   <span className="text-xs text-slate-500 mt-1">Allowed: Any file type (jpg, pdf, html, css, etc.)</span>
                 </label>
               </div>
-              {uploadFile && (
-                <div className="mt-4 p-3 bg-blue-50 text-blue-800 text-sm rounded-lg flex items-center gap-2">
-                  <File size={16} className="shrink-0" />
-                  <span className="truncate">{uploadFile.name}</span>
+              {uploadFiles.length > 0 && (
+                <div className="mt-4 space-y-2 max-h-32 overflow-y-auto pr-2">
+                  {uploadFiles.map((file, i) => (
+                    <div key={i} className="p-3 bg-blue-50 text-blue-800 text-sm rounded-lg flex items-center gap-2">
+                      <File size={16} className="shrink-0" />
+                      <span className="truncate">{file.name}</span>
+                    </div>
+                  ))}
                 </div>
               )}
               <div className="mt-6 flex justify-end gap-3">
-                <button type="button" onClick={() => {setShowUploadFile(false); setUploadFile(null);}} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                <button type="button" onClick={() => {setShowUploadFile(false); setUploadFiles([]);}} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={!uploadFile || isUploading} className="px-4 py-2 text-sm font-medium text-white bg-[#0145F2] hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50">
-                  {isUploading ? 'Uploading...' : 'Upload File'}
+                <button type="submit" disabled={uploadFiles.length === 0 || isUploading} className="px-4 py-2 text-sm font-medium text-white bg-[#0145F2] hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50">
+                  {isUploading ? 'Uploading...' : `Upload ${uploadFiles.length > 1 ? 'Files' : 'File'}`}
                 </button>
               </div>
             </form>
