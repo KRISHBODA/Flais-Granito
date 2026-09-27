@@ -12,6 +12,7 @@ const WebsiteFileManager = () => {
   const [nodes, setNodes] = useState([]);
   const [currentNodeId, setCurrentNodeId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [selectedNodes, setSelectedNodes] = useState(new Set());
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   
   // Modals state
@@ -52,6 +53,7 @@ const WebsiteFileManager = () => {
       const res = await axios.get(url, getHeaders());
       if (res.data.success) {
         setNodes(res.data.data);
+        setSelectedNodes(new Set());
         // Also update tree if these are folders
         setTreeNodes(prev => ({ ...prev, [parentId]: res.data.data.filter(n => n.type === 'folder') }));
       }
@@ -268,11 +270,19 @@ const WebsiteFileManager = () => {
   };
 
   const handleDelete = async () => {
-    if (!targetNode) return;
+    if (!targetNode && selectedNodes.size === 0) return;
     
     try {
-      await axios.delete(`${API}/api/admin/website-nodes/${targetNode._id}`, getHeaders());
-      toast.success('Deleted successfully');
+      if (selectedNodes.size > 0) {
+        await Promise.all(
+          Array.from(selectedNodes).map(id => axios.delete(`${API}/api/admin/website-nodes/${id}`, getHeaders()))
+        );
+        toast.success(`${selectedNodes.size} items deleted successfully`);
+        setSelectedNodes(new Set());
+      } else if (targetNode) {
+        await axios.delete(`${API}/api/admin/website-nodes/${targetNode._id}`, getHeaders());
+        toast.success('Deleted successfully');
+      }
       setShowDelete(false);
       setTargetNode(null);
       fetchNodes(currentNodeId);
@@ -398,26 +408,41 @@ const WebsiteFileManager = () => {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 bg-slate-50">
           
-          {/* Breadcrumbs */}
-          <div className="bg-slate-50 px-6 py-3 border-b border-slate-200 flex items-center gap-2 overflow-x-auto whitespace-nowrap">
-            <button 
-              onClick={() => handleNavigate(null)}
-              className="flex items-center gap-1.5 text-slate-600 hover:text-[#0145F2] font-medium transition-colors"
-            >
-              <Home size={16} />
-              Website Root
-            </button>
-            {breadcrumbs.map((b, i) => (
-              <React.Fragment key={b._id}>
-                <ChevronRight size={16} className="text-slate-400 shrink-0" />
+          {/* Breadcrumbs & Toolbar */}
+          <div className="bg-slate-50 px-6 py-3 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap">
+              <button 
+                onClick={() => handleNavigate(null)}
+                className="flex items-center gap-1.5 text-slate-600 hover:text-[#0145F2] font-medium transition-colors"
+              >
+                <Home size={16} />
+                Website Root
+              </button>
+              {breadcrumbs.map((b, i) => (
+                <React.Fragment key={b._id}>
+                  <ChevronRight size={16} className="text-slate-400 shrink-0" />
+                  <button 
+                    onClick={() => handleNavigate(b._id)}
+                    className="text-slate-600 hover:text-[#0145F2] font-medium transition-colors"
+                  >
+                    {b.name}
+                  </button>
+                </React.Fragment>
+              ))}
+            </div>
+            
+            {selectedNodes.size > 0 && (
+              <div className="flex items-center gap-3 ml-4">
+                <span className="text-sm font-medium text-slate-600">{selectedNodes.size} selected</span>
                 <button 
-                  onClick={() => handleNavigate(b._id)}
-                  className="text-slate-600 hover:text-[#0145F2] font-medium transition-colors"
+                  onClick={() => setShowDelete(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
                 >
-                  {b.name}
+                  <Trash2 size={16} />
+                  Delete Selected
                 </button>
-              </React.Fragment>
-            ))}
+              </div>
+            )}
           </div>
 
           {/* List Area */}
@@ -436,6 +461,20 @@ const WebsiteFileManager = () => {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-slate-50 sticky top-0 z-10">
                   <tr>
+                    <th className="px-6 py-3 w-12 border-b border-slate-200">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-slate-300 text-[#0145F2] focus:ring-[#0145F2]"
+                        checked={nodes.length > 0 && selectedNodes.size === nodes.length}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedNodes(new Set(nodes.map(n => n._id)));
+                          } else {
+                            setSelectedNodes(new Set());
+                          }
+                        }}
+                      />
+                    </th>
                     <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">Name</th>
                     <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">Size</th>
                     <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">Modified</th>
@@ -444,7 +483,20 @@ const WebsiteFileManager = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {nodes.map(node => (
-                    <tr key={node._id} className="hover:bg-slate-50 transition-colors group">
+                    <tr key={node._id} className={`hover:bg-slate-50 transition-colors group ${selectedNodes.has(node._id) ? 'bg-blue-50/50' : ''}`}>
+                      <td className="px-6 py-4">
+                        <input 
+                          type="checkbox" 
+                          className="rounded border-slate-300 text-[#0145F2] focus:ring-[#0145F2]"
+                          checked={selectedNodes.has(node._id)}
+                          onChange={(e) => {
+                            const newSet = new Set(selectedNodes);
+                            if (e.target.checked) newSet.add(node._id);
+                            else newSet.delete(node._id);
+                            setSelectedNodes(newSet);
+                          }}
+                        />
+                      </td>
                       <td className="px-6 py-4">
                         <div 
                           className={`flex items-center gap-3 ${node.type === 'folder' ? 'cursor-pointer hover:text-[#0145F2]' : ''}`}
@@ -477,15 +529,13 @@ const WebsiteFileManager = () => {
                               <Link size={16} />
                             </button>
                           )}
-                          {node.type === 'file' && (
-                            <button 
-                              onClick={() => handleDownload(node)}
-                              className="p-1.5 text-slate-400 hover:text-[#0145F2] hover:bg-blue-50 rounded-md transition-colors"
-                              title="Download"
-                            >
-                              <Download size={16} />
-                            </button>
-                          )}
+                          <button 
+                            onClick={() => handleDownload(node)}
+                            className="p-1.5 text-slate-400 hover:text-[#0145F2] hover:bg-blue-50 rounded-md transition-colors"
+                            title="Download"
+                          >
+                            <Download size={16} />
+                          </button>
                           <button 
                             onClick={() => { setTargetNode(node); setNewName(node.name); setShowRename(true); }}
                             className="p-1.5 text-slate-400 hover:text-[#0145F2] hover:bg-blue-50 rounded-md transition-colors"
@@ -676,9 +726,15 @@ const WebsiteFileManager = () => {
                 <div>
                   <h3 className="font-bold text-slate-900 text-lg">Delete permanently?</h3>
                   <p className="text-slate-500 text-sm mt-1">
-                    Are you sure you want to delete <span className="font-semibold text-slate-700">{targetNode?.name}</span>? 
-                    {targetNode?.type === 'folder' && " All contents inside this folder will also be permanently deleted."}
-                    This action cannot be undone.
+                    {selectedNodes.size > 0 ? (
+                      `Are you sure you want to delete ${selectedNodes.size} items? All contents inside any selected folders will also be permanently deleted. This action cannot be undone.`
+                    ) : (
+                      <>
+                        Are you sure you want to delete <span className="font-semibold text-slate-700">{targetNode?.name}</span>? 
+                        {targetNode?.type === 'folder' && " All contents inside this folder will also be permanently deleted."}
+                        This action cannot be undone.
+                      </>
+                    )}
                   </p>
                 </div>
               </div>

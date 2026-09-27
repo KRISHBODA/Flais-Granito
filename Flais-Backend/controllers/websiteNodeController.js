@@ -1,6 +1,7 @@
 const websiteNodeService = require("../services/WebsiteNodeService");
 const websiteFileSystemProvider = require("../services/storage/WebsiteFileSystemProvider");
 const WebsiteNode = require("../models/WebsiteNode");
+const archiver = require('archiver');
 
 // @desc    Get website nodes by parentId
 // @route   GET /api/admin/website-nodes
@@ -103,11 +104,28 @@ const deleteNode = async (req, res, next) => {
 const downloadFile = async (req, res, next) => {
   try {
     const node = await WebsiteNode.findById(req.params.id);
-    if (!node || node.type !== "file") {
-      return res.status(404).json({ success: false, message: "File not found" });
+    if (!node) {
+      return res.status(404).json({ success: false, message: "Node not found" });
     }
+    
     const absolutePath = websiteFileSystemProvider.resolveWebsitePath(node.relativePath);
-    return res.download(absolutePath, node.name);
+
+    if (node.type === "folder") {
+      res.attachment(`${node.name}.zip`);
+      const archive = archiver('zip', {
+        zlib: { level: 9 }
+      });
+
+      archive.on('error', function(err) {
+        throw err;
+      });
+
+      archive.pipe(res);
+      archive.directory(absolutePath, false);
+      archive.finalize();
+    } else {
+      return res.download(absolutePath, node.name);
+    }
   } catch (error) {
     next(error);
   }
