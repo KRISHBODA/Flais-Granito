@@ -2,6 +2,7 @@ const websiteNodeService = require("../services/WebsiteNodeService");
 const websiteFileSystemProvider = require("../services/storage/WebsiteFileSystemProvider");
 const WebsiteNode = require("../models/WebsiteNode");
 const archiver = require('archiver');
+const fs = require('fs');
 
 // @desc    Get website nodes by parentId
 // @route   GET /api/admin/website-nodes
@@ -111,13 +112,22 @@ const downloadFile = async (req, res, next) => {
     const absolutePath = websiteFileSystemProvider.resolveWebsitePath(node.relativePath);
 
     if (node.type === "folder") {
+      if (!fs.existsSync(absolutePath)) {
+        return res.status(404).json({ success: false, message: "Folder not found on disk" });
+      }
+
       res.attachment(`${node.name}.zip`);
       const archive = archiver('zip', {
         zlib: { level: 9 }
       });
 
       archive.on('error', function(err) {
-        throw err;
+        console.error('Archive error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ success: false, message: "Error generating zip" });
+        } else {
+          res.end();
+        }
       });
 
       archive.pipe(res);
