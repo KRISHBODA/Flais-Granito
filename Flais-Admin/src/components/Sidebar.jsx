@@ -112,7 +112,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               }
             >
               <Settings size={20} />
-              Admin Users
+              Manage Users
             </NavLink>
           )}
         </nav>

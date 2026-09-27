@@ -133,7 +133,7 @@ const AdminUsers = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Admin Users</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Manage Users</h1>
         <div className="flex items-center gap-4">
           <select
             value={statusFilter}
