@@ -1,7 +1,7 @@
 const websiteNodeService = require("../services/WebsiteNodeService");
 const websiteFileSystemProvider = require("../services/storage/WebsiteFileSystemProvider");
 const WebsiteNode = require("../models/WebsiteNode");
-const archiver = require('archiver');
+const { ZipArchive } = require('archiver');
 const fs = require('fs');
 
 // @desc    Get website nodes by parentId
@@ -117,7 +117,7 @@ const downloadFile = async (req, res, next) => {
       }
 
       res.attachment(`${node.name}.zip`);
-      const archive = archiver('zip', {
+      const archive = new ZipArchive({
         zlib: { level: 9 }
       });
 
