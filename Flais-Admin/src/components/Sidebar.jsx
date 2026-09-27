@@ -29,7 +29,7 @@ const navItems = [
   { name: 'Blog', path: '/admin/blogs', icon: FileText, permission: 'blog' },
   { name: 'Settings', path: '/admin/settings', icon: Settings, permission: 'settings' },
   { name: 'Analytics', path: '/admin/analytics', icon: BarChart3, permission: 'analytics' },
-  { name: 'Website Files', path: '/admin/website-files', icon: FolderTree, permission: 'website-files' },
+  { name: '360 Virtual View', path: '/admin/website-files', icon: FolderTree, permission: 'website-files' },
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {

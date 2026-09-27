@@ -345,7 +345,7 @@ const WebsiteFileManager = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
             <Folder className="text-[#0145F2]" size={24} />
-            Website Files
+            360 Virtual View
           </h1>
           <p className="text-sm text-slate-500 mt-1">Manage public website assets and folders</p>
         </div>

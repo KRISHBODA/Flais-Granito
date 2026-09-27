@@ -6,6 +6,7 @@ import { Loader2, Plus, Edit, Trash2, KeyRound } from 'lucide-react';
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   
@@ -30,7 +31,7 @@ const AdminUsers = () => {
     { id: 'blog', label: 'Blog' },
     { id: 'settings', label: 'Settings' },
     { id: 'analytics', label: 'Analytics' },
-    { id: 'website-files', label: 'Website Files' }
+    { id: 'website-files', label: '360 Virtual View' }
   ];
 
   const BackendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '');
@@ -119,6 +120,12 @@ const AdminUsers = () => {
     }
   };
 
+  const filteredUsers = users.filter(user => {
+    if (statusFilter === 'active') return user.isActive;
+    if (statusFilter === 'disabled') return !user.isActive;
+    return true;
+  });
+
   if (loading) {
     return <div className="flex h-64 items-center justify-center"><Loader2 className="animate-spin text-[#0145F2]" size={32} /></div>;
   }
@@ -127,12 +134,23 @@ const AdminUsers = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Admin Users</h1>
-        <button
-          onClick={() => openModal()}
-          className="flex items-center gap-2 rounded-xl bg-[#0145F2] px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
-        >
-          <Plus size={18} /> Add User
-        </button>
+        <div className="flex items-center gap-4">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-[#0145F2]"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+          </select>
+          <button
+            onClick={() => openModal()}
+            className="flex items-center gap-2 rounded-xl bg-[#0145F2] px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+          >
+            <Plus size={18} /> Add User
+          </button>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -148,7 +166,7 @@ const AdminUsers = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {users.map(user => (
+              {filteredUsers.map(user => (
                 <tr key={user._id} className="hover:bg-slate-50">
                   <td className="px-6 py-4">{user.name}</td>
                   <td className="px-6 py-4">{user.email}</td>
@@ -170,7 +188,7 @@ const AdminUsers = () => {
                   </td>
                 </tr>
               ))}
-              {users.length === 0 && (
+              {filteredUsers.length === 0 && (
                 <tr>
                   <td colSpan="5" className="px-6 py-8 text-center text-slate-500">No users found.</td>
                 </tr>
