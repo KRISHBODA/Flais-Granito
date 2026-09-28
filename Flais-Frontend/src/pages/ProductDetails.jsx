@@ -287,20 +287,20 @@ const ProductDetails = () => {
 
             {/* Thumbnail Strip */}
             {allImages.length > 1 && (
-              <div className="mt-4 flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+              <div className="mt-3 flex items-center gap-3 overflow-x-auto py-2.5 px-2 -mx-2 scrollbar-none">
                 {allImages.map((img, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setCurrentImageIndex(idx)}
-                    className={`relative h-16 w-20 sm:h-20 sm:w-24 shrink-0 rounded-xl overflow-hidden transition-all ${
+                    className={`relative h-16 w-20 sm:h-20 sm:w-24 shrink-0 rounded-xl overflow-hidden transition-all cursor-pointer focus:outline-none ${
                       currentImageIndex === idx
-                        ? 'ring-2 ring-[#5D4037] ring-offset-2 scale-102 shadow-md'
-                        : 'opacity-60 hover:opacity-100 border border-zinc-200'
+                        ? 'ring-2 ring-[#5D4037] ring-offset-2 ring-offset-white shadow-md'
+                        : 'opacity-60 hover:opacity-100 border border-zinc-200 hover:border-zinc-300'
                     }`}
                     title={`Photo ${idx + 1}`}
                   >
-                    <img src={img} alt={`Thumb ${idx + 1}`} className="h-full w-full object-cover" />
+                    <img src={img} alt={`Thumb ${idx + 1}`} className="h-full w-full object-cover select-none pointer-events-none" />
                   </button>
                 ))}
               </div>
