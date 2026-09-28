@@ -601,12 +601,49 @@ const TileCalculator = () => {
     if (activeRoomId === id) setActiveRoomId(newRooms[0].id);
   };
 
-  const handleShare = () => {
-    const stateHash = encodeState(rooms);
-    const url = new URL(window.location.href);
-    url.searchParams.set('state', stateHash);
-    navigator.clipboard.writeText(url.toString());
-    toast.success('Link copied! Share with your contractor');
+  const handleShare = async () => {
+    try {
+      const stateHash = encodeState(rooms);
+      const url = new URL(window.location.href);
+      url.searchParams.set('state', stateHash);
+      const shareUrl = url.toString();
+
+      const shareData = {
+        title: `${projectName ? `${projectName} - ` : ''}Tile Estimate | FLAIS Granito`,
+        text: `Here is our tile calculation estimate for ${projectName || 'my project'} on FLAIS Granito Tile Calculator`,
+        url: shareUrl
+      };
+
+      if (typeof navigator !== 'undefined' && navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') {
+            // User cancelled the share dialog, do nothing
+            return;
+          }
+        }
+      }
+
+      // Fallback: Copy to clipboard if navigator.share is unavailable
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      toast.success('Link copied! Share with your contractor');
+    } catch (err) {
+      toast.error('Unable to share at this moment');
+    }
   };
 
   const handlePrint = () => {
