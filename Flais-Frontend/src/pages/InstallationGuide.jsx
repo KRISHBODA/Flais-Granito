@@ -140,27 +140,18 @@ const InstallationGuide = () => {
             transition={{ duration: 0.8 }}
             className="max-w-2xl"
           >
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-display font-bold text-zinc-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-display font-bold text-zinc-900 mb-6 sm:mb-8 md:mb-10">
               {settings.title}
             </h1>
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-medium text-zinc-700 mb-6 sm:mb-8 md:mb-10">
-              {settings.subtitle}
-            </h2>
-            {settings.pdfUrl ? (
+            {settings.pdfUrl && (
               <button
                 onClick={() => {
                   window.open(getOptimizedImageUrl(settings.pdfUrl), '_blank');
                 }}
-                className="inline-block bg-black hover:bg-zinc-800 text-white font-bold tracking-[0.2em] uppercase py-4 px-10 text-sm shadow-md transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer mt-6"
+                className="inline-block bg-black hover:bg-zinc-800 text-white font-bold tracking-[0.2em] uppercase py-4 px-10 text-sm shadow-md transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
               >
-                {settings.subtitle}
+                Installation Guide
               </button>
-            ) : (
-              <span
-                className="inline-block bg-black text-white font-bold tracking-[0.2em] uppercase py-4 px-10 text-sm mt-6"
-              >
-                {settings.subtitle}
-              </span>
             )}
           </motion.div>
         </div>
