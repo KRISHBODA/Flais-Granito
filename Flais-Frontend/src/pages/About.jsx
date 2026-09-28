@@ -431,9 +431,6 @@ const About = () => {
               <span className="block text-[#5D4037] font-bold uppercase tracking-widest text-sm">Our Core</span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-display font-bold leading-none tracking-tighter text-zinc-900">PILLARS</h2>
             </div>
-            <p className="text-zinc-600 max-w-md text-center md:text-right font-light text-lg">
-              We are committed to eco-friendly practices and global distribution, ensuring timely delivery worldwide while exceeding your expectations.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8">
