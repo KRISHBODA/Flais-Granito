@@ -232,14 +232,6 @@ const ProductDetails = () => {
               onMouseLeave={handleMouseLeave}
               className="relative aspect-[4/3] md:aspect-[1.1] lg:aspect-auto lg:h-[540px] w-full rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100 shadow-md group select-none"
             >
-              {/* Swipe Hint */}
-              {allImages.length > 1 && (
-                <div className="absolute top-4 right-4 z-20 pointer-events-none">
-                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-[11px] font-medium shadow-sm">
-                    Swipe or Drag ↔
-                  </span>
-                </div>
-              )}
 
               <div className={`w-full h-full flex items-center justify-center ${currentImageIndex === 0 ? 'p-0' : 'p-6'}`}>
                 {allImages.length > 0 ? (
