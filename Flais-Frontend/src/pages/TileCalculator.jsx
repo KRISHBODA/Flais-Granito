@@ -395,6 +395,28 @@ const getTileCountFallback = (size) => {
   return 4;
 };
 
+const is1200x1800 = (room, tileSizes = []) => {
+  if (!room) return false;
+  const tid = (room.tileId || '').toLowerCase().replace(/\s+/g, '');
+  if (tid === '1200x1800' || tid === '1800x1200' || tid.includes('1200x1800') || tid.includes('1800x1200')) return true;
+
+  const selectedSize = tileSizes.find(s => s.id === room.tileId);
+  if (selectedSize) {
+    const sId = (selectedSize.id || '').toLowerCase().replace(/\s+/g, '');
+    const sLabel = (selectedSize.label || '').toLowerCase().replace(/\s+/g, '');
+    if (sId.includes('1200x1800') || sId.includes('1800x1200')) return true;
+    if (sLabel.includes('1200x1800') || sLabel.includes('1800x1200') || sLabel.includes('1200×1800') || sLabel.includes('1800×1200')) return true;
+  }
+
+  if (room.tileId === 'custom') {
+    const w = parseFloat(room.customTileW);
+    const h = parseFloat(room.customTileH);
+    if ((w === 1200 && h === 1800) || (w === 1800 && h === 1200)) return true;
+  }
+
+  return false;
+};
+
 const TileCalculator = () => {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -421,6 +443,7 @@ const TileCalculator = () => {
       { id: '600x600', w: 600, h: 600, label: '600×600 mm', desc: 'LISC / MARVEL', count: 4 },
       { id: '600x1200', w: 600, h: 1200, label: '600×1200 mm', desc: 'GLASS / ELECTRA', count: 2 },
       { id: '800x1600', w: 800, h: 1600, label: '800×1600 mm', desc: 'MARBLE GLOSS', count: 2 },
+      { id: '1200x1800', w: 1200, h: 1800, label: '1200×1800 mm', desc: 'FULL BODY SLAB', count: 1 },
       { id: '800x2400', w: 800, h: 2400, label: '800×2400 mm', desc: 'EXTRA MAX', count: 2 },
       { id: '800x3000', w: 800, h: 3000, label: '800×3000 mm', desc: 'EXTRA MAX XL', count: 1 },
       { id: 'custom', label: 'Custom', desc: 'Enter dimensions', count: 0 }
@@ -466,6 +489,9 @@ const TileCalculator = () => {
             if (fetchedSizes.length > 0) {
               setRooms(prevRooms => prevRooms.map(room => {
                 if (room.tileId !== 'custom') {
+                  if (is1200x1800(room, fetchedSizes) && (String(room.tilesPerBox) === '1' || String(room.tilesPerBox) === '2')) {
+                    return room;
+                  }
                   const sizeObj = fetchedSizes.find(s => s.id === room.tileId);
                   if (sizeObj) {
                     return { ...room, tilesPerBox: String(getTileCountFallback(sizeObj)) };
@@ -923,7 +949,12 @@ const TileCalculator = () => {
                       onClick={() => {
                         const updates = { tileId: size.id };
                         if (size.id !== 'custom') {
-                          updates.tilesPerBox = String(getTileCountFallback(size));
+                          if (is1200x1800({ tileId: size.id }, settings.tileSizes)) {
+                            const current = String(activeRoom.tilesPerBox);
+                            updates.tilesPerBox = (current === '2' ? '2' : '1');
+                          } else {
+                            updates.tilesPerBox = String(getTileCountFallback(size));
+                          }
                         }
                         updateRoom(activeRoom.id, updates);
                       }}
@@ -976,15 +1007,53 @@ const TileCalculator = () => {
                   <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm text-zinc-600 mb-2">Tiles per Box</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={activeRoom.tilesPerBox}
-                        onChange={e => updateRoom(activeRoom.id, { tilesPerBox: e.target.value })}
-                        disabled={activeRoom.tileId !== 'custom'}
-                        className={`${inputClasses} ${activeRoom.tileId !== 'custom' ? 'opacity-60 bg-zinc-100 cursor-not-allowed' : ''}`}
-                        title={activeRoom.tileId !== 'custom' ? "This value is fixed by admin and cannot be changed." : ""}
-                      />
+                      {is1200x1800(activeRoom, settings.tileSizes) ? (
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              type="button"
+                              onClick={() => updateRoom(activeRoom.id, { tilesPerBox: '1' })}
+                              className={`py-3 px-4 rounded-xl border text-sm font-semibold transition-all flex flex-col items-center justify-center cursor-pointer ${
+                                String(activeRoom.tilesPerBox) === '1' || !activeRoom.tilesPerBox || activeRoom.tilesPerBox === '0'
+                                  ? 'bg-zinc-900 border-zinc-900 text-white shadow-sm'
+                                  : 'bg-[#faf8f5] border-zinc-200 text-zinc-700 hover:border-[#886d5e]'
+                              }`}
+                            >
+                              <span className="font-bold text-sm sm:text-base">1 (15mm)</span>
+                              <span className={`text-[11px] font-normal mt-0.5 ${String(activeRoom.tilesPerBox) === '1' || !activeRoom.tilesPerBox || activeRoom.tilesPerBox === '0' ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                                1 tile / box
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateRoom(activeRoom.id, { tilesPerBox: '2' })}
+                              className={`py-3 px-4 rounded-xl border text-sm font-semibold transition-all flex flex-col items-center justify-center cursor-pointer ${
+                                String(activeRoom.tilesPerBox) === '2'
+                                  ? 'bg-zinc-900 border-zinc-900 text-white shadow-sm'
+                                  : 'bg-[#faf8f5] border-zinc-200 text-zinc-700 hover:border-[#886d5e]'
+                              }`}
+                            >
+                              <span className="font-bold text-sm sm:text-base">2 (9mm)</span>
+                              <span className={`text-[11px] font-normal mt-0.5 ${String(activeRoom.tilesPerBox) === '2' ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                                2 tiles / box
+                              </span>
+                            </button>
+                          </div>
+                          <p className="text-xs text-zinc-500">
+                            Selected thickness: <span className="font-semibold text-zinc-800">{String(activeRoom.tilesPerBox) === '2' ? '9mm (2 tiles per box)' : '15mm (1 tile per box)'}</span>
+                          </p>
+                        </div>
+                      ) : (
+                        <input
+                          type="number"
+                          min="0"
+                          value={activeRoom.tilesPerBox}
+                          onChange={e => updateRoom(activeRoom.id, { tilesPerBox: e.target.value })}
+                          disabled={activeRoom.tileId !== 'custom'}
+                          className={`${inputClasses} ${activeRoom.tileId !== 'custom' ? 'opacity-60 bg-zinc-100 cursor-not-allowed' : ''}`}
+                          title={activeRoom.tileId !== 'custom' ? "This value is fixed by admin and cannot be changed." : ""}
+                        />
+                      )}
                     </div>
                   </div>
                   
