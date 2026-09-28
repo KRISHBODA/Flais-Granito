@@ -92,6 +92,15 @@ const Footer = () => {
     }
   ];
 
+  const getGoogleMapsUrl = (address) => {
+    const defaultAddress = 'Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.';
+    const queryAddress = (address || defaultAddress).trim();
+    const query = queryAddress.toLowerCase().includes('flais')
+      ? queryAddress
+      : `FLAIS GRANITO, ${queryAddress}`;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  };
+
   return (
     <footer className="bg-zinc-950 text-zinc-400 pt-14 sm:pt-20 md:pt-24 pb-8 sm:pb-12">
       <div className="container-custom">
@@ -103,12 +112,18 @@ const Footer = () => {
                 <img loading="lazy" src={logo} alt="FLAIS GRANITO" className="h-12 w-[160px] object-contain origin-left" />
               </Link>
               <div className="space-y-6 text-[15px]">
-                <div className="flex items-start space-x-4">
-                  <MapPin size={20} className="text-white shrink-0 mt-1" />
-                  <p className="leading-relaxed text-zinc-400 hover:text-white transition-colors cursor-default">
+                <a
+                  href={getGoogleMapsUrl(footerSettings.address)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start space-x-4 group cursor-pointer"
+                  title="View on Google Maps"
+                >
+                  <MapPin size={20} className="text-white shrink-0 mt-1 group-hover:text-[#5D4037] transition-colors" />
+                  <p className="leading-relaxed text-zinc-400 group-hover:text-white transition-colors">
                     {footerSettings.address}
                   </p>
-                </div>
+                </a>
                 <div className="flex items-center space-x-4">
                   <Phone size={20} className="text-white shrink-0" />
                   <div className="flex flex-col">

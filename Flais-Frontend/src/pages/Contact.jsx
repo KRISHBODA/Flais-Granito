@@ -405,17 +405,26 @@ const Contact = () => {
                   Whether you're looking for a specific tile design or need a full consultation for your commercial project, we're here to help.
                 </p>
               </div>
-
               <div className="space-y-6 sm:space-y-8">
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-beige-100 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 text-beige-600">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    pageSettings.address
+                      ? (pageSettings.address.toLowerCase().includes('flais') ? pageSettings.address : `FLAIS GRANITO, ${pageSettings.address}`)
+                      : 'FLAIS GRANITO, Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.'
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start space-x-4 sm:space-x-6 group cursor-pointer transition-colors"
+                  title="View on Google Maps"
+                >
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-beige-100 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 text-beige-600 group-hover:bg-[#5D4037] group-hover:text-white transition-colors">
                     <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-zinc-900 text-base sm:text-lg">Our Location</h4>
-                    <p className="text-zinc-600 text-sm sm:text-base">{pageSettings.address || "Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India."}</p>
+                    <h4 className="font-bold text-zinc-900 text-base sm:text-lg group-hover:text-[#5D4037] transition-colors">Our Location</h4>
+                    <p className="text-zinc-600 text-sm sm:text-base group-hover:text-zinc-900 transition-colors">{pageSettings.address || "Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India."}</p>
                   </div>
-                </div>
+                </a>
 
                 <div className="flex items-start space-x-4 sm:space-x-6">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-beige-100 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 text-beige-600">
