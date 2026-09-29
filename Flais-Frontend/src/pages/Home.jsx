@@ -596,14 +596,28 @@ const Home = () => {
                   <SwiperSlide key={`${col._id || col.id || col.name}-${index}`}>
                     <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-none" style={{ transform: 'translateZ(0)' }}>
                       {!collectionsImageErrors[`${col._id || col.id || col.name}-${index}`] ? (
-                        <img
-                          loading="eager"
-                          src={getOptimizedImageUrl(col.image, 800)}
-                          alt={col.name}
-                          onError={() => handleCollectionsImageError(`${col._id || col.id || col.name}-${index}`)}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                          style={{ backfaceVisibility: 'hidden' }}
-                        />
+                        <>
+                          {/* Ambient blurred backdrop to seamlessly fill container */}
+                          <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+                            <img
+                              src={getOptimizedImageUrl(col.image, 400)}
+                              alt=""
+                              aria-hidden="true"
+                              className="w-full h-full object-cover blur-2xl scale-125 opacity-60"
+                            />
+                            <div className="absolute inset-0 bg-black/15" />
+                          </div>
+
+                          {/* 100% Full Uncut Photo */}
+                          <img
+                            loading="eager"
+                            src={getOptimizedImageUrl(col.image, 1200)}
+                            alt={col.name}
+                            onError={() => handleCollectionsImageError(`${col._id || col.id || col.name}-${index}`)}
+                            className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
+                            style={{ backfaceVisibility: 'hidden' }}
+                          />
+                        </>
                       ) : (
                         <div className="absolute inset-0 bg-[#FAF8F5] flex items-center justify-center border border-zinc-200/50">
                           <span className="text-[10px] text-zinc-400 font-sans tracking-[0.25em] uppercase font-semibold">{col.name}</span>
@@ -611,14 +625,14 @@ const Home = () => {
                       )}
 
                       {/* Base overlay for inactive slide contrast */}
-                      <div className="absolute inset-0 bg-black/5 transition-colors duration-500" />
+                      <div className="absolute inset-0 z-20 bg-black/10 transition-colors duration-500 pointer-events-none" />
 
                       {/* Active-only overlay and content */}
-                      <div className="absolute inset-0 transition-opacity duration-500 active-only-content">
+                      <div className="absolute inset-0 z-30 transition-opacity duration-500 active-only-content pointer-events-none">
                         {/* Content Area */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                           {/* Explore More Button at Bottom */}
-                          <div className="absolute bottom-10 w-full flex justify-center translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                          <div className="absolute bottom-10 w-full flex justify-center translate-y-2 group-hover:translate-y-0 transition-all duration-500 pointer-events-auto">
                             <Link
                               to="/products"
                               className="px-10 py-3 bg-white text-zinc-900 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-100 transition-all shadow-xl rounded-full"
