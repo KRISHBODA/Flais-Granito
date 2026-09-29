@@ -194,7 +194,7 @@ const EditProduct = () => {
       data.append("price", 0);
       data.append("category", formData.category);
       data.append("size", formData.size);
-      data.append("color", formData.color);
+      data.append("color", (formData.color || "").trim());
       data.append("thickness", formData.thickness);
       data.append("finishes", formData.finishes);
       data.append("application", formData.application);

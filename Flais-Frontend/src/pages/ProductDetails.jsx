@@ -94,7 +94,7 @@ const ProductDetails = () => {
     return {
       size: product.size || 'N/A',
       finish: product.finishes || product.finish || 'N/A',
-      color: product.color || 'N/A',
+      color: (product.color || '').trim() || 'N/A',
       thickness: product.thickness || 'N/A',
       application: product.application || '',
       randoms: product.randoms || '',

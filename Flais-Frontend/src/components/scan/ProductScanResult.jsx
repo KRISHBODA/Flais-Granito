@@ -179,7 +179,7 @@ const ProductScanResult = ({ product, onScanAnother }) => {
                   Body Type / Color
                 </span>
                 <span className="text-sm font-semibold text-zinc-900">
-                  {product.color || 'Standard'}
+                  {(product.color || '').trim() || 'Standard'}
                 </span>
               </div>
 

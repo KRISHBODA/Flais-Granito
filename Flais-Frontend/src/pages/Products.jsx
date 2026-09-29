@@ -1273,15 +1273,22 @@ const Products = () => {
                         <div className="pt-6 px-2 flex flex-col flex-1">
                           <div className="mb-2 flex items-center gap-2 flex-wrap">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-[#5D4037] bg-[#5D4037]/5 px-2.5 py-0.5 rounded border border-[#5D4037]/10">{product.category || 'Standard'}</span>
-                            {product.color && product.color.toUpperCase() !== 'GVT' && (
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-zinc-200 bg-white text-zinc-700 flex items-center gap-1.5 shadow-2xs">
-                                <span
-                                  className="w-2 h-2 rounded-full border border-black/20"
-                                  style={{ backgroundColor: BODY_TYPE_SWATCHES[product.color.toLowerCase()] || '#A0A0A0' }}
-                                />
-                                {product.color} Body
-                              </span>
-                            )}
+                            {(() => {
+                              const cleanColor = (product.color || '').trim();
+                              const upper = cleanColor.toUpperCase();
+                              if (!cleanColor || upper === 'GVT' || upper === 'PGVT' || upper.includes('GVT') || upper.includes('PGVT')) {
+                                return null;
+                              }
+                              return (
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-zinc-200 bg-white text-zinc-700 flex items-center gap-1.5 shadow-2xs">
+                                  <span
+                                    className="w-2 h-2 rounded-full border border-black/20"
+                                    style={{ backgroundColor: BODY_TYPE_SWATCHES[cleanColor.toLowerCase()] || '#A0A0A0' }}
+                                  />
+                                  {cleanColor} Body
+                                </span>
+                              );
+                            })()}
                             {product.tagReview && String(product.tagReview).trim() !== '' && (
                               <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border ${
                                 /best\s*selling/i.test(product.tagReview)
