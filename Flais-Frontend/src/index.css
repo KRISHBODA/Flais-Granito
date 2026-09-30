@@ -478,8 +478,8 @@ html.lenis body {
 /* Default Mobile Slide Layout: single fixed slide for consistent arrow steps */
 
 .collections-swiper .swiper-slide {
-    width: 90vw !important;
-    height: clamp(200px, 51vw, 290px) !important;
+    width: 100% !important;
+    height: 380px !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -500,17 +500,17 @@ html.lenis body {
 }
 
 
-/* Inner card dimensions */
+/* Inner card dimensions: square/rectangle for active, vertical rectangle for inactive */
 
 .collections-swiper .swiper-slide .collections-card-inner {
     width: 100% !important;
-    height: 100% !important;
+    height: 380px !important;
     will-change: width, height;
 }
 
 .collections-swiper .swiper-slide-active .collections-card-inner {
     width: 100% !important;
-    height: 100% !important;
+    height: 380px !important;
 }
 
 
@@ -519,15 +519,16 @@ html.lenis body {
 @media (min-width: 640px) {
     .collections-swiper .swiper-slide {
         width: 72vw !important;
-        height: clamp(260px, 40.5vw, 420px) !important;
+        height: 480px !important;
     }
     .collections-swiper .swiper-slide .collections-card-inner {
         width: 100% !important;
-        height: 100% !important;
+        height: 480px !important;
+        will-change: width, height;
     }
     .collections-swiper .swiper-slide-active .collections-card-inner {
         width: 100% !important;
-        height: 100% !important;
+        height: 480px !important;
     }
 }
 
@@ -536,16 +537,17 @@ html.lenis body {
 
 @media (min-width: 1024px) {
     .collections-swiper .swiper-slide {
-        width: 54vw !important;
-        height: clamp(320px, 30.5vw, 500px) !important;
+        width: 50vw !important;
+        height: 580px !important;
     }
     .collections-swiper .swiper-slide .collections-card-inner {
         width: 100% !important;
-        height: 100% !important;
+        height: 580px !important;
+        will-change: width, height;
     }
     .collections-swiper .swiper-slide-active .collections-card-inner {
         width: 100% !important;
-        height: 100% !important;
+        height: 580px !important;
     }
 }
 
@@ -567,28 +569,28 @@ html.lenis body {
 /* Navigation buttons positioned exactly at active slide borders */
 
 .collections-prev-btn {
-    left: calc(50% - 46vw) !important;
+    left: calc(50% - 33vw) !important;
 }
 
 .collections-next-btn {
-    right: calc(50% - 46vw) !important;
+    right: calc(50% - 33vw) !important;
 }
 
 @media (min-width: 640px) {
     .collections-prev-btn {
-        left: calc(50% - 37vw) !important;
+        left: calc(50% - 33vw) !important;
     }
     .collections-next-btn {
-        right: calc(50% - 37vw) !important;
+        right: calc(50% - 33vw) !important;
     }
 }
 
 @media (min-width: 1024px) {
     .collections-prev-btn {
-        left: calc(50% - 28vw) !important;
+        left: calc(50% - 23vw) !important;
     }
     .collections-next-btn {
-        right: calc(50% - 28vw) !important;
+        right: calc(50% - 23vw) !important;
     }
 }
 
