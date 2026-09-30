@@ -80,13 +80,29 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-// Auto-generate slug if not provided or modified
-productSchema.pre("validate", function () {
-  if (this.title && !this.slug) {
-    this.slug = this.title
+// Auto-generate unique slug if not provided or modified
+productSchema.pre("validate", async function () {
+  if (this.title && (!this.slug || this.isModified("title") || this.isModified("slug"))) {
+    let baseSlug = (this.slug || this.title)
       .toLowerCase()
+      .trim()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)+/g, "");
+
+    if (!baseSlug) baseSlug = "product";
+
+    let candidateSlug = baseSlug;
+    let counter = 1;
+    while (
+      await mongoose.models.Product.exists({
+        slug: candidateSlug,
+        _id: { $ne: this._id },
+      })
+    ) {
+      counter++;
+      candidateSlug = `${baseSlug}-${counter}`;
+    }
+    this.slug = candidateSlug;
   }
 });
 

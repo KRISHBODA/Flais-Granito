@@ -135,9 +135,25 @@ exports.createProduct = async (req, res) => {
       is3d = req.body.has3dPreview === "true" || req.body.has3dPreview === true;
     }
 
+    // Ensure unique slug
+    let baseSlug = (slug || title || "product")
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+
+    if (!baseSlug) baseSlug = "product";
+
+    let finalSlug = baseSlug;
+    let counter = 1;
+    while (await Product.exists({ slug: finalSlug })) {
+      counter++;
+      finalSlug = `${baseSlug}-${counter}`;
+    }
+
     const product = await Product.create({
       title,
-      slug,
+      slug: finalSlug,
       description,
       price: Number(price),
       category,
@@ -162,6 +178,12 @@ exports.createProduct = async (req, res) => {
       product,
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "A product with a similar title or identifier already exists. Please adjust the title.",
+      });
+    }
     res.status(500).json({ success: false, message: error.message || "Server Error" });
   }
 };
@@ -581,9 +603,27 @@ exports.updateProduct = async (req, res) => {
 
     const { title, slug, description, price, category, stock, featured, size, color, thickness, finishes, application, link360, randoms, collection: productCollection, tagReview } = req.body;
 
+    let finalSlug = product.slug;
+    if (slug || (title && title !== product.title)) {
+      let baseSlug = (slug || title)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "");
+
+      if (!baseSlug) baseSlug = "product";
+
+      finalSlug = baseSlug;
+      let counter = 1;
+      while (await Product.exists({ slug: finalSlug, _id: { $ne: product._id } })) {
+        counter++;
+        finalSlug = `${baseSlug}-${counter}`;
+      }
+    }
+
     let updateData = {
       title,
-      slug,
+      slug: finalSlug,
       description,
       price: price ? Number(price) : product.price,
       category,
@@ -691,6 +731,12 @@ exports.updateProduct = async (req, res) => {
     );
     res.status(200).json({ success: true, product: updatedProduct });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "A product with a similar title or identifier already exists. Please adjust the title.",
+      });
+    }
     res.status(500).json({ success: false, message: "Update failed", error: error.message });
   }
 };
