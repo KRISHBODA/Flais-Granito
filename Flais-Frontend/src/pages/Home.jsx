@@ -598,10 +598,10 @@ const Home = () => {
                       {!collectionsImageErrors[`${col._id || col.id || col.name}-${index}`] ? (
                         <img
                           loading="eager"
-                          src={getOptimizedImageUrl(col.image, 800)}
+                          src={getOptimizedImageUrl(col.image, 1200)}
                           alt={col.name}
                           onError={() => handleCollectionsImageError(`${col._id || col.id || col.name}-${index}`)}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                          className="absolute inset-0 w-full h-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
                           style={{ backfaceVisibility: 'hidden' }}
                         />
                       ) : (
