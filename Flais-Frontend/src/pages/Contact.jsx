@@ -360,7 +360,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="pt-24 min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <SEO 
         title={pageSettings.heroTitle || "Contact Us"}
         description={pageSettings.heroSubtitle || "Have questions about our tiles or need a quote? Contact FLAIS GRANITO today. Our support team is ready to help you with tile selection and orders."}
@@ -368,7 +368,7 @@ const Contact = () => {
         schema={contactSchema}
       />
       {/* Header */}
-      <section className="relative min-h-[180px] py-12 sm:min-h-[220px] md:min-h-[250px] flex items-center justify-center overflow-hidden">
+      <section className="relative pt-28 pb-12 sm:pt-32 md:pt-36 flex items-center justify-center overflow-hidden">
         {isVideo ? (
           <video
             autoPlay
