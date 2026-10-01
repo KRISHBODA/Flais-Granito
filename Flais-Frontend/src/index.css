@@ -505,7 +505,6 @@ html.lenis body {
 .collections-swiper .swiper-slide .collections-card-inner {
     width: 100% !important;
     height: 380px !important;
-    will-change: width, height;
 }
 
 .collections-swiper .swiper-slide-active .collections-card-inner {
@@ -524,7 +523,6 @@ html.lenis body {
     .collections-swiper .swiper-slide .collections-card-inner {
         width: 100% !important;
         height: 480px !important;
-        will-change: width, height;
     }
     .collections-swiper .swiper-slide-active .collections-card-inner {
         width: 100% !important;
@@ -543,7 +541,6 @@ html.lenis body {
     .collections-swiper .swiper-slide .collections-card-inner {
         width: 100% !important;
         height: 580px !important;
-        will-change: width, height;
     }
     .collections-swiper .swiper-slide-active .collections-card-inner {
         width: 100% !important;
@@ -695,3 +692,19 @@ html.lenis body {
     height: auto !important;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
 }
+
+/* Optimize high-resolution 3D preview and product photos rendering */
+img {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.group\/card img,
+.group img,
+.collections-card-inner img,
+.collections-swiper img,
+.swiper-slide img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+

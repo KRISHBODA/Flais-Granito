@@ -327,19 +327,27 @@ const Home = () => {
               prevEl: '.swiper-button-prev-custom',
             }}
             onSlideChange={(swiper) => setActiveHeroIndex(swiper.realIndex)}
-            className="h-full w-full relative group transform-gpu"
+            className="h-full w-full relative group"
           >
             {heroSlides.map((slide, index) => {
               const isActive = activeHeroIndex === index;
               return (
                 <SwiperSlide key={index} className="overflow-hidden">
-                  <div className="relative h-full w-full overflow-hidden perspective-1000">
+                  <div className="relative h-full w-full overflow-hidden">
                     <img
                       src={getOptimizedImageUrl(slide.image, 1920)}
-                      alt={slide.title}
-                      className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[7000ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${isActive ? 'scale-112' : 'scale-100'
+                      alt={slide.title || "FLAIS GRANITO Hero Slide"}
+                      className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[7000ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${isActive ? 'scale-105' : 'scale-100'
                         }`}
-                      loading="lazy"
+                      style={{
+                        imageRendering: '-webkit-optimize-contrast',
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                        transformOrigin: 'center center',
+                      }}
+                      loading={index === 0 ? "eager" : "lazy"}
+                      fetchPriority={index === 0 ? "high" : "auto"}
+                      decoding="async"
                     />
 
                     {slide.title && (
@@ -594,15 +602,21 @@ const Home = () => {
               >
                 {collectionSlides.map((col, index) => (
                   <SwiperSlide key={`${col._id || col.id || col.name}-${index}`}>
-                    <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-none" style={{ transform: 'translateZ(0)' }}>
+                    <div className="collections-card-inner relative w-full h-full overflow-hidden group rounded-none">
                       {!collectionsImageErrors[`${col._id || col.id || col.name}-${index}`] ? (
                         <img
                           loading="eager"
-                          src={getOptimizedImageUrl(col.image, 800)}
+                          src={getOptimizedImageUrl(col.image, 1920)}
                           alt={col.name}
                           onError={() => handleCollectionsImageError(`${col._id || col.id || col.name}-${index}`)}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                          style={{ backfaceVisibility: 'hidden' }}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
+                          style={{
+                            imageRendering: '-webkit-optimize-contrast',
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                            transformOrigin: 'center center',
+                          }}
+                          decoding="async"
                         />
                       ) : (
                         <div className="absolute inset-0 bg-[#FAF8F5] flex items-center justify-center border border-zinc-200/50">

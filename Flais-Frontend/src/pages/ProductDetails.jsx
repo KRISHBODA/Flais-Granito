@@ -27,7 +27,7 @@ const ProductImage = ({ src, alt }) => {
   }, [src]);
 
   return (
-    <div className={`w-full h-full transition-all duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}>
+    <div className={`w-full h-full transition-colors duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}>
       <img
         ref={imgRef}
         src={src}
@@ -35,7 +35,12 @@ const ProductImage = ({ src, alt }) => {
         loading="lazy"
         decoding="async"
         onLoad={() => setLoaded(true)}
-        className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-98'}`}
+        style={{
+          imageRendering: '-webkit-optimize-contrast',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+        }}
+        className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
     </div>
   );
@@ -238,7 +243,14 @@ const ProductDetails = () => {
                   <img 
                     src={allImages[currentImageIndex]} 
                     alt={product.title || product.name} 
-                    loading="lazy" 
+                    loading={currentImageIndex === 0 ? "eager" : "lazy"} 
+                    fetchPriority={currentImageIndex === 0 ? "high" : "auto"}
+                    decoding={currentImageIndex === 0 ? "sync" : "async"}
+                    style={{
+                      imageRendering: '-webkit-optimize-contrast',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                    }}
                     className={`${currentImageIndex === 0 ? 'w-full h-full object-cover' : 'max-w-full max-h-full object-contain'} transition-all duration-500 select-none cursor-grab active:cursor-grabbing`} 
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
@@ -300,7 +312,7 @@ const ProductDetails = () => {
                     }`}
                     title={`Photo ${idx + 1}`}
                   >
-                    <img src={img} alt={`Thumb ${idx + 1}`} className="h-full w-full object-cover select-none pointer-events-none" />
+                    <img src={img} alt={`Thumb ${idx + 1}`} style={{ imageRendering: '-webkit-optimize-contrast' }} className="h-full w-full object-cover select-none pointer-events-none" />
                   </button>
                 ))}
               </div>

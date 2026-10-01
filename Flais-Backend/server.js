@@ -108,6 +108,12 @@ const staticOptions = {
 
 app.use("/media", express.static(path.join(__dirname, "uploads"), staticOptions));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), staticOptions));
+
+// Fallback for media files not found locally (e.g. dev environment using production database)
+app.use(["/media", "/uploads"], (req, res) => {
+  const cleanUrl = req.url.startsWith("/") ? req.url : `/${req.url}`;
+  return res.redirect(302, `https://flaisgranito.com/media${cleanUrl}`);
+});
 const websiteContentOptions = {
   maxAge: '7d',
   setHeaders(res) {

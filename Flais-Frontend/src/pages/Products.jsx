@@ -33,7 +33,7 @@ const ProductImage = ({ src, alt, hoverSrc, index = 0 }) => {
 
   return (
     <div 
-      className={`relative w-full h-full transition-all duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}
+      className={`relative w-full h-full transition-colors duration-300 ${!loaded ? 'animate-pulse bg-zinc-200' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
     >
       <img
@@ -42,15 +42,27 @@ const ProductImage = ({ src, alt, hoverSrc, index = 0 }) => {
         alt={alt}
         loading={index < 6 ? 'eager' : 'lazy'}
         fetchPriority={index < 3 ? 'high' : 'auto'}
-        decoding="async"
+        decoding={index < 6 ? 'sync' : 'async'}
         onLoad={() => setLoaded(true)}
-        className={`w-full h-full object-cover transition-all duration-500 ${hoverSrc && isHovered ? 'group-hover/card:opacity-0 group-hover/card:scale-105' : 'group-hover/card:scale-105'} ${loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-98'}`}
+        style={{
+          imageRendering: '-webkit-optimize-contrast',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+        }}
+        className={`w-full h-full object-cover transition-all duration-500 ${
+          hoverSrc && isHovered ? 'group-hover/card:opacity-0 group-hover/card:scale-105' : 'group-hover/card:scale-105'
+        } ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
       {hoverSrc && isHovered && (
         <img
           src={hoverSrc}
           alt={`${alt} tile face`}
           decoding="async"
+          style={{
+            imageRendering: '-webkit-optimize-contrast',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+          }}
           className="absolute inset-0 w-full h-full object-contain p-4 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100 group-hover/card:scale-102 bg-[#FAF8F5]/95 pointer-events-none"
         />
       )}
@@ -1259,7 +1271,7 @@ const Products = () => {
                         key={product._id}
                         className="p-4 pb-8 rounded-tl-[3.5rem] rounded-br-[3.5rem] rounded-tr-[1.25rem] rounded-bl-[1.25rem] bg-[#FAF8F5] border border-[#D2C9B1]/30 group flex flex-col h-full hover:shadow-xl hover:border-[#5D4037]/30"
                       >
-                        <Link to={`/products/${product.slug}`} onClick={savePageState} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 transform-gpu group/card">
+                        <Link to={`/products/${product.slug}`} onClick={savePageState} className="block relative aspect-[3/4] overflow-hidden rounded-tl-[2.75rem] rounded-br-[2.75rem] rounded-tr-[0.85rem] rounded-bl-[0.85rem] bg-zinc-100 group/card">
                           <ProductImage
                             src={getOptimizedImageUrl(product.images && product.images.length > 0 ? product.images[0] : (product.image || 'https://via.placeholder.com/400x400?text=No+Image'), 600)}
                             hoverSrc={product.images && product.images.length > 1 ? getOptimizedImageUrl(product.images[1], 600) : null}

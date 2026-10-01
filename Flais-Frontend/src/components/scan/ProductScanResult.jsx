@@ -86,6 +86,11 @@ const ProductScanResult = ({ product, onScanAnother }) => {
             <img
               src={currentImage}
               alt={product.title || product.name}
+              style={{
+                imageRendering: '-webkit-optimize-contrast',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+              }}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
 
