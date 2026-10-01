@@ -23,10 +23,11 @@ const defaultContactSettings = {
   heroTitle: 'Contact Us',
   heroSubtitle: 'Have a question or planning a project? Reach out to our team of experts today.',
   heroMedia: '',
-  facebook: 'https://www.facebook.com/FlaisTile/',
-  instagram: 'https://www.instagram.com/flaisgranito/',
-  linkedin: 'https://www.linkedin.com/company/flais-granito/',
-  youtube: 'https://www.youtube.com/@FlaisGranito'
+  facebook: 'https://www.facebook.com/share/1Eqo7HDYNb/',
+  instagram: 'https://www.instagram.com/flais_tiles.and.adhesives/?hl=en',
+  linkedin: 'https://www.linkedin.com/company/flais-granito',
+  youtube: 'https://www.youtube.com/@flais_tiles.and.adhesives',
+  pinterest: 'https://pin.it/3NKlK8ujW'
 };
 
 const countryCodes = [
@@ -999,6 +1000,19 @@ const Messages = () => {
                   onChange={(e) => setContactSettings({ ...contactSettings, youtube: e.target.value })}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm focus:border-[#0145F2] focus:outline-none"
                   placeholder="https://youtube.com/..."
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Pinterest Profile Link</label>
+                <input
+                  type="text"
+                  value={contactSettings.pinterest || ''}
+                  onChange={(e) => setContactSettings({ ...contactSettings, pinterest: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm focus:border-[#0145F2] focus:outline-none"
+                  placeholder="https://pin.it/..."
                 />
               </div>
             </div>

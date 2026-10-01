@@ -12,7 +12,12 @@ const Footer = () => {
     phone1: '+91 95867 33300',
     phone2: '+91 98983 04831',
     email: 'info@flaisgranito.com',
-    address: 'Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.'
+    address: 'Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.',
+    facebook: 'https://www.facebook.com/share/1Eqo7HDYNb/',
+    linkedin: 'https://www.linkedin.com/company/flais-granito',
+    instagram: 'https://www.instagram.com/flais_tiles.and.adhesives/?hl=en',
+    youtube: 'https://www.youtube.com/@flais_tiles.and.adhesives',
+    pinterest: 'https://pin.it/3NKlK8ujW'
   });
 
   React.useEffect(() => {
@@ -20,8 +25,7 @@ const Footer = () => {
       try {
         const res = await api.get('/settings');
         if (res.data.success && res.data.settings) {
-          const { phone1, phone2, email, address } = res.data.settings;
-          setFooterSettings({ phone1, phone2, email, address });
+          setFooterSettings(prev => ({ ...prev, ...res.data.settings }));
         }
       } catch (err) {
                 // Fallback to local storage if available
@@ -42,7 +46,7 @@ const Footer = () => {
   const socialLinks = [
     {
       name: 'Facebook',
-      href: 'https://www.facebook.com/share/1Eqo7HDYNb/',
+      href: footerSettings.facebook || 'https://www.facebook.com/share/1Eqo7HDYNb/',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
@@ -51,7 +55,7 @@ const Footer = () => {
     },
     {
       name: 'Linkedin',
-      href: 'https://www.linkedin.com/in/flais-tiles-and-adhesive-54b353201?utm_source=share_via&utm_content=profile&utm_medium=member_android',
+      href: footerSettings.linkedin || 'https://www.linkedin.com/company/flais-granito',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
@@ -62,7 +66,7 @@ const Footer = () => {
     },
     {
       name: 'Instagram',
-      href: 'https://www.instagram.com/flais_tiles.and.adhesives?igsh=Y29neGJjeTlpMHo0',
+      href: footerSettings.instagram || 'https://www.instagram.com/flais_tiles.and.adhesives/?hl=en',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -73,7 +77,7 @@ const Footer = () => {
     },
     {
       name: 'Youtube',
-      href: 'https://youtube.com/@flais_tiles.and.adhesives?si=5PMCOWaJ4LTMG6BI',
+      href: footerSettings.youtube || 'https://www.youtube.com/@flais_tiles.and.adhesives',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.11 1 12 1 12s0 3.89.46 5.58a2.78 2.78 0 0 0 1.94 2c1.72.42 8.6.42 8.6.42s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.89 23 12 23 12s0-3.89-.46-5.58z" />
@@ -83,7 +87,7 @@ const Footer = () => {
     },
     {
       name: 'Pinterest',
-      href: 'https://pin.it/3NKlK8ujW',
+      href: footerSettings.pinterest || 'https://pin.it/3NKlK8ujW',
       icon: (props) => (
         <svg {...props} viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12c0 4.27 2.68 7.91 6.46 9.38-.09-.8-.16-2.02.03-2.9.18-.78 1.16-5.01 1.16-5.01s-.3-.59-.3-1.47c0-1.38.8-2.41 1.79-2.41.85 0 1.26.63 1.26 1.39 0 .85-.54 2.13-.82 3.31-.24.99.49 1.8 1.48 1.8 1.78 0 3.15-1.88 3.15-4.59 0-2.4-1.72-4.08-4.19-4.08-2.85 0-4.52 2.14-4.52 4.34 0 .86.33 1.78.74 2.28.08.1.09.19.07.28-.08.32-.25 1.02-.28 1.15-.04.17-.14.2-.33.12-1.25-.58-2.03-2.42-2.03-3.89 0-3.17 2.3-6.09 6.65-6.09 3.49 0 6.2 2.49 6.2 5.81 0 3.47-2.19 6.26-5.23 6.26-1.02 0-1.98-.53-2.31-1.15l-.63 2.4c-.23.88-.85 1.98-1.27 2.66C8.86 21.72 10.39 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" />

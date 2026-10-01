@@ -214,9 +214,9 @@ const defaultPageSettings = {
   phone: "+91 95867 33300",
   email: "info@flaisgranito.com",
   facebook: "https://www.facebook.com/share/1Eqo7HDYNb/",
-  instagram: "https://www.instagram.com/flais_tiles.and.adhesives?igsh=Y29neGJjeTlpMHo0",
-  linkedin: "https://www.linkedin.com/in/flais-tiles-and-adhesive-54b353201?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-  youtube: "https://youtube.com/@flais_tiles.and.adhesives?si=5PMCOWaJ4LTMG6BI",
+  instagram: "https://www.instagram.com/flais_tiles.and.adhesives/?hl=en",
+  linkedin: "https://www.linkedin.com/company/flais-granito",
+  youtube: "https://www.youtube.com/@flais_tiles.and.adhesives",
   pinterest: "https://pin.it/3NKlK8ujW"
 };
 
@@ -489,7 +489,7 @@ const Contact = () => {
                     },
                     {
                       label: 'Instagram',
-                      href: pageSettings.instagram || 'https://www.instagram.com/flais_tiles.and.adhesives?igsh=Y29neGJjeTlpMHo0',
+                      href: pageSettings.instagram || 'https://www.instagram.com/flais_tiles.and.adhesives/?hl=en',
                       color: '#E1306C',
                       icon: (
                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -499,7 +499,7 @@ const Contact = () => {
                     },
                     {
                       label: 'LinkedIn',
-                      href: pageSettings.linkedin || 'https://www.linkedin.com/in/flais-tiles-and-adhesive-54b353201?utm_source=share_via&utm_content=profile&utm_medium=member_android',
+                      href: pageSettings.linkedin || 'https://www.linkedin.com/company/flais-granito',
                       color: '#0A66C2',
                       icon: (
                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -509,7 +509,7 @@ const Contact = () => {
                     },
                     {
                       label: 'YouTube',
-                      href: pageSettings.youtube || 'https://youtube.com/@flais_tiles.and.adhesives?si=5PMCOWaJ4LTMG6BI',
+                      href: pageSettings.youtube || 'https://www.youtube.com/@flais_tiles.and.adhesives',
                       color: '#FF0000',
                       icon: (
                         <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">

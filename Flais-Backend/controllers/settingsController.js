@@ -8,10 +8,11 @@ const DEFAULT_SETTINGS = {
   heroTitle: 'Contact Us',
   heroSubtitle: 'Have a question or planning a project? Reach out to our team of experts today.',
   heroMedia: '',
-  facebook: 'https://www.facebook.com/FlaisTile/',
-  instagram: 'https://www.instagram.com/flaisgranito/',
-  linkedin: 'https://www.linkedin.com/company/flais-granito/',
-  youtube: 'https://www.youtube.com/@FlaisGranito'
+  facebook: 'https://www.facebook.com/share/1Eqo7HDYNb/',
+  instagram: 'https://www.instagram.com/flais_tiles.and.adhesives/?hl=en',
+  linkedin: 'https://www.linkedin.com/company/flais-granito',
+  youtube: 'https://www.youtube.com/@flais_tiles.and.adhesives',
+  pinterest: 'https://pin.it/3NKlK8ujW'
 };
 
 exports.getSettings = async (req, res) => {
@@ -42,7 +43,8 @@ exports.updateSettings = async (req, res) => {
       facebook,
       instagram,
       linkedin,
-      youtube
+      youtube,
+      pinterest
     } = req.body;
     let settings = await Settings.findOne();
     if (!settings) {
@@ -59,6 +61,7 @@ exports.updateSettings = async (req, res) => {
     if (instagram !== undefined) settings.instagram = instagram;
     if (linkedin !== undefined) settings.linkedin = linkedin;
     if (youtube !== undefined) settings.youtube = youtube;
+    if (pinterest !== undefined) settings.pinterest = pinterest;
 
     await settings.save();
     res.status(200).json({ success: true, message: "Settings updated successfully", settings });
