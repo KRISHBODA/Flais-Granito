@@ -212,8 +212,6 @@ const defaultPageSettings = {
   heroMedia: "",
   address: "Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.",
   phone: "+91 9909911772",
-  phone1: "+91 9909911772",
-  phone2: "+91 98983 04831",
   email: "info@flaisgranito.com",
   facebook: "https://www.facebook.com/share/1Eqo7HDYNb/",
   instagram: "https://www.instagram.com/flais_tiles.and.adhesives/?hl=en",
@@ -231,9 +229,7 @@ const Contact = () => {
       try {
         const response = await api.get('/settings');
         if (response.data.success && response.data.settings) {
-          const s = response.data.settings;
-          const phone = s.phone || s.phone1 || defaultPageSettings.phone;
-          setPageSettings({ ...defaultPageSettings, ...s, phone });
+          setPageSettings({ ...defaultPageSettings, ...response.data.settings });
         }
       } catch (error) {
         console.warn('[Contact] Failed to load settings', error);
@@ -252,10 +248,10 @@ const Contact = () => {
   }, [pageSettings.heroMedia]);
 
   const getWhatsAppLink = () => {
-    const phoneToUse = pageSettings.phone || pageSettings.phone1 || "+919909911772";
-    const firstPhone = phoneToUse.split(',')[0].trim();
+    if (!pageSettings.phone) return "https://wa.me/919586733300";
+    const firstPhone = pageSettings.phone.split(',')[0].trim();
     const digits = firstPhone.replace(/\D/g, '');
-    return `https://wa.me/${digits || '919909911772'}`;
+    return `https://wa.me/${digits}`;
   };
 
   const contactSchema = {
@@ -266,7 +262,7 @@ const Contact = () => {
     "mainEntity": {
       "@type": "LocalBusiness",
       "name": "FLAIS GRANITO",
-      "telephone": (pageSettings.phone || pageSettings.phone1 || "+919909911772").replace(/\s+/g, ''),
+      "telephone": (pageSettings.phone || "+919586733300").replace(/\s+/g, ''),
       "email": pageSettings.email || "info@flaisgranito.com",
       "address": {
         "@type": "PostalAddress",
@@ -440,12 +436,14 @@ const Contact = () => {
                       {pageSettings.phone ? (
                         pageSettings.phone.split(',').map((p, idx) => (
                           <React.Fragment key={idx}>
-                            {p.trim()}
+                            <a href={`tel:${p.replace(/\s+/g, '')}`} className="hover:text-zinc-900 transition-colors">
+                              {p.trim()}
+                            </a>
                             {idx < pageSettings.phone.split(',').length - 1 && <br />}
                           </React.Fragment>
                         ))
                       ) : (
-                        <>+91 9909911772<br />+91 98983 04831</>
+                        <a href="tel:+919909911772" className="hover:text-zinc-900 transition-colors">+91 9909911772</a>
                       )}
                     </p>
                     <p className="text-zinc-500 text-xs sm:text-sm mt-0.5">Mon - Sat: 9:00 AM - 7:00 PM</p>

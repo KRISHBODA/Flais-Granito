@@ -17,8 +17,6 @@ import toast from 'react-hot-toast';
 
 const defaultContactSettings = {
   phone: '+91 9909911772',
-  phone1: '+91 9909911772',
-  phone2: '+91 98983 04831',
   email: 'info@flaisgranito.com',
   address: 'Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.',
   heroTitle: 'Contact Us',
@@ -468,12 +466,20 @@ const Messages = () => {
   const handleSaveSettings = (e) => {
     if (e) e.preventDefault();
     const token = localStorage.getItem('adminToken');
-    const payload = {
-      ...contactSettings,
-      phone: contactSettings.phone || '',
-      phone1: contactSettings.phone ? contactSettings.phone.split(',')[0].trim() : (contactSettings.phone1 || '')
-    };
-    axios.put(`${API}/api/settings`, payload, {
+    const { phone, email, address, heroTitle, heroSubtitle, heroMedia, facebook, instagram, linkedin, youtube, pinterest } = contactSettings;
+    axios.put(`${API}/api/settings`, {
+      phone,
+      email,
+      address,
+      heroTitle,
+      heroSubtitle,
+      heroMedia,
+      facebook,
+      instagram,
+      linkedin,
+      youtube,
+      pinterest
+    }, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then((res) => {
@@ -529,13 +535,11 @@ const Messages = () => {
       try {
         const response = await axios.get(`${API}/api/settings`);
         if (response.data.success && response.data.settings) {
-          const resSettings = response.data.settings;
-          const resolvedPhone = resSettings.phone || resSettings.phone1 || defaultContactSettings.phone;
+          const s = response.data.settings;
           setContactSettings({
             ...defaultContactSettings,
-            ...resSettings,
-            phone: resolvedPhone,
-            phone1: resSettings.phone1 || resolvedPhone
+            ...s,
+            phone: s.phone || defaultContactSettings.phone
           });
         }
       } catch (error) {
@@ -943,10 +947,10 @@ const Messages = () => {
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Phone Number</label>
                 <input
                   type="text"
-                  value={contactSettings.phone !== undefined ? contactSettings.phone : (contactSettings.phone1 || '')}
-                  onChange={(e) => setContactSettings({ ...contactSettings, phone: e.target.value, phone1: e.target.value.split(',')[0].trim() })}
+                  value={contactSettings.phone}
+                  onChange={(e) => setContactSettings({ ...contactSettings, phone: e.target.value })}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm focus:border-[#0145F2] focus:outline-none"
-                  placeholder="+91 9909911772"
+                  placeholder="+91 98765 43210"
                 />
               </div>
               <div>

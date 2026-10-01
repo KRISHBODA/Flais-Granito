@@ -9,8 +9,7 @@ import api from '../utils/api';
 
 const Footer = () => {
   const [footerSettings, setFooterSettings] = React.useState({
-    phone: '+91 9909911772',
-    phone1: '+91 9909911772',
+    phone1: '+91 95867 33300',
     phone2: '+91 98983 04831',
     email: 'info@flaisgranito.com',
     address: 'Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.',
@@ -26,15 +25,7 @@ const Footer = () => {
       try {
         const res = await api.get('/settings');
         if (res.data.success && res.data.settings) {
-          const s = res.data.settings;
-          const phone1 = s.phone1 || (s.phone ? s.phone.split(',')[0].trim() : '+91 9909911772');
-          const phone2 = s.phone2 !== undefined ? s.phone2 : (s.phone && s.phone.includes(',') ? s.phone.split(',')[1].trim() : '');
-          setFooterSettings(prev => ({
-            ...prev,
-            ...s,
-            phone1,
-            phone2: phone2 || prev.phone2
-          }));
+          setFooterSettings(prev => ({ ...prev, ...res.data.settings }));
         }
       } catch (err) {
                 // Fallback to local storage if available

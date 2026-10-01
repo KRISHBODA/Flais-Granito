@@ -2,7 +2,7 @@ const Settings = require("../models/Settings");
 
 const DEFAULT_SETTINGS = {
   phone: '+91 9909911772',
-  phone1: '+91 9909911772',
+  phone1: '+91 95867 33300',
   phone2: '+91 98983 04831',
   email: 'info@flaisgranito.com',
   address: 'Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.',
@@ -22,20 +22,9 @@ exports.getSettings = async (req, res) => {
     if (!settings) {
       settings = await Settings.create(DEFAULT_SETTINGS);
     }
-    const settingsObj = settings.toObject();
-    const resolvedPhone = settingsObj.phone || settingsObj.phone1 || DEFAULT_SETTINGS.phone;
-    const resolvedPhone1 = settingsObj.phone1 || (resolvedPhone ? resolvedPhone.split(',')[0].trim() : DEFAULT_SETTINGS.phone1);
-    const resolvedPhone2 = settingsObj.phone2 || (resolvedPhone && resolvedPhone.includes(',') ? resolvedPhone.split(',')[1].trim() : DEFAULT_SETTINGS.phone2);
-
     res.status(200).json({
       success: true,
-      settings: {
-        ...DEFAULT_SETTINGS,
-        ...settingsObj,
-        phone: resolvedPhone,
-        phone1: resolvedPhone1,
-        phone2: resolvedPhone2
-      }
+      settings: { ...DEFAULT_SETTINGS, ...settings.toObject() }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -63,20 +52,8 @@ exports.updateSettings = async (req, res) => {
     if (!settings) {
       settings = new Settings(DEFAULT_SETTINGS);
     }
-    if (phone !== undefined) {
-      settings.phone = phone;
-      const parts = String(phone).split(',').map(p => p.trim()).filter(Boolean);
-      if (parts.length > 0) {
-        settings.phone1 = parts[0];
-        if (parts.length > 1) {
-          settings.phone2 = parts[1];
-        }
-      }
-    }
-    if (phone1 !== undefined) {
-      settings.phone1 = phone1;
-      if (phone === undefined) settings.phone = phone1;
-    }
+    if (phone !== undefined) settings.phone = phone;
+    if (phone1 !== undefined) settings.phone1 = phone1;
     if (phone2 !== undefined) settings.phone2 = phone2;
     if (email !== undefined) settings.email = email;
     if (address !== undefined) settings.address = address;
