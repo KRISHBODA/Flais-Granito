@@ -1,8 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from '../utils/api';
 
 const WhatsAppButton = () => {
+  const [whatsappUrl, setWhatsappUrl] = useState("https://wa.me/919909911772");
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await api.get('/settings');
+        if (res.data.success && res.data.settings) {
+          const raw = res.data.settings.phone || res.data.settings.phone1;
+          if (raw) {
+            const digits = raw.split(',')[0].replace(/\D/g, '');
+            if (digits) {
+              setWhatsappUrl(`https://wa.me/${digits}`);
+            }
+          }
+        }
+      } catch (e) {
+        // Fallback silently
+      }
+    };
+    fetchSettings();
+  }, []);
+
   return (
     <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50">
       {/* Pulse Effect */}
@@ -20,7 +43,7 @@ const WhatsAppButton = () => {
       />
       
       <motion.a
-        href="https://wa.me/919586733300"
+        href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0, opacity: 0 }}

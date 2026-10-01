@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 
 const settingsSchema = new mongoose.Schema({
-  phone1: { type: String, default: "+91 95867 33300" },
+  phone: { type: String, default: "+91 9909911772" },
+  phone1: { type: String, default: "+91 9909911772" },
   phone2: { type: String, default: "+91 98983 04831" },
   email: { type: String, default: "info@flaisgranito.com" },
   address: { type: String, default: "Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India." },

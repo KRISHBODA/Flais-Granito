@@ -211,7 +211,9 @@ const defaultPageSettings = {
   heroSubtitle: "Have a question or planning a project? Reach out to our team of experts today.",
   heroMedia: "",
   address: "Survey No. 151/pl, Unchi Mandal, Halvad Highway, Gujarat 363642, India.",
-  phone: "+91 95867 33300",
+  phone: "+91 9909911772",
+  phone1: "+91 9909911772",
+  phone2: "+91 98983 04831",
   email: "info@flaisgranito.com",
   facebook: "https://www.facebook.com/share/1Eqo7HDYNb/",
   instagram: "https://www.instagram.com/flais_tiles.and.adhesives/?hl=en",
@@ -229,7 +231,9 @@ const Contact = () => {
       try {
         const response = await api.get('/settings');
         if (response.data.success && response.data.settings) {
-          setPageSettings({ ...defaultPageSettings, ...response.data.settings });
+          const s = response.data.settings;
+          const phone = s.phone || s.phone1 || defaultPageSettings.phone;
+          setPageSettings({ ...defaultPageSettings, ...s, phone });
         }
       } catch (error) {
         console.warn('[Contact] Failed to load settings', error);
@@ -248,10 +252,10 @@ const Contact = () => {
   }, [pageSettings.heroMedia]);
 
   const getWhatsAppLink = () => {
-    if (!pageSettings.phone) return "https://wa.me/919586733300";
-    const firstPhone = pageSettings.phone.split(',')[0].trim();
+    const phoneToUse = pageSettings.phone || pageSettings.phone1 || "+919909911772";
+    const firstPhone = phoneToUse.split(',')[0].trim();
     const digits = firstPhone.replace(/\D/g, '');
-    return `https://wa.me/${digits}`;
+    return `https://wa.me/${digits || '919909911772'}`;
   };
 
   const contactSchema = {
@@ -262,7 +266,7 @@ const Contact = () => {
     "mainEntity": {
       "@type": "LocalBusiness",
       "name": "FLAIS GRANITO",
-      "telephone": (pageSettings.phone || "+919586733300").replace(/\s+/g, ''),
+      "telephone": (pageSettings.phone || pageSettings.phone1 || "+919909911772").replace(/\s+/g, ''),
       "email": pageSettings.email || "info@flaisgranito.com",
       "address": {
         "@type": "PostalAddress",
@@ -441,7 +445,7 @@ const Contact = () => {
                           </React.Fragment>
                         ))
                       ) : (
-                        <>+91 95867 33300<br />+91 98983 04831</>
+                        <>+91 9909911772<br />+91 98983 04831</>
                       )}
                     </p>
                     <p className="text-zinc-500 text-xs sm:text-sm mt-0.5">Mon - Sat: 9:00 AM - 7:00 PM</p>

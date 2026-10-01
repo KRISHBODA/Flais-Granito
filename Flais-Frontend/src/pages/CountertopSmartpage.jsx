@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../utils/api';
 import {
   Phone,
   Mail,
@@ -166,6 +167,19 @@ const PACKAGING_SPECS = [
 const CountertopSmartpage = () => {
   const [packingModalOpen, setPackingModalOpen] = useState(false);
   const [adhesiveModalOpen, setAdhesiveModalOpen] = useState(false);
+  const [phone, setPhone] = useState('+91 9909911772');
+
+  useEffect(() => {
+    api.get('/settings').then(res => {
+      if (res.data?.success && res.data?.settings) {
+        const p = res.data.settings.phone || res.data.settings.phone1;
+        if (p) setPhone(p.split(',')[0].trim());
+      }
+    }).catch(() => {});
+  }, []);
+
+  const phoneDigits = phone.replace(/\D/g, '') || '919909911772';
+  const phoneTel = phone.replace(/\s+/g, '') || '+919909911772';
 
   return (
     <div className="relative min-h-screen font-sans selection:bg-[#5D4037] selection:text-white bg-white">
@@ -216,7 +230,7 @@ const CountertopSmartpage = () => {
           {/* Quick Contact Bar */}
           <div className="mt-6 pt-5 border-t border-zinc-800 flex items-center justify-center gap-3 sm:gap-4">
             <a
-              href="tel:+919586733300"
+              href={`tel:${phoneTel}`}
               aria-label="Call technical desk"
               className="w-11 h-11 rounded-full bg-zinc-900 hover:bg-[#5D4037] text-[#c5a880] hover:text-white border border-zinc-800 hover:border-[#c5a880] flex items-center justify-center transition-all duration-300 shadow-sm active:scale-95"
             >
@@ -224,7 +238,7 @@ const CountertopSmartpage = () => {
             </a>
 
             <a
-              href="https://wa.me/919586733300?text=Hello%20FLAIS%20Granito%2C%20I%20have%20an%20inquiry%20about%2015mm%20Countertops."
+              href={`https://wa.me/${phoneDigits}?text=Hello%20FLAIS%20Granito%2C%20I%20have%20an%20inquiry%20about%2015mm%20Countertops.`}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Chat on WhatsApp"
@@ -452,7 +466,7 @@ const CountertopSmartpage = () => {
               {/* Action CTAs */}
               <div className="pt-4 border-t border-zinc-100 flex flex-col sm:flex-row gap-3">
                 <a
-                  href="https://wa.me/919586733300?text=Hello%20FLAIS%20Granito%2C%20I%20have%20a%20logistics%20inquiry%20regarding%2015mm%20countertop%20packaging%20and%20pallet%20crates."
+                  href={`https://wa.me/${phoneDigits}?text=Hello%20FLAIS%20Granito%2C%20I%20have%20a%20logistics%20inquiry%20regarding%2015mm%20countertop%20packaging%20and%20pallet%20crates.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 py-3.5 px-4 bg-[#5D4037] hover:bg-[#4a332c] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm text-center"
@@ -462,7 +476,7 @@ const CountertopSmartpage = () => {
                 </a>
 
                 <a
-                  href="tel:+919586733300"
+                  href={`tel:${phoneTel}`}
                   className="py-3.5 px-5 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 text-center"
                 >
                   <Phone size={15} />
@@ -565,7 +579,7 @@ const CountertopSmartpage = () => {
               {/* Action CTAs */}
               <div className="pt-4 border-t border-zinc-100 flex flex-col sm:flex-row gap-3">
                 <a
-                  href="https://wa.me/919586733300?text=Hello%20FLAIS%20Granito%2C%20I%20have%20an%20inquiry%20regarding%20Tile%20Adhesive%20for%2015mm%20Slabs."
+                  href={`https://wa.me/${phoneDigits}?text=Hello%20FLAIS%20Granito%2C%20I%20have%20an%20inquiry%20regarding%20Tile%20Adhesive%20for%2015mm%20Slabs.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 py-3.5 px-4 bg-[#5D4037] hover:bg-[#4a332c] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm text-center"
@@ -585,7 +599,7 @@ const CountertopSmartpage = () => {
                 </a>
 
                 <a
-                  href="tel:+919586733300"
+                  href={`tel:${phoneTel}`}
                   className="py-3.5 px-5 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 text-center"
                 >
                   <Phone size={15} />
