@@ -38,6 +38,12 @@ class WebsiteNodeService {
     if (/[\\/\0]/.test(name) || name === "." || name === "..") {
       throw new Error("Security Violation: Invalid node name.");
     }
+    
+    // SECURITY: Prevent creating folders with the same name as source code folders
+    const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git"];
+    if (excludedFolders.includes(name.toLowerCase())) {
+      throw new Error("Security Violation: Reserved folder name.");
+    }
   }
 
   /**
@@ -361,6 +367,13 @@ class WebsiteNodeService {
 
         for (const dirent of dirents) {
           const name = dirent.name;
+          
+          // SECURITY: Exclude source code directories from being synced or shown
+          const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git"];
+          if (excludedFolders.includes(name.toLowerCase())) {
+            continue;
+          }
+          
           const slug = this.calculateSlug(name);
           const childRelativePath = dirRelativePath ? `${dirRelativePath}/${name}` : name;
           const isDir = dirent.isDirectory();
@@ -421,6 +434,13 @@ class WebsiteNodeService {
 
         for (const dirent of dirents) {
           const name = dirent.name;
+
+          // SECURITY: Exclude source code directories from being synced or shown
+          const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git"];
+          if (excludedFolders.includes(name.toLowerCase())) {
+            continue;
+          }
+
           const slug = this.calculateSlug(name);
           const childRelativePath = dirRelativePath ? `${dirRelativePath}/${name}` : name;
           const isDir = dirent.isDirectory();
