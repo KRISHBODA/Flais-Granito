@@ -8,7 +8,14 @@ const adminSchema = new mongoose.Schema({
   role: { type: String, enum: ["superadmin", "admin"], default: "admin" },
   permissions: { type: [String], default: [] },
   isActive: { type: Boolean, default: true },
-  mustChangePassword: { type: Boolean, default: false }
+  mustChangePassword: { type: Boolean, default: false },
+  
+  // 2FA Fields
+  twoFactorEnabled: { type: Boolean, default: false },
+  twoFactorSecretEncrypted: { type: String },
+  pendingTwoFactorSecretEncrypted: { type: String },
+  twoFactorVerifiedAt: { type: Date },
+  twoFactorRecoveryCodes: { type: [String], default: [] }
 }, { timestamps: true });
 
 adminSchema.pre("save", async function () {

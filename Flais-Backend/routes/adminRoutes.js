@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { loginAdmin, getAdminProfile, updateAdminProfile } = require("../controllers/adminController");
-const { protect } = require("../middleware/authMiddleware");
+const { loginAdmin, getAdminProfile, updateAdminProfile, setup2FA, verifySetup2FA, verify2FA, recover2FA } = require("../controllers/adminController");
+const { protect, validate2FAChallenge } = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
 const { createRateLimit } = require("../middleware/rateLimit");
 const uploadService = require("../services/storage/UploadService");
@@ -18,9 +18,26 @@ const sensitiveUploadLimiter = createRateLimit({
   message: "Too many upload/delete requests. Please try again later.",
 });
 
+const twoFactorLimiter = createRateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: "Too many 2FA attempts. Please try again later.",
+});
+
 // @route   POST /api/admin/login
 router.post("/login", loginLimiter, loginAdmin);
 
+// @route   POST /api/admin/2fa/setup
+router.post("/2fa/setup", validate2FAChallenge("SETUP"), setup2FA);
+
+// @route   POST /api/admin/2fa/verify-setup
+router.post("/2fa/verify-setup", twoFactorLimiter, validate2FAChallenge("SETUP"), verifySetup2FA);
+
+// @route   POST /api/admin/2fa/verify
+router.post("/2fa/verify", twoFactorLimiter, validate2FAChallenge("VERIFY"), verify2FA);
+
+// @route   POST /api/admin/2fa/recover
+router.post("/2fa/recover", twoFactorLimiter, validate2FAChallenge("VERIFY"), recover2FA);
 // @route   GET /api/admin/profile
 router.get("/profile", protect, getAdminProfile);
 

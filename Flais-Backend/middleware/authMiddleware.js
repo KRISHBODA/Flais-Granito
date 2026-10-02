@@ -74,3 +74,47 @@ const superAdminOnly = (req, res, next) => {
 };
 
 module.exports = { protect, authorize, superAdminOnly };
+
+const validate2FAChallenge = (expectedPhase) => async (req, res, next) => {
+  let token;
+  if (!JWT_SECRET) {
+    return res.status(500).json({ success: false, message: "Server misconfigured" });
+  }
+
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, JWT_SECRET, {
+        algorithms: ["HS256"],
+        issuer: JWT_ISSUER,
+        audience: "flais-2fa",
+      });
+
+      if (decoded.twoFactorPhase !== expectedPhase) {
+         return res.status(403).json({ success: false, message: "Invalid 2FA challenge phase" });
+      }
+
+      req.admin = await Admin.findById(decoded.id).select("-password");
+
+      if (!req.admin) {
+        return res.status(401).json({ success: false, message: "Not authorized, admin not found" });
+      }
+
+      if (req.admin.isActive === false) {
+        return res.status(403).json({ success: false, message: "Account disabled." });
+      }
+      
+      if (req.admin.role !== "superadmin") {
+         return res.status(403).json({ success: false, message: "2FA is only for Super Admins" });
+      }
+
+      next();
+    } catch (error) {
+      res.status(401).json({ success: false, message: "Not authorized, challenge token failed" });
+    }
+  } else {
+    res.status(401).json({ success: false, message: "Not authorized, no challenge token" });
+  }
+};
+
+module.exports = { protect, authorize, superAdminOnly, validate2FAChallenge };
