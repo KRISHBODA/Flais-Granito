@@ -1,7 +1,7 @@
 const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { authenticator } = require("otplib");
+const { generateSecret, generateURI, verifySync } = require("otplib");
 const qrcode = require("qrcode");
 const crypto = require("crypto");
 const { encryptData, decryptData, hashData } = require("../utils/crypto");
@@ -165,16 +165,15 @@ exports.changePassword = async (req, res) => {
 exports.setup2FA = async (req, res) => {
   try {
     const admin = await Admin.findById(req.admin._id);
-    if (!admin || admin.twoFactorEnabled) {
+    if (!admin || admin.role !== "superadmin" || admin.isActive === false || admin.twoFactorEnabled) {
       return res.status(400).json({ success: false, message: "2FA already enabled or admin not found." });
     }
 
-    const secret = authenticator.generateSecret();
+    const secret = generateSecret();
+    const otpauthUrl = generateURI({ issuer: "Flais Granito", label: admin.email, secret });
+    const qrCodeDataUrl = await qrcode.toDataURL(otpauthUrl);
     admin.pendingTwoFactorSecretEncrypted = encryptData(secret);
     await admin.save();
-
-    const otpauthUrl = authenticator.keyuri(admin.email, "Flais Granito", secret);
-    const qrCodeDataUrl = await qrcode.toDataURL(otpauthUrl);
 
     res.status(200).json({
       success: true,
@@ -199,7 +198,7 @@ exports.verifySetup2FA = async (req, res) => {
     }
 
     const secret = decryptData(admin.pendingTwoFactorSecretEncrypted);
-    const isValid = authenticator.verify({ token, secret });
+    const { valid: isValid } = verifySync({ token, secret });
 
     if (!isValid) {
       return res.status(401).json({ success: false, message: "Invalid verification code." });
@@ -250,7 +249,7 @@ exports.verify2FA = async (req, res) => {
     }
 
     const secret = decryptData(admin.twoFactorSecretEncrypted);
-    const isValid = authenticator.verify({ token, secret });
+    const { valid: isValid } = verifySync({ token, secret });
 
     if (!isValid) {
       return res.status(401).json({ success: false, message: "Invalid verification code." });
