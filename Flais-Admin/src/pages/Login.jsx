@@ -9,6 +9,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [verificationError, setVerificationError] = useState('');
   
   const [loginState, setLoginState] = useState('LOGIN_FORM'); // LOGIN_FORM, SETUP_2FA, VERIFY_2FA
   const [challengeToken, setChallengeToken] = useState(null);
@@ -46,6 +48,7 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoginError('');
     setIsLoading(true);
 
     try {
@@ -59,15 +62,25 @@ const Login = () => {
         setLoginState('SETUP_2FA');
         await initiate2FASetup(response.data.challengeToken);
       } else if (response.data.requires2FA) {
+        if (!response.data.challengeToken) {
+          setLoginError('Unable to complete login. Please try again.');
+          return;
+        }
         setChallengeToken(response.data.challengeToken);
         setLoginState('VERIFY_2FA');
       } else if (response.data.success) {
         toast.success('Login successful!');
         saveAuthAndRedirect(response.data);
+      } else {
+        setLoginError('Unable to complete login. Please try again.');
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "Connection failed";
-      toast.error("Login Error: " + errorMsg);
+      const status = error.response?.status;
+      setLoginError(status === 401 ? 'Invalid email or password.'
+        : status === 429 ? 'Too many login attempts. Please try again later.'
+        : status === 403 ? 'This account is unavailable. Please contact an administrator.'
+        : status ? 'Unable to complete login. Please try again.'
+        : 'Cannot connect to the server. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -119,6 +132,7 @@ const Login = () => {
 
   const handleVerify2FA = async (e) => {
     e.preventDefault();
+    setVerificationError('');
     setIsLoading(true);
     try {
       if (useRecovery) {
@@ -141,7 +155,11 @@ const Login = () => {
         }
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Invalid verification code");
+      const status = error.response?.status;
+      setVerificationError(status === 401 ? 'Invalid verification code. Please try again.'
+        : status === 429 ? 'Too many verification attempts. Please try again later.'
+        : status ? 'Unable to verify your code. Please try again.'
+        : 'Cannot connect to the server. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -175,6 +193,7 @@ const Login = () => {
         {loginState === 'LOGIN_FORM' && (
           <form onSubmit={handleLogin} className="p-8">
             <div className="space-y-6">
+              {loginError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{loginError}</p>}
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">Email Address</label>
                 <div className="relative">
@@ -310,6 +329,7 @@ const Login = () => {
         {loginState === 'VERIFY_2FA' && (
           <form onSubmit={handleVerify2FA} className="p-8">
             <div className="space-y-6">
+              {verificationError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{verificationError}</p>}
               <p className="text-sm text-slate-600 text-center">
                 {useRecovery 
                   ? "Enter one of your 8-character recovery codes."

@@ -46,6 +46,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     if (confirmLogout) {
       // 2. Clear admin auth token
       localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminData');
       
       // 3. Show success toast
       toast.success('Logged out successfully');

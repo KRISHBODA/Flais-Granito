@@ -20,6 +20,7 @@ const Navbar = ({ setSidebarOpen }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminData');
     toast.success("Logged out");
     navigate('/admin/login');
   };
