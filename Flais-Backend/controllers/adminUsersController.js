@@ -1,5 +1,6 @@
 const Admin = require("../models/Admin");
 const crypto = require("crypto");
+const validator = require("validator");
 
 const generateTempPassword = () => {
   return crypto.randomBytes(8).toString("hex") + "aA1!"; // ensure requirements
@@ -60,11 +61,28 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const { name, role, permissions, isActive } = req.body;
+    const { name, email, role, permissions, isActive } = req.body;
     const user = await Admin.findById(req.params.id);
     
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (email !== undefined) {
+      const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+      if (!validator.isEmail(normalizedEmail)) {
+        return res.status(400).json({ success: false, message: "Enter a valid email address" });
+      }
+
+      const escapedEmail = normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const existing = await Admin.findOne({
+        _id: { $ne: user._id },
+        email: new RegExp(`^${escapedEmail}$`, "i")
+      });
+      if (existing) {
+        return res.status(400).json({ success: false, message: "User with this email already exists" });
+      }
+      user.email = normalizedEmail;
     }
 
     if (user._id.toString() === req.admin._id.toString()) {
@@ -95,6 +113,9 @@ exports.updateUser = async (req, res) => {
 
     res.status(200).json({ success: true, user: await Admin.findById(user._id).select("-password") });
   } catch (error) {
+    if (error.code === 11000 && error.keyPattern?.email) {
+      return res.status(400).json({ success: false, message: "User with this email already exists" });
+    }
     res.status(500).json({ success: false, message: "Failed to update user", error: error.message });
   }
 };

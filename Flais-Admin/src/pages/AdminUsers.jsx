@@ -235,10 +235,9 @@ const AdminUsers = () => {
                   <input
                     type="email"
                     required
-                    disabled={!!editingUser}
                     value={formData.email}
                     onChange={e => setFormData({...formData, email: e.target.value})}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-[#0145F2] outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2 focus:border-[#0145F2] outline-none"
                   />
                 </div>
               </div>
