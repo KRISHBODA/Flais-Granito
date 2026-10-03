@@ -7,7 +7,7 @@ const generateTempPassword = () => {
 
 exports.getUsers = async (req, res) => {
   try {
-    const users = await Admin.find().select("-password");
+    const users = await Admin.find({ role: { $ne: "superadmin" } }).select("-password");
     res.status(200).json({ success: true, users });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
