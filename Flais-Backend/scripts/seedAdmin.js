@@ -23,7 +23,7 @@ const run = async () => {
     process.exit(0);
   }
 
-  await Admin.create({ email, password });
+  await Admin.create({ email, password, role: "superadmin" });
 
   process.exit(0);
 };
