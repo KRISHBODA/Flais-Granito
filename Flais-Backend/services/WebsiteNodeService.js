@@ -40,7 +40,7 @@ class WebsiteNodeService {
     }
     
     // SECURITY: Prevent creating folders with the same name as source code folders
-    const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git"];
+    const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git", ".github", ".vscode", ".ds_store", ".env"];
     if (excludedFolders.includes(name.toLowerCase())) {
       throw new Error("Security Violation: Reserved folder name.");
     }
@@ -121,8 +121,10 @@ class WebsiteNodeService {
     let name = file.originalname;
 
     const isJpeg = file.mimetype === 'image/jpeg' || 
+                   file.mimetype === 'image/png' ||
                    path.extname(name).toLowerCase() === '.jpg' || 
-                   path.extname(name).toLowerCase() === '.jpeg';
+                   path.extname(name).toLowerCase() === '.jpeg' ||
+                   path.extname(name).toLowerCase() === '.png';
     
     if (isJpeg) {
       name = '1.jpeg';
@@ -369,7 +371,7 @@ class WebsiteNodeService {
           const name = dirent.name;
           
           // SECURITY: Exclude source code directories from being synced or shown
-          const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git"];
+          const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git", ".github", ".vscode", ".ds_store", ".env"];
           if (excludedFolders.includes(name.toLowerCase())) {
             continue;
           }
@@ -436,7 +438,7 @@ class WebsiteNodeService {
           const name = dirent.name;
 
           // SECURITY: Exclude source code directories from being synced or shown
-          const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git"];
+          const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git", ".github", ".vscode", ".ds_store", ".env"];
           if (excludedFolders.includes(name.toLowerCase())) {
             continue;
           }
