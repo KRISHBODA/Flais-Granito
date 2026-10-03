@@ -356,73 +356,96 @@ class WebsiteNodeService {
    * Preview Sync from server to database.
    * Recursively scans WEBSITE_CONTENT_ROOT and compares with DB.
    */
-  async previewSync() {
-    const changes = {
-      newNodes: [],
-      metadataUpdates: [],
-      conflicts: [],
-    };
+async previewSync() {
+  const changes = {
+    newNodes: [],
+    metadataUpdates: [],
+    conflicts: [],
+  };
 
-    const scanDirectory = async (dirRelativePath, parentId) => {
-      try {
-        const dirents = await websiteFileSystemProvider.readDir(dirRelativePath);
+  const scanDirectory = async (dirRelativePath) => {
+    try {
+      const dirents = await websiteFileSystemProvider.readDir(dirRelativePath);
 
-        for (const dirent of dirents) {
-          const name = dirent.name;
-          
-          // SECURITY: Exclude source code directories from being synced or shown
-          const excludedFolders = ["flais-backend", "flais-frontend", "flais-admin", "node_modules", ".git", ".github", ".vscode", ".ds_store", ".env"];
-          if (excludedFolders.includes(name.toLowerCase())) {
-            continue;
-          }
-          
-          const slug = this.calculateSlug(name);
-          const childRelativePath = dirRelativePath ? `${dirRelativePath}/${name}` : name;
-          const isDir = dirent.isDirectory();
-          
-          const dbNode = await WebsiteNode.findOne({ parentId: parentId || null, slug });
+      for (const dirent of dirents) {
+        const name = dirent.name;
 
-          if (!dbNode) {
-            changes.newNodes.push({
-              name,
-              type: isDir ? "folder" : "file",
-              parentId,
+        // SECURITY: Exclude source-code/system directories
+        const excludedFolders = [
+          "flais-backend",
+          "flais-frontend",
+          "flais-admin",
+          "node_modules",
+          ".git",
+          ".github",
+          ".vscode",
+          ".ds_store",
+          ".env",
+        ];
+
+        if (excludedFolders.includes(name.toLowerCase())) {
+          continue;
+        }
+
+        const childRelativePath = dirRelativePath
+          ? `${dirRelativePath}/${name}`
+          : name;
+
+        const isDir = dirent.isDirectory();
+
+        // IMPORTANT:
+        // Preview must not depend on a parent ObjectId,
+        // because the parent may itself not exist in DB yet.
+        const dbNode = await WebsiteNode.findOne({
+          relativePath: childRelativePath,
+        });
+
+        if (!dbNode) {
+          changes.newNodes.push({
+            name,
+            type: isDir ? "folder" : "file",
+            relativePath: childRelativePath,
+            parentRelativePath: dirRelativePath || null,
+          });
+        } else {
+          if (
+            (isDir && dbNode.type !== "folder") ||
+            (!isDir && dbNode.type !== "file")
+          ) {
+            changes.conflicts.push({
               relativePath: childRelativePath,
+              message: `Type mismatch. DB says ${dbNode.type}, FS says ${
+                isDir ? "folder" : "file"
+              }.`,
             });
-          } else {
-            if ((isDir && dbNode.type !== "folder") || (!isDir && dbNode.type !== "file")) {
-              changes.conflicts.push({
+          } else if (!isDir) {
+            const stats =
+              await websiteFileSystemProvider.getStats(childRelativePath);
+
+            if (dbNode.fileSize !== stats.size) {
+              changes.metadataUpdates.push({
+                nodeId: dbNode._id,
                 relativePath: childRelativePath,
-                message: `Type mismatch. DB says ${dbNode.type}, FS says ${isDir ? "folder" : "file"}.`,
+                oldSize: dbNode.fileSize,
+                newSize: stats.size,
               });
-            } else if (!isDir) {
-              const stats = await websiteFileSystemProvider.getStats(childRelativePath);
-              if (dbNode.fileSize !== stats.size) {
-                changes.metadataUpdates.push({
-                  nodeId: dbNode._id,
-                  relativePath: childRelativePath,
-                  oldSize: dbNode.fileSize,
-                  newSize: stats.size,
-                });
-              }
             }
           }
-
-          if (isDir) {
-            const nextParentId = dbNode ? dbNode._id : "PENDING_CREATION"; 
-            // In preview, we don't have the ID for new nodes, but we can scan it anyway.
-            await scanDirectory(childRelativePath, nextParentId);
-          }
         }
-      } catch (err) {
-        console.error(`Error scanning ${dirRelativePath}:`, err.message);
+
+        if (isDir) {
+          await scanDirectory(childRelativePath);
+        }
       }
-    };
+    } catch (err) {
+      console.error(`Error scanning ${dirRelativePath}:`, err.message);
+    }
+  };
 
-    await scanDirectory("", null);
-    return changes;
-  }
+  await scanDirectory("");
 
+  return changes;
+}
   /**
    * Apply Sync from server to database.
    */
