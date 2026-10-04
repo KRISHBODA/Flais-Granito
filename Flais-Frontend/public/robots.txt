@@ -1,5 +1,10 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /api/
+Disallow: /catalog/view
+Disallow: /scan
+Disallow: /box-countertop-15mm
+Disallow: /calculator
 
 Sitemap: https://www.flaisgranito.com/sitemap.xml

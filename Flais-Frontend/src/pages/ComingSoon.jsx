@@ -1,10 +1,13 @@
 import React from 'react';
 import logoWhite from '../assets/Flais White.png';
+import SEO from '../components/SEO';
 import './ComingSoon.css';
 
 const ComingSoon = () => {
+
   return (
     <div className="coming-soon-container">
+      <SEO title="Coming Soon" description="FLAIS GRANITO is launching something new. Visit us soon." noindex={true} />
       <div className="coming-soon-backdrop" />
       <div className="coming-soon-content">
         <img 
