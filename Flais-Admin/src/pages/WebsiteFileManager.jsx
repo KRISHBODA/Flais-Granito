@@ -297,6 +297,12 @@ const WebsiteFileManager = () => {
     window.open(`${API}/api/admin/website-nodes/${node._id}/download?token=${localStorage.getItem('adminToken')}`, '_blank');
   };
 
+  const handleDownloadMultiple = () => {
+    if (selectedNodes.size === 0) return;
+    const ids = Array.from(selectedNodes).join(',');
+    window.open(`${API}/api/admin/website-nodes/download-multiple?ids=${ids}&token=${localStorage.getItem('adminToken')}`, '_blank');
+  };
+
   const handleShare = (node) => {
     // Generate clean link using the frontend domain
     const baseUrl = window.location.origin;
@@ -434,6 +440,13 @@ const WebsiteFileManager = () => {
             {selectedNodes.size > 0 && (
               <div className="flex items-center gap-3 ml-4">
                 <span className="text-sm font-medium text-slate-600">{selectedNodes.size} selected</span>
+                <button 
+                  onClick={handleDownloadMultiple}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <Download size={16} />
+                  Download Selected
+                </button>
                 <button 
                   onClick={() => setShowDelete(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"

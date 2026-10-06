@@ -363,6 +363,13 @@ async previewSync() {
     conflicts: [],
   };
 
+  // Pre-fetch all nodes from DB to avoid N+1 queries
+  const allDbNodes = await WebsiteNode.find({}).lean();
+  const dbNodesByPath = new Map();
+  for (const node of allDbNodes) {
+    dbNodesByPath.set(node.relativePath, node);
+  }
+
   const scanDirectory = async (dirRelativePath) => {
     try {
       const dirents = await websiteFileSystemProvider.readDir(dirRelativePath);
@@ -393,12 +400,7 @@ async previewSync() {
 
         const isDir = dirent.isDirectory();
 
-        // IMPORTANT:
-        // Preview must not depend on a parent ObjectId,
-        // because the parent may itself not exist in DB yet.
-        const dbNode = await WebsiteNode.findOne({
-          relativePath: childRelativePath,
-        });
+        const dbNode = dbNodesByPath.get(childRelativePath);
 
         if (!dbNode) {
           changes.newNodes.push({
@@ -446,10 +448,14 @@ async previewSync() {
 
   return changes;
 }
-  /**
-   * Apply Sync from server to database.
-   */
   async applySync() {
+    // Pre-fetch all nodes to avoid N+1 queries
+    const allDbNodes = await WebsiteNode.find({});
+    const dbNodesByPath = new Map();
+    for (const node of allDbNodes) {
+      dbNodesByPath.set(node.relativePath, node);
+    }
+
     const scanDirectory = async (dirRelativePath, parentId) => {
       let createdCount = 0;
       let updatedCount = 0;
@@ -470,7 +476,7 @@ async previewSync() {
           const childRelativePath = dirRelativePath ? `${dirRelativePath}/${name}` : name;
           const isDir = dirent.isDirectory();
 
-          let dbNode = await WebsiteNode.findOne({ parentId: parentId || null, slug });
+          let dbNode = dbNodesByPath.get(childRelativePath);
 
           if (!dbNode) {
             // Create missing node
@@ -487,6 +493,7 @@ async previewSync() {
               extension: ext,
             });
             await dbNode.save();
+            dbNodesByPath.set(childRelativePath, dbNode);
             createdCount++;
           } else if (!isDir) {
             // Update metadata

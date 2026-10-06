@@ -11,11 +11,15 @@ const {
   moveNode,
   deleteNode,
   downloadFile,
+  downloadMultipleFiles,
   previewSync,
   applySync,
   getBreadcrumbs,
   viewFile,
 } = require("../controllers/websiteNodeController");
+
+// @route   GET /api/admin/website-nodes/download-multiple
+router.get("/download-multiple", downloadMultipleFiles);
 
 // @route   GET /api/admin/website-nodes/:id/download
 // Make download public so it doesn't require a token

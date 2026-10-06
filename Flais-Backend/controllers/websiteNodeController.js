@@ -17,6 +17,54 @@ const getNodes = async (req, res, next) => {
   }
 };
 
+// @desc    Download multiple files/folders
+// @route   GET /api/admin/website-nodes/download-multiple
+// @access  Public
+const downloadMultipleFiles = async (req, res, next) => {
+  try {
+    const ids = req.query.ids ? req.query.ids.split(',') : [];
+    if (!ids.length) {
+      return res.status(400).json({ success: false, message: "No nodes selected" });
+    }
+
+    const nodes = await WebsiteNode.find({ _id: { $in: ids } });
+    if (!nodes.length) {
+      return res.status(404).json({ success: false, message: "Nodes not found" });
+    }
+
+    res.attachment(`download.zip`);
+    const archive = new ZipArchive({
+      zlib: { level: 9 }
+    });
+
+    archive.on('error', function(err) {
+      console.error('Archive error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, message: "Error generating zip" });
+      } else {
+        res.end();
+      }
+    });
+
+    archive.pipe(res);
+
+    for (const node of nodes) {
+      const absolutePath = websiteFileSystemProvider.resolveWebsitePath(node.relativePath);
+      if (fs.existsSync(absolutePath)) {
+        if (node.type === 'folder') {
+          archive.directory(absolutePath, node.name);
+        } else {
+          archive.file(absolutePath, { name: node.name });
+        }
+      }
+    }
+
+    archive.finalize();
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get node by ID
 // @route   GET /api/admin/website-nodes/:id
 // @access  Private/Admin
@@ -211,6 +259,7 @@ module.exports = {
   moveNode,
   deleteNode,
   downloadFile,
+  downloadMultipleFiles,
   previewSync,
   applySync,
   getBreadcrumbs,
