@@ -26,7 +26,7 @@ const RouteSeo = () => {
       <meta property="og:description" content={description} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      {route.noindex && <meta name="robots" content="noindex, nofollow" />}
+      <meta name="robots" content={route.noindex ? "noindex, nofollow" : "index, follow"} />
     </Helmet>
   );
 };

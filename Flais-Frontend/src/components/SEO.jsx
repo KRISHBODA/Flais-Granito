@@ -39,7 +39,7 @@ const SEO = ({
       <meta name="twitter:title" content={seoTitle} />
       {description && <meta name="twitter:description" content={description} />}
       {image && <meta name="twitter:image" content={image} />}
-      {noindex && <meta name="robots" content="noindex, nofollow" />}
+      <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
       {author && <meta name="author" content={author} />}
       {publishedTime && <meta property="article:published_time" content={publishedTime} />}
       {section && <meta property="article:section" content={section} />}
