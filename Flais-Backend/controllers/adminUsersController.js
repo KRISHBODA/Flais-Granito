@@ -127,14 +127,40 @@ exports.resetUserPassword = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const tempPassword = generateTempPassword();
-    user.password = tempPassword;
+    const { customPassword, reset2FA } = req.body || {};
+    let finalPassword = "";
+
+    if (customPassword && customPassword.trim()) {
+      if (customPassword.trim().length < 8) {
+        return res.status(400).json({ success: false, message: "Custom password must be at least 8 characters" });
+      }
+      finalPassword = customPassword.trim();
+    } else {
+      finalPassword = generateTempPassword();
+    }
+
+    user.password = finalPassword;
     user.mustChangePassword = true;
+
+    if (reset2FA) {
+      user.twoFactorEnabled = false;
+      user.twoFactorSecretEncrypted = undefined;
+      user.pendingTwoFactorSecretEncrypted = undefined;
+      user.twoFactorVerifiedAt = undefined;
+      user.twoFactorRecoveryCodes = [];
+    }
+
     await user.save();
 
     res.status(200).json({
       success: true,
-      tempPassword
+      tempPassword: finalPassword,
+      message: "Password reset successfully",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email
+      }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to reset password", error: error.message });
