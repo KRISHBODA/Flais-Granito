@@ -56,6 +56,22 @@ const ProductSkeleton = () => (
   </div>
 );
 
+// ============================================================
+// SEO SETTINGS - edit these values to update this page's SEO tags
+// ============================================================
+const SEO_SETTINGS = {
+  title: '1200x1800 mm Tiles',
+  description:
+    'Explore FLAIS GRANITO large format 1200x1800 mm tiles for floors, walls and countertops. Premium GVT and PGVT porcelain slabs from Morbi, Gujarat.',
+  keywords:
+    '1200x1800 tiles, 1200x1800 mm tiles, large format tiles, porcelain slabs, GVT tiles, PGVT tiles, FLAIS GRANITO',
+  image: '', // optional: full image URL used for social sharing (og:image)
+  noindex: false, // set true to hide this page from search engines
+};
+
+// Maximum number of products shown on this page
+const MAX_PRODUCTS = 8;
+
 const SIZE = '1200x1800';
 const APPLICATION = '';
 const HEADING = '1200 x 1800 mm Tiles';
@@ -75,15 +91,21 @@ const Tiles1200x1800 = () => {
 
   const filtered = useMemo(
     () =>
-      products.filter(
-        (p) => matchesSize(p.size, size) && matchesApplication(p.application, application)
-      ),
+      products
+        .filter((p) => matchesSize(p.size, size) && matchesApplication(p.application, application))
+        .slice(0, MAX_PRODUCTS),
     [products, size, application]
   );
 
   return (
     <div className="bg-white min-h-screen">
-      <SEO title="1200x1800 mm Tiles" description="Explore FLAIS GRANITO large format 1200x1800 mm tiles." />
+      <SEO
+        title={SEO_SETTINGS.title}
+        description={SEO_SETTINGS.description}
+        keywords={SEO_SETTINGS.keywords}
+        image={SEO_SETTINGS.image || undefined}
+        noindex={SEO_SETTINGS.noindex}
+      />
 
       <section className="pt-32 pb-10 px-6 md:px-12 max-w-[1600px] mx-auto">
         <h1 className="font-sans font-bold text-4xl md:text-5xl text-zinc-900">{HEADING}</h1>
