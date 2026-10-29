@@ -33,7 +33,7 @@ import Home from './pages/Home';
 const About = lazyWithRetry(() => import('./pages/About'));
 const Products = lazyWithRetry(() => import('./pages/Products'));
 const Tiles1200x1800 = lazyWithRetry(() => import('./pages/1200-1800-tiles'));
-const Tiles1200x2400Walls = lazyWithRetry(() => import('./pages/Tiles1200x2400Walls'));
+const Tiles1200x2400Walls = lazyWithRetry(() => import('./pages/1200-2400-tiles-for-walls'));
 const ProductDetails = lazyWithRetry(() => import('./pages/ProductDetails'));
 const Catalog = lazyWithRetry(() => import('./pages/Catalog'));
 const CatalogViewer = lazyWithRetry(() => import('./pages/CatalogViewer'));
