@@ -34,6 +34,21 @@ const About = lazyWithRetry(() => import('./pages/About'));
 const Products = lazyWithRetry(() => import('./pages/Products'));
 const Tiles1200x1800 = lazyWithRetry(() => import('./pages/1200-1800-tiles'));
 const Tiles1200x2400Walls = lazyWithRetry(() => import('./pages/1200-2400-tiles-for-walls'));
+const Tiles15mmSolorBodySlabs = lazyWithRetry(() => import('./pages/15mm-solor-body-slabs'));
+const Tiles15mmFullBodyTile = lazyWithRetry(() => import('./pages/15mm-full-body-tile'));
+const Tiles15mmVitrifiedFloors = lazyWithRetry(() => import('./pages/15mm-thick-vitrified-tiles-for-floors'));
+const Tiles15mmKitchenCountertopSlabs = lazyWithRetry(() => import('./pages/best-15mm-slabs-for-kitchen-countertops-project'));
+const Tiles800LargeFormat = lazyWithRetry(() => import('./pages/800-2400-large-format-tiles'));
+const CountertopSlab = lazyWithRetry(() => import('./pages/countertop-slab'));
+const FullBodySlabTiles = lazyWithRetry(() => import('./pages/full-body-slab-tiles-with-15mm-9mm-thickness'));
+const KitchenSlab = lazyWithRetry(() => import('./pages/kitchen-slab'));
+const LargeFormatKitchenSlabDesign = lazyWithRetry(() => import('./pages/large-format-kitchen-slab-tiles-design'));
+const LargeFormatPorcelainSlab = lazyWithRetry(() => import('./pages/large-format-porcelain-slab'));
+const LargeFormatSlabs15mm = lazyWithRetry(() => import('./pages/large-format-slabs-15mm-thickness'));
+const MarbleLookPorcelainSlab = lazyWithRetry(() => import('./pages/marble-look-finish-porcelain-slab'));
+const OutdoorPorcelainSlab = lazyWithRetry(() => import('./pages/outdoor-porcelain-slab'));
+const PremiumSlabTiles = lazyWithRetry(() => import('./pages/premium-slab-tiles'));
+const SlabTiles = lazyWithRetry(() => import('./pages/slab-tiles'));
 const ProductDetails = lazyWithRetry(() => import('./pages/ProductDetails'));
 const Catalog = lazyWithRetry(() => import('./pages/Catalog'));
 const CatalogViewer = lazyWithRetry(() => import('./pages/CatalogViewer'));
@@ -91,6 +106,21 @@ function App() {
                 <Route path="/products" element={<Products />} />
                 <Route path="/1200-1800-tiles" element={<Tiles1200x1800 />} />
                 <Route path="/1200-2400-tiles-for-walls" element={<Tiles1200x2400Walls />} />
+                <Route path="/15mm-solor-body-slabs" element={<Tiles15mmSolorBodySlabs />} />
+                <Route path="/15mm-full-body-tile" element={<Tiles15mmFullBodyTile />} />
+                <Route path="/15mm-thick-vitrified-tiles-for-floors" element={<Tiles15mmVitrifiedFloors />} />
+                <Route path="/best-15mm-slabs-for-kitchen-countertops-project" element={<Tiles15mmKitchenCountertopSlabs />} />
+                <Route path="/800-2400-large-format-tiles" element={<Tiles800LargeFormat />} />
+                <Route path="/countertop-slab" element={<CountertopSlab />} />
+                <Route path="/full-body-slab-tiles-with-15mm-9mm-thickness" element={<FullBodySlabTiles />} />
+                <Route path="/kitchen-slab" element={<KitchenSlab />} />
+                <Route path="/large-format-kitchen-slab-tiles-design" element={<LargeFormatKitchenSlabDesign />} />
+                <Route path="/large-format-porcelain-slab" element={<LargeFormatPorcelainSlab />} />
+                <Route path="/large-format-slabs-15mm-thickness" element={<LargeFormatSlabs15mm />} />
+                <Route path="/marble-look-finish-porcelain-slab" element={<MarbleLookPorcelainSlab />} />
+                <Route path="/outdoor-porcelain-slab" element={<OutdoorPorcelainSlab />} />
+                <Route path="/premium-slab-tiles" element={<PremiumSlabTiles />} />
+                <Route path="/slab-tiles" element={<SlabTiles />} />
                 <Route path="/products/:id" element={<ProductDetails />} />
                 <Route path="/catalog" element={<Catalog />} />
                 <Route path="/catalog/view" element={<CatalogViewer />} />
