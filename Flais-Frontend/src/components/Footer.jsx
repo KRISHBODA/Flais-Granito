@@ -235,6 +235,7 @@ const Footer = () => {
                     <Link
                       to={item.to}
                       tabIndex={copy === 1 ? -1 : undefined}
+                      onClick={(e) => e.currentTarget.blur()}
                       className="text-[12px] sm:text-[13px] capitalize tracking-wide text-zinc-400 hover:text-white transition-colors"
                     >
                       {item.label}
