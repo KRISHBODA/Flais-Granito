@@ -7,6 +7,27 @@ import api from '../utils/api';
 
 
 
+// SEO landing pages shown in the footer marquee
+const SEO_PAGE_LINKS = [
+  { to: '/1200-1800-tiles', label: '1200 1800 tiles' },
+  { to: '/1200-2400-tiles-for-walls', label: '1200 2400 tiles for walls' },
+  { to: '/15mm-solor-body-slabs', label: '15mm solor body slabs' },
+  { to: '/15mm-full-body-tile', label: '15mm full body tile' },
+  { to: '/15mm-thick-vitrified-tiles-for-floors', label: '15mm thick vitrified tiles for floors' },
+  { to: '/800-2400-large-format-tiles', label: '800 2400 large format tiles' },
+  { to: '/best-15mm-slabs-for-kitchen-countertops-project', label: 'best 15mm slabs for kitchen countertops project' },
+  { to: '/countertop-slab', label: 'countertop slab' },
+  { to: '/full-body-slab-tiles-with-15mm-9mm-thickness', label: 'full body slab tiles with 15mm 9mm thickness' },
+  { to: '/kitchen-slab', label: 'kitchen slab' },
+  { to: '/large-format-kitchen-slab-tiles-design', label: 'large format kitchen slab tiles design' },
+  { to: '/large-format-porcelain-slab', label: 'large format porcelain slab' },
+  { to: '/large-format-slabs-15mm-thickness', label: 'large format slabs 15mm thickness' },
+  { to: '/marble-look-finish-porcelain-slab', label: 'marble look finish porcelain slab' },
+  { to: '/outdoor-porcelain-slab', label: 'outdoor porcelain slab' },
+  { to: '/premium-slab-tiles', label: 'premium slab tiles' },
+  { to: '/slab-tiles', label: 'slab tiles' },
+];
+
 const Footer = () => {
   const [footerSettings, setFooterSettings] = React.useState({
     phone1: '+91 95867 33300',
@@ -201,6 +222,28 @@ const Footer = () => {
                 +91 93137 35697
               </a>
             </div>
+          </div>
+        </div>
+
+        {/* SEO Links Marquee */}
+        <div className="footer-marquee border-t border-zinc-900 py-4 mb-10" aria-label="Popular tile categories">
+          <div className="footer-marquee-track">
+            {[0, 1].map((copy) => (
+              <div className="footer-marquee-group" key={copy} aria-hidden={copy === 1 ? 'true' : undefined}>
+                {SEO_PAGE_LINKS.map((item) => (
+                  <React.Fragment key={item.to}>
+                    <Link
+                      to={item.to}
+                      tabIndex={copy === 1 ? -1 : undefined}
+                      className="text-[12px] sm:text-[13px] capitalize tracking-wide text-zinc-400 hover:text-white transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                    <span className="text-zinc-700" aria-hidden="true">|</span>
+                  </React.Fragment>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
 
