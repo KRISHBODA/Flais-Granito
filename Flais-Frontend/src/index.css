@@ -718,8 +718,14 @@ img {
     width: max-content;
     animation: footer-marquee 70s linear infinite;
 }
-.footer-marquee:hover .footer-marquee-track,
-.footer-marquee:focus-within .footer-marquee-track {
+/* Pause on mouse hover (not on touch, where :hover sticks after a tap) */
+@media (hover: hover) and (pointer: fine) {
+    .footer-marquee:hover .footer-marquee-track {
+        animation-play-state: paused;
+    }
+}
+/* Pause for keyboard users tabbing through the links */
+.footer-marquee:has(a:focus-visible) .footer-marquee-track {
     animation-play-state: paused;
 }
 .footer-marquee-group {
