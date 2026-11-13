@@ -62,7 +62,7 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: '15mm Thick Vitrified Tiles for Floors',
+  title: '15mm Thick Vitrified Tiles For Floors',
   description:
     'Explore FLAIS GRANITO 15 mm thick vitrified tiles for floors. High strength, low water absorption tiles for homes, offices and commercial spaces.',
   keywords:
