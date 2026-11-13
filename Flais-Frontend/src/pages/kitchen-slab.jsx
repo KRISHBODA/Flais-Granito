@@ -89,11 +89,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Kitchen Slabs',
+  title: 'Kitchen Slab Manufacturers, India',
   description:
-    'Explore FLAIS GRANITO 1200x2400 mm kitchen slabs. Seamless, easy to clean large format porcelain slabs for kitchen floors, walls and surfaces.',
+    'FLAIS GRANITO is one of the India's leading Kitchen Slab Manufacturers. Visit us for more info aboubt Kitchen Slab near your.',
   keywords:
-    'kitchen slab, kitchen slab tiles, 1200x2400 slabs, large format kitchen tiles, FLAIS GRANITO',
+    'Kitchen Slab Manufacturers, Kitchen Slab India',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
