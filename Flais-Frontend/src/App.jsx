@@ -106,7 +106,7 @@ function App() {
                 <Route path="/products" element={<Products />} />
                 <Route path="/1200-1800-tiles" element={<Tiles1200x1800 />} />
                 <Route path="/1200-2400-tiles-for-walls" element={<Tiles1200x2400Walls />} />
-                <Route path="/15mm-solor-body-slabs" element={<Tiles15mmSolorBodySlabs />} />
+                <Route path="/15mm-color-body-slabs" element={<Tiles15mmSolorBodySlabs />} />
                 <Route path="/15mm-full-body-tile" element={<Tiles15mmFullBodyTile />} />
                 <Route path="/15mm-thick-vitrified-tiles-for-floors" element={<Tiles15mmVitrifiedFloors />} />
                 <Route path="/best-15mm-slabs-for-kitchen-countertops-project" element={<Tiles15mmKitchenCountertopSlabs />} />
