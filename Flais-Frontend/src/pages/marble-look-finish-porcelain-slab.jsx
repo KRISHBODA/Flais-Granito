@@ -89,11 +89,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Marble Look Finish Porcelain Slabs',
+  title: 'Marble Look & Finish Porcelain Slab Manufacturers, India',
   description:
-    'Explore FLAIS GRANITO marble look porcelain slabs. Elegant marble finish slabs with veining and gloss for floors and walls.',
+    'FLAIS GRANITO is one of the leading Marble Look & Finish Porcelain Slab Manufacturers, India. Elegant marble finish slabs with veining and gloss for floors and walls.',
   keywords:
-    'marble look porcelain slab, marble finish tiles, marble effect slabs, marble gloss tiles, FLAIS GRANITO',
+    'Marble Look & Finish Porcelain Slab Manufacturers',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
