@@ -89,9 +89,9 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Large Format Kitchen Slab Tiles Design',
+  title: 'Large Format Kitchen Slab Manufacturers, India',
   description:
-    'Explore FLAIS GRANITO large format kitchen slab tile designs. 1200x1800 mm wall suitable porcelain slabs for kitchen walls and backsplashes.',
+    'FLAIS GRANITO Large Format Kitchen Slab Manufacturers in India. Visit us for more info about Large Format Kitchen Slab from Gujarat, India.',
   keywords:
     'large format kitchen slab tiles, kitchen slab design, kitchen wall slabs, 1200x1800 tiles, FLAIS GRANITO',
   image: '', // optional: full image URL used for social sharing (og:image)
