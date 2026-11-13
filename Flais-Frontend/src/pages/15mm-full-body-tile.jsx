@@ -62,9 +62,9 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: '15mm Full Body Tiles',
+  title: '15mm Full Body Tile Manufacturers',
   description:
-    'Explore FLAIS GRANITO 15 mm full body porcelain tiles. Consistent colour through the entire thickness, built for high traffic and long lasting performance.',
+    'Explore FLAIS is one of the leading 15mm Full Body Tile Manufacturers in India. Consistent colour through the entire thickness, built for high traffic and long lasting performance.',
   keywords:
     '15mm full body tile, full body tiles, 15mm thick tiles, full body porcelain tiles, FLAIS GRANITO',
   image: '', // optional: full image URL used for social sharing (og:image)
