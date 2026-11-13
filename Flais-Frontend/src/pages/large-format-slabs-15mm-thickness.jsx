@@ -89,11 +89,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Large Format Slabs 15mm Thickness',
+  title: 'Large Format Slabs in 15mm Thickness',
   description:
-    'Explore FLAIS GRANITO large format slabs in 15 mm thickness. Extra strong 1200x1800 mm porcelain slabs for floors, walls and countertops.',
+    'FLAIS GRANITO is one of the leading Large Format Slabs in 15mm Thickness, india. Extra strong 1200x1800 mm porcelain slabs for floors, walls and countertops.',
   keywords:
-    'large format slabs 15mm, 15mm thick slabs, 15mm porcelain slabs, 1200x1800 slabs, FLAIS GRANITO',
+    'Large Format Slabs in 15mm Thickness',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
