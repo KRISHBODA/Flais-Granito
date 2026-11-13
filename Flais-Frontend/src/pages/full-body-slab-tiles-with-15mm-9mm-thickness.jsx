@@ -89,11 +89,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Full Body Slab Tiles 15mm and 9mm Thickness',
+  title: 'Full Body Slab Tiles With 15mm and 9mm Thickness',
   description:
-    'Explore FLAIS GRANITO full body slab tiles in 15 mm and 9 mm thickness. Large format porcelain slabs for floors and walls, made in Morbi, Gujarat.',
+    'FLAIS GRANITO is one of the leading Full Body Slab Tiles With 15mm and 9mm Thickness. Large format porcelain slabs for floors and walls, made in Morbi, Gujarat.',
   keywords:
-    'full body slab tiles, 15mm slab tiles, 9mm slab tiles, large format slabs, porcelain slabs, FLAIS GRANITO',
+    'Full Body Slab Tiles With 15mm and 9mm Thickness',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
