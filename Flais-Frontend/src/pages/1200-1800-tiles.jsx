@@ -60,11 +60,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: '1200x1800 mm Tiles',
+  title: '1200x1800 Tiles Manufacturers, India',
   description:
-    'Explore FLAIS GRANITO large format 1200x1800 mm tiles for floors, walls and countertops. Premium GVT and PGVT porcelain slabs from Morbi, Gujarat.',
+    'Explore FLAIS GRANITO large format 1200x1800 mm tiles for floors, walls and countertops.We are one of the leading 1200x1800 Tiles Manufacturers from Gujarat, India.',
   keywords:
-    '1200x1800 tiles, 1200x1800 mm tiles, large format tiles, porcelain slabs, GVT tiles, PGVT tiles, FLAIS GRANITO',
+    '1200x1800 tiles, 1200x1800 mm tiles, 1200x1800 Tiles Manufacturers',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
