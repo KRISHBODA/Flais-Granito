@@ -89,11 +89,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Slab Tiles',
+  title: 'Slab Tiles Manufacturers, India',
   description:
-    'Explore the FLAIS GRANITO range of slab tiles. Large format GVT, PGVT and full body porcelain slabs for floors and walls, made in Morbi, Gujarat.',
+    'FLAIS GRANITO is one the leading Slab Tiles Manufacturers in India. Visit us for more info about Slab Tiles Manufacturers Near you.',
   keywords:
-    'slab tiles, large format slab tiles, porcelain slabs, GVT slab tiles, FLAIS GRANITO',
+    'Slab Tiles Manufacturers',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
