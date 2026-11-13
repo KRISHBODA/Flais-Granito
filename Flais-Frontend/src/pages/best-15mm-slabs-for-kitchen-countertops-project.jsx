@@ -62,11 +62,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Best 15mm Slabs for Kitchen Countertops',
+  title: 'Best 15mm Slabs for Kitchen Countertops Project',
   description:
-    'Explore FLAIS GRANITO 15 mm thick slabs for kitchen countertops. Durable, heat and stain resistant porcelain slabs for modern kitchen projects, made in Morbi, Gujarat.',
+    'FLAIS GRANITO is Best 15mm Slabs for Kitchen Countertops Project in India. Durable, heat and stain resistant porcelain slabs for modern kitchen projects, made in Morbi, Gujarat.',
   keywords:
-    '15mm slabs for kitchen countertops, kitchen countertop slabs, 15mm thick slabs, porcelain countertop slabs, kitchen slabs, FLAIS GRANITO',
+    'Best 15mm Slabs for Kitchen Countertops Project',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
