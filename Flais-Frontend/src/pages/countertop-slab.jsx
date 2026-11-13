@@ -89,11 +89,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Countertop Slabs',
+  title: 'Countertop Slab Manufacturers, India',
   description:
-    'Explore FLAIS GRANITO 15 mm thick porcelain countertop slabs. Durable, heat and stain resistant slabs for kitchens and bathrooms, made in Morbi, Gujarat.',
+    'FLAIS GRANITO is one of the leading Countertop Slab Manufacturers. Durable, heat and stain resistant slabs for kitchens and bathrooms, made in Morbi, Gujarat.',
   keywords:
-    'countertop slab, porcelain countertop slabs, 15mm slabs, kitchen countertop, FLAIS GRANITO',
+    'Countertop Slab Manufacturers',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
