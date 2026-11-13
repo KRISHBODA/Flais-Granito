@@ -60,11 +60,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Large Format Tiles 800x1600 mm',
+  title: '800x2400 Large Format Tiles Manufacturers in India',
   description:
-    'Explore FLAIS GRANITO large format 800x1600 mm tiles. Premium GVT and PGVT porcelain slabs for floors and walls, made in Morbi, Gujarat.',
+    'FLAIS GRANITO is one of the leading 800x2400 Large Format Tiles Manufacturers. Premium GVT and PGVT porcelain slabs for floors and walls, made in Morbi, Gujarat.',
   keywords:
-    'large format tiles, 800x1600 tiles, 800x1600 mm tiles, large slabs, GVT tiles, PGVT tiles, porcelain slabs, FLAIS GRANITO',
+    '800x2400 Large Format Tiles, 800x2400 Large Format Tiles Manufacturers',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
