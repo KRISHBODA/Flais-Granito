@@ -89,11 +89,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Large Format Porcelain Slabs',
+  title: 'Large Format Kitchen Slab Tiles Design, India',
   description:
-    'Explore FLAIS GRANITO large format porcelain slabs in 1200x1800 mm and 1200x2400 mm. Premium GVT and PGVT slabs for floors and walls.',
+    'FLAIS GRANITO is one of the leading Large Format Kitchen Slab Tiles Design, India. Premium GVT and PGVT slabs for floors and walls.',
   keywords:
-    'large format porcelain slab, porcelain slabs, 1200x1800 slabs, 1200x2400 slabs, GVT slabs, FLAIS GRANITO',
+    'large format porcelain slab, Large Format Kitchen Slab Tiles Design',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
