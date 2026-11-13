@@ -60,9 +60,9 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: '1200x2400 mm Tiles for Walls',
+  title: '1200x2400 & 1200x2800 Tiles For Walls',
   description:
-    'Explore FLAIS GRANITO large format 1200x2400 mm wall tiles. Seamless porcelain wall slabs for modern interiors, made in Morbi, Gujarat.',
+    'Explore FLAIS GRANITO large format 1200x2400 & 1200x2800 Tiles For Walls. Seamless porcelain wall slabs for modern interiors, made in Morbi, Gujarat.',
   keywords:
     '1200x2400 wall tiles, 1200x2400 mm tiles for walls, large format wall tiles, wall slabs, porcelain wall tiles, FLAIS GRANITO',
   image: '', // optional: full image URL used for social sharing (og:image)
