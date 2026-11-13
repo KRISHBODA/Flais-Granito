@@ -62,11 +62,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: '15mm Color Body Slabs',
+  title: '15mm Color Body Slabs Manufacturers, India',
   description:
-    'Explore FLAIS GRANITO 15 mm thick color body porcelain slabs. Extra strong, durable slabs for floors, walls and countertops, made in Morbi, Gujarat.',
+    'Explore FLAIS GRANITO is one of the leading 15mm Color Body Slabs Manufacturers, India. Extra strong, durable slabs for floors, walls and countertops, made in Morbi, Gujarat.',
   keywords:
-    '15mm color body slabs, 15mm slabs, 15mm thick tiles, color body tiles, porcelain slabs, FLAIS GRANITO',
+    '15mm Color Body Slabs Manufacturers, 15mm Color Body Slabs Manufacturers in India',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
