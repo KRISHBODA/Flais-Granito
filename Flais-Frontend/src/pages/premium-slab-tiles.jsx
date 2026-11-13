@@ -89,9 +89,9 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Premium Slab Tiles',
+  title: 'Premium Slab Tiles Manufacturers, India',
   description:
-    'Explore FLAIS GRANITO premium slab tiles from the Marvel Collection. Luxury large format porcelain slabs for floors and walls.',
+    'FLAIS GRANITO is one of the leading Premium Slab Tiles Manufacturers in India. Luxury large format porcelain slabs for floors and walls.',
   keywords:
     'premium slab tiles, luxury slab tiles, marvel collection, large format slabs, FLAIS GRANITO',
   image: '', // optional: full image URL used for social sharing (og:image)
