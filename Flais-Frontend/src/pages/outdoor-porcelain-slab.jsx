@@ -89,11 +89,11 @@ const ProductSkeleton = () => (
 // SEO SETTINGS - edit these values to update this page's SEO tags
 // ============================================================
 const SEO_SETTINGS = {
-  title: 'Outdoor Porcelain Slabs',
+  title: 'Outdoor Porcelain Slab Manufacturers, India',
   description:
-    'Explore FLAIS GRANITO 15 mm thick porcelain slabs for outdoor use. Strong, durable slabs for patios, terraces and exteriors.',
+    'FLAIS GRANITO is one of the leading Outdoor Porcelain Slab Manufacturers in India. Strong, durable slabs for patios, terraces and exteriors.',
   keywords:
-    'outdoor porcelain slab, outdoor tiles, 15mm outdoor slabs, patio slabs, FLAIS GRANITO',
+    'Outdoor Porcelain Slab Manufacturers',
   image: '', // optional: full image URL used for social sharing (og:image)
   noindex: false, // set true to hide this page from search engines
 };
