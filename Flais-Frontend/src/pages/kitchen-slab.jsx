@@ -91,7 +91,7 @@ const ProductSkeleton = () => (
 const SEO_SETTINGS = {
   title: 'Kitchen Slab Manufacturers, India',
   description:
-    'FLAIS GRANITO is one of the India's leading Kitchen Slab Manufacturers. Visit us for more info aboubt Kitchen Slab near your.',
+    'FLAIS GRANITO is one of the India leading Kitchen Slab Manufacturers. Visit us for more info aboubt Kitchen Slab near your.',
   keywords:
     'Kitchen Slab Manufacturers, Kitchen Slab India',
   image: '', // optional: full image URL used for social sharing (og:image)
