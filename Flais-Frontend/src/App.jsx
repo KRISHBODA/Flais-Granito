@@ -34,7 +34,7 @@ const About = lazyWithRetry(() => import('./pages/About'));
 const Products = lazyWithRetry(() => import('./pages/Products'));
 const Tiles1200x1800 = lazyWithRetry(() => import('./pages/1200-1800-tiles'));
 const Tiles1200x2400Walls = lazyWithRetry(() => import('./pages/1200-2400-tiles-for-walls'));
-const Tiles15mmSolorBodySlabs = lazyWithRetry(() => import('./pages/15mm-solor-body-slabs'));
+const Tiles15mmSolorBodySlabs = lazyWithRetry(() => import('./pages/15mm-color-body-slabs'));
 const Tiles15mmFullBodyTile = lazyWithRetry(() => import('./pages/15mm-full-body-tile'));
 const Tiles15mmVitrifiedFloors = lazyWithRetry(() => import('./pages/15mm-thick-vitrified-tiles-for-floors'));
 const Tiles15mmKitchenCountertopSlabs = lazyWithRetry(() => import('./pages/best-15mm-slabs-for-kitchen-countertops-project'));
