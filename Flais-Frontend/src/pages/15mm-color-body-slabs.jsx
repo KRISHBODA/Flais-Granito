@@ -80,7 +80,7 @@ const HEADING = '15 mm Color Body Slabs';
 const INTRO = 'Extra thick 15 mm slabs for heavy duty floors, walls and countertops.';
 
 // Sidebar-less, 4-per-row product grid of 15 mm thick tiles.
-const Tiles15mmSolorBodySlabs = () => {
+const Tiles15mmColorBodySlabs = () => {
   const thickness = THICKNESS;
   const application = APPLICATION;
   const { data: products = [], isLoading, isError } = useQuery({
@@ -220,4 +220,4 @@ const Tiles15mmSolorBodySlabs = () => {
   );
 };
 
-export default Tiles15mmSolorBodySlabs;
+export default Tiles15mmColorBodySlabs;
