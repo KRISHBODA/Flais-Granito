@@ -3,13 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 
-<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-MMZGNBPM"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-</script>
-
 // Helper to wrap lazy imports and catch chunk loading / network errors (e.g. after new deployments)
 const lazyWithRetry = (componentImport) => {
   return lazy(async () => {
